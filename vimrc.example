@@ -55,17 +55,28 @@ set termguicolors               " True color support (if terminal supports it)
 
 " Configure genero-tools plugin
 let g:genero_tools_config = {
-  \ 'genero_tools_path': 'query.sh',           " Path to query.sh (must be in PATH)
-  \ 'cache_enabled': v:true,                   " Enable result caching
-  \ 'cache_ttl': 3600,                         " Cache TTL in seconds (1 hour)
-  \ 'cache_max_size': 100,                     " Max cache entries
-  \ 'display_mode': 'quickfix',                " Display mode: quickfix|popup|inline|split|echo
-  \ 'keybindings_enabled': v:true,             " Enable default keybindings
-  \ 'timeout': 10000,                          " Command timeout (ms) - 10s for large codebases
-  \ 'async_enabled': v:true,                   " Show progress for long commands
-  \ 'result_limit': 1000,                      " Max results before warning
-  \ 'pagination_size': 50                      " Results per page
+  \ 'genero_tools_path': 'query.sh',
+  \ 'cache_enabled': v:true,
+  \ 'cache_ttl': 3600,
+  \ 'cache_max_size': 100,
+  \ 'display_mode': 'quickfix',
+  \ 'keybindings_enabled': v:true,
+  \ 'timeout': 10000,
+  \ 'async_enabled': v:true,
+  \ 'result_limit': 1000,
+  \ 'pagination_size': 50
   \ }
+" Configuration options:
+"   genero_tools_path: Path to query.sh (must be in PATH)
+"   cache_enabled: Enable result caching
+"   cache_ttl: Cache TTL in seconds (1 hour)
+"   cache_max_size: Max cache entries
+"   display_mode: Display mode (quickfix|popup|inline|split|echo)
+"   keybindings_enabled: Enable default keybindings
+"   timeout: Command timeout in ms (10s for large codebases)
+"   async_enabled: Show progress for long commands
+"   result_limit: Max results before warning
+"   pagination_size: Results per page
 
 " ============================================================================
 " Genero-Tools Keybindings
@@ -116,14 +127,14 @@ let g:genero_tools_config = {
 " let g:genero_tools_config = {
 "   \ 'genero_tools_path': 'query.sh',
 "   \ 'cache_enabled': v:true,
-"   \ 'cache_ttl': 7200,                         " Longer TTL
-"   \ 'cache_max_size': 200,                     " Larger cache
-"   \ 'display_mode': 'inline',                  " Quick inline popups
+"   \ 'cache_ttl': 7200,
+"   \ 'cache_max_size': 200,
+"   \ 'display_mode': 'inline',
 "   \ 'keybindings_enabled': v:true,
-"   \ 'timeout': 15000,                          " 15 seconds
-"   \ 'async_enabled': v:true,                   " Keep editor responsive
-"   \ 'result_limit': 2000,                      " Allow more results
-"   \ 'pagination_size': 100                     " Larger pages
+"   \ 'timeout': 15000,
+"   \ 'async_enabled': v:true,
+"   \ 'result_limit': 2000,
+"   \ 'pagination_size': 100
 "   \ }
 "
 
