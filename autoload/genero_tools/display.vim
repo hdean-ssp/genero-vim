@@ -247,25 +247,30 @@ function! genero_tools#display#inline_neovim(lines) abort
   endtry
 endfunction
 
-" Inline popup for Vim using preview window
+" Inline popup for Vim using echo with visual formatting
 function! genero_tools#display#inline_vim(lines) abort
   try
-    " Create temporary buffer
-    let buf_name = 'genero_tools_inline_' . localtime()
-    execute 'silent! pedit ' . buf_name
+    " For classic Vim, use a simple echo-based popup that doesn't disrupt layout
+    " Format the output nicely
+    let formatted = []
+    call add(formatted, '┌' . repeat('─', 78) . '┐')
     
-    " Get preview window
-    let preview_win = win_getid(win_findbuf(bufnr(buf_name))[0])
+    for line in a:lines
+      let truncated = line[0:76]
+      let padding = repeat(' ', 78 - len(truncated))
+      call add(formatted, '│ ' . truncated . padding . ' │')
+    endfor
     
-    " Set content
-    call win_execute(preview_win, 'call append(0, a:lines)')
-    call win_execute(preview_win, 'setlocal nomodifiable')
-    call win_execute(preview_win, 'setlocal buftype=nofile')
+    call add(formatted, '└' . repeat('─', 78) . '┘')
     
-    " Auto-close after 5 seconds
-    call timer_start(5000, function('genero_tools#display#close_preview_window', [buf_name]))
+    " Display using echo (non-intrusive)
+    call genero_tools#display#echo(join(formatted, "\n"))
+    
+    " Show a message that it will auto-clear
+    echomsg 'Press any key to dismiss'
+    
   catch
-    " Fallback to echo
+    " Fallback to simple echo
     call genero_tools#display#echo(join(a:lines, "\n"))
   endtry
 endfunction
@@ -275,17 +280,6 @@ function! genero_tools#display#close_inline_window(win_id, timer_id) abort
   try
     if nvim_win_is_valid(a:win_id)
       call nvim_win_close(a:win_id, v:true)
-    endif
-  catch
-  endtry
-endfunction
-
-" Close preview window (Vim)
-function! genero_tools#display#close_preview_window(buf_name, timer_id) abort
-  try
-    let buf_nr = bufnr(a:buf_name)
-    if buf_nr != -1
-      execute 'silent! bdelete ' . buf_nr
     endif
   catch
   endtry
