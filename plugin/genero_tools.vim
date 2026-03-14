@@ -26,9 +26,4 @@ if genero_tools#config#get('keybindings_enabled')
   call genero_tools#keybindings#register()
 endif
 
-" Enable autocomplete for 4GL files
-augroup genero_tools_complete
-  autocmd!
-  autocmd FileType genero,4gl call genero_tools#complete#enable()
-augroup END
 
