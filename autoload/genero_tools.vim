@@ -74,6 +74,9 @@ function! genero_tools#list_functions_in_file(file_path) abort
     return {}
   endif
   
+  " Convert to relative path if absolute
+  let file_path = genero_tools#normalize_file_path(file_path)
+  
   let cache_key = 'list-file-functions:' . file_path
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached)
@@ -134,6 +137,9 @@ function! genero_tools#get_file_metadata(file_path) abort
     return {}
   endif
   
+  " Convert to relative path if absolute
+  let file_path = genero_tools#normalize_file_path(file_path)
+  
   let cache_key = 'file-references:' . file_path
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached)
@@ -188,4 +194,35 @@ function! genero_tools#get_current_module() abort
   endif
   
   return ''
+endfunction
+
+" Normalize file path to relative format for genero-tools
+" Converts absolute paths to relative paths based on codebase root
+function! genero_tools#normalize_file_path(file_path) abort
+  let path = a:file_path
+  
+  " If path is already relative, add ./ prefix if needed
+  if path[0] != '/'
+    if path[0:1] != './'
+      let path = './' . path
+    endif
+    return path
+  endif
+  
+  " For absolute paths, try to make them relative to codebase root
+  let codebase_path = genero_tools#get_codebase_path()
+  
+  " If codebase path is found and path starts with it, make it relative
+  if !empty(codebase_path) && path[0:len(codebase_path)-1] == codebase_path
+    let relative = path[len(codebase_path):]
+    " Remove leading slash
+    if relative[0] == '/'
+      let relative = relative[1:]
+    endif
+    return './' . relative
+  endif
+  
+  " Fallback: just use the filename with ./ prefix
+  let filename = fnamemodify(path, ':t')
+  return './' . filename
 endfunction
