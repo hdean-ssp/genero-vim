@@ -29,6 +29,7 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - Intelligent caching with LRU eviction
 - Result pagination for large codebases
 - Multiple display modes (quickfix, popup, inline, split, echo)
+- **Omnifunc autocomplete** - Function and module name completion with signatures
 - Full Vim 8.0+ and Neovim 0.4+ compatibility
 - Zero configuration changes required between editors
 
@@ -128,6 +129,31 @@ let g:genero_tools_config.display_mode = 'split'     " New split window
 let g:genero_tools_config.display_mode = 'echo'      " Command line output
 let g:genero_tools_config.display_mode = 'popup'     " Large floating window (Neovim only)
 ```
+
+## Autocomplete
+
+The plugin provides intelligent autocomplete for function and module names. Autocomplete is automatically enabled for `.4gl` files.
+
+**Usage:**
+```
+1. Open a .4gl file
+2. Start typing a function or module name
+3. Press Ctrl+X Ctrl+O to trigger omnifunc completion
+4. Select from the list of matching functions/modules
+5. Completion shows function signatures in the preview
+```
+
+**Manual Control:**
+```vim
+:GeneroCompleteEnable   " Enable autocomplete for current buffer
+:GeneroCompleteDisable  " Disable autocomplete for current buffer
+```
+
+**Completion Features:**
+- Function name completion with signatures
+- Module name completion
+- Cached results for performance
+- Works with partial matches (e.g., typing "val" completes "validate_input")
 
 ## Setup
 
