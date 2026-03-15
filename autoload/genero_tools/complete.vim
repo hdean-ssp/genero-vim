@@ -68,9 +68,8 @@ function! genero_tools#complete#search_functions(pattern) abort
     return cached.data
   endif
   
-  " Use search-functions with wildcard pattern
-  let search_pattern = a:pattern . '*'
-  let result = genero_tools#command#execute_shell('search-functions', [search_pattern])
+  " search-functions does substring matching, no wildcard needed
+  let result = genero_tools#command#execute_shell('search-functions', [a:pattern])
   
   if result.success && type(result.data) == type([])
     call genero_tools#cache#set(cache_key, result)
@@ -92,9 +91,8 @@ function! genero_tools#complete#search_modules(pattern) abort
     return cached.data
   endif
   
-  " Use search-modules with wildcard pattern
-  let search_pattern = a:pattern . '*'
-  let result = genero_tools#command#execute_shell('search-modules', [search_pattern])
+  " search-modules does substring matching, no wildcard needed
+  let result = genero_tools#command#execute_shell('search-modules', [a:pattern])
   
   if result.success && type(result.data) == type([])
     call genero_tools#cache#set(cache_key, result)
