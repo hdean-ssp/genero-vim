@@ -49,6 +49,9 @@ set mouse=a                     " Enable mouse support
 set background=dark             " Dark background
 set termguicolors               " True color support (if terminal supports it)
 
+" Set leader key to space
+let mapleader = " "
+
 " ============================================================================
 " Genero-Tools Plugin Configuration
 " ============================================================================

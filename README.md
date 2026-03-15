@@ -41,10 +41,10 @@ The default leader key is backslash `\`. All keybindings work in normal mode.
 
 | Keybinding | Action | Example |
 |-----------|--------|---------|
-| `Ctrl+]` | Find function under cursor | Place cursor on `validate_input`, press `Ctrl+]` |
-| `<leader>l` | List functions in current file | Press `\l` to see all functions |
-| `<leader>s` | Get function signature under cursor | Place cursor on `process_data`, press `\s` |
-| `<leader>m` | Get metadata for current file | Press `\m` to see author, tickets, dates |
+| `<leader>gl` | Find function under cursor | Place cursor on `validate_input`, press `<space>gl` |
+| `<leader>gf` | List functions in current file | Press `<space>gf` to see all functions |
+| `<leader>gs` | Get function signature under cursor | Place cursor on `process_data`, press `<space>gs` |
+| `<leader>gm` | Get metadata for current file | Press `<space>gm` to see author, tickets, dates |
 
 ### Usage Examples
 
@@ -52,7 +52,7 @@ The default leader key is backslash `\`. All keybindings work in normal mode.
 ```
 1. Open a .4gl file
 2. Place cursor on a function name: validate_input
-3. Press Ctrl+]
+3. Press <space>gl
 4. Results appear in inline popup (or quickfix, depending on display_mode)
 ```
 
@@ -60,21 +60,21 @@ The default leader key is backslash `\`. All keybindings work in normal mode.
 ```
 1. Open a .4gl file
 2. Place cursor on a function name: calculate_total
-3. Press \s
+3. Press <space>gs
 4. Function signature appears (parameters, return types)
 ```
 
 **Example 3: List all functions in current file**
 ```
 1. Open a .4gl file
-2. Press \l
+2. Press <space>gf
 3. All functions in the file are listed with line numbers
 ```
 
 **Example 4: Get file metadata**
 ```
 1. Open a .4gl file
-2. Press \m
+2. Press <space>gm
 3. File metadata appears (author, ticket codes, created/modified dates)
 ```
 
