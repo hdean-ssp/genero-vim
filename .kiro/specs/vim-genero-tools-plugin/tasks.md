@@ -323,8 +323,8 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Skip registration if keybindings_enabled is false
     - _Requirements: 12.1, 12.6_
 
-- [ ] 13. Implement codebase path detection
-  - [ ] 13.1 Create codebase path detection function
+- [x] 13. Implement codebase path detection
+  - [x] 13.1 Create codebase path detection function
     - Implement genero_tools#get_codebase_path() to detect project root
     - Search for genero project markers (genero.conf, .genero, etc.)
     - Fall back to current working directory
@@ -334,25 +334,25 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - **Property 15: Codebase Path Is Included in Commands**
     - **Validates: Requirements 1.5, 2.5, 3.5, 4.5, 5.5**
 
-- [ ] 14. Implement large codebase optimization guidance
-  - [ ] 14.1 Add result limit guidance messages
+- [x] 14. Implement large codebase optimization guidance
+  - [x] 14.1 Add result limit guidance messages
     - When result count reaches result_limit (1000), display message suggesting narrower search
     - Include examples of more specific search patterns
     - _Requirements: 17.1_
   
-  - [ ] 14.2 Add timeout recovery suggestions
+  - [x] 14.2 Add timeout recovery suggestions
     - When command times out, suggest using more specific search terms
     - Suggest filtering by module or file
     - Recommend increasing timeout for very large codebases
     - _Requirements: 17.2_
   
-  - [ ] 14.3 Add cache efficiency messaging
+  - [x] 14.3 Add cache efficiency messaging
     - Display cache statistics in GeneroConfigShow
     - Show hit/miss ratio and memory usage
     - Suggest optimal cache_ttl and cache_max_size for large codebases
     - _Requirements: 17.5_
   
-  - [ ] 14.4 Add progress and performance feedback
+  - [x] 14.4 Add progress and performance feedback
     - Display elapsed time for commands taking >2 seconds
     - Show estimated completion time if available
     - Recommend async_enabled for large codebases

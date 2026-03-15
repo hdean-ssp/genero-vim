@@ -188,8 +188,34 @@ let g:genero_tools_config = {
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
-  \ 'pagination_size': 50
+  \ 'pagination_size': 50,
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
   \ }
+```
+
+### Error Handling and Large Codebase Guidance
+
+When commands timeout or return too many results, the plugin provides actionable guidance:
+
+**Timeout Errors** suggest:
+- Using more specific search terms (e.g., `"myFunc"` instead of `"func"`)
+- Filtering by module name (e.g., `"mymodule.m3:myFunc"`)
+- Filtering by file path (e.g., `"src/myfile.4gl:myFunc"`)
+- Increasing timeout for very large codebases (6M+ LOC)
+- Enabling async mode to prevent blocking
+
+**Result Size Errors** suggest:
+- Using more specific search terms
+- Filtering by module or file
+- Increasing `result_limit` configuration
+- Using pagination to view results in smaller chunks
+
+### Codebase Detection
+
+The plugin automatically detects your project root by searching for markers (by default: `castle.sch`, `genero.conf`, `.genero`, `.git`). Customize the markers for your project:
+
+```vim
+let g:genero_tools_config.codebase_markers = ['custom.marker', '.git']
 ```
 
 For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for optimized configuration.

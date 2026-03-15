@@ -15,15 +15,17 @@ function! genero_tools#error#format_invalid_path(path) abort
   return message . "\n" . guidance
 endfunction
 
-" Format error for timeout with guidance for large codebases
+" Format error for timeout with guidance for large codebases (Requirement 17.2)
 function! genero_tools#error#format_timeout(command) abort
   let message = 'Error: Command timed out: ' . a:command
   let guidance = [
     \ 'Tip: The search took too long. For large codebases, try:',
-    \ '  1. Use a more specific search term',
-    \ '  2. Filter by module or file name',
-    \ '  3. Increase timeout in config: let g:genero_tools_config.timeout = 20000',
-    \ '  4. Enable async mode: let g:genero_tools_config.async_enabled = 1'
+    \ '  1. Use a more specific search term (e.g., "myFunc" instead of "func")',
+    \ '  2. Filter by module name (e.g., "mymodule.m3:myFunc")',
+    \ '  3. Filter by file path (e.g., "src/myfile.4gl:myFunc")',
+    \ '  4. Increase timeout in config: let g:genero_tools_config.timeout = 20000',
+    \ '  5. Enable async mode: let g:genero_tools_config.async_enabled = 1',
+    \ '  6. For very large codebases (6M+ LOC), consider increasing to 30000ms'
     \ ]
   return message . "\n" . join(guidance, "\n")
 endfunction
@@ -43,14 +45,16 @@ function! genero_tools#error#format_permission_denied(resource) abort
   return message . "\n" . guidance
 endfunction
 
-" Format error for result too large
+" Format error for result too large (Requirement 17.1)
 function! genero_tools#error#format_result_too_large(result_count, limit) abort
   let message = 'Error: Too many results (' . a:result_count . ' > ' . a:limit . ')'
   let guidance = [
-    \ 'Tip: The search returned too many results. Try:',
-    \ '  1. Use a more specific search term',
-    \ '  2. Filter by module or file',
-    \ '  3. Increase result_limit in config: let g:genero_tools_config.result_limit = 2000'
+    \ 'Tip: The search returned too many results. For large codebases, try:',
+    \ '  1. Use a more specific search term (e.g., "myFunc" instead of "func")',
+    \ '  2. Filter by module name (e.g., "mymodule.m3:myFunc")',
+    \ '  3. Filter by file path (e.g., "src/myfile.4gl:myFunc")',
+    \ '  4. Increase result_limit in config: let g:genero_tools_config.result_limit = 2000',
+    \ '  5. Use pagination to view results in smaller chunks'
     \ ]
   return message . "\n" . join(guidance, "\n")
 endfunction

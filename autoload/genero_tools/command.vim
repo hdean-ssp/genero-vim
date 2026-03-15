@@ -32,10 +32,16 @@ function! genero_tools#command#execute_shell(command, args) abort
     " Execute system command
     let output = system(cmd_line)
     let exit_code = v:shell_error
+    let elapsed = localtime() - start_time
     
     " Hide progress
     if genero_tools#config#get('async_enabled')
       call genero_tools#progress#hide()
+    endif
+    
+    " Show elapsed time for commands taking >2 seconds (Requirement 17.4, 17.7)
+    if elapsed > 2
+      call genero_tools#progress#show_elapsed('Command completed', start_time)
     endif
     
     " Check for errors
@@ -51,7 +57,7 @@ function! genero_tools#command#execute_shell(command, args) abort
       let result.data = data
       let result.error = ''
       
-      " Check if result set is too large
+      " Check if result set is too large (Requirement 17.1)
       let size_error = genero_tools#error#check_result_size(data)
       if !empty(size_error)
         let result.error = size_error

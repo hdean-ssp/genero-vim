@@ -67,7 +67,8 @@ let g:genero_tools_config = {
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
-  \ 'pagination_size': 50
+  \ 'pagination_size': 50,
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
   \ }
 " Configuration options:
 "   genero_tools_path: Path to query.sh (must be in PATH)
@@ -80,6 +81,7 @@ let g:genero_tools_config = {
 "   async_enabled: Show progress for long commands
 "   result_limit: Max results before warning
 "   pagination_size: Results per page
+"   codebase_markers: Project root markers (searches in order)
 
 " Disable preview window for autocomplete
 set completeopt-=preview
@@ -140,7 +142,8 @@ set completeopt-=preview
 "   \ 'timeout': 15000,
 "   \ 'async_enabled': v:true,
 "   \ 'result_limit': 2000,
-"   \ 'pagination_size': 100
+"   \ 'pagination_size': 100,
+"   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
 "   \ }
 "
 

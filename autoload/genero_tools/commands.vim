@@ -32,34 +32,7 @@ endfunction
 
 " GeneroConfigShow command - display current configuration
 function! genero_tools#commands#config_show() abort
-  let config = genero_tools#config#get_all()
-  let lines = ['=== Genero-Tools Configuration ===', '']
-  
-  for [key, value] in items(config)
-    if type(value) == type(v:true)
-      let value_str = value ? 'true' : 'false'
-    else
-      let value_str = string(value)
-    endif
-    call add(lines, key . ': ' . value_str)
-  endfor
-  
-  call add(lines, '')
-  let cache_stats = genero_tools#cache#stats()
-  call add(lines, '=== Cache Statistics ===')
-  call add(lines, 'Cache size: ' . cache_stats.size . ' / ' . cache_stats.max_size)
-  call add(lines, 'Cache enabled: ' . (cache_stats.enabled ? 'true' : 'false'))
-  call add(lines, 'Cache TTL: ' . cache_stats.ttl . 'ms')
-  
-  let memory_usage = genero_tools#cache#estimate_memory()
-  call add(lines, 'Estimated memory: ' . memory_usage . 'KB')
-  
-  call add(lines, '')
-  call add(lines, '=== Supported Display Modes ===')
-  let supported_modes = genero_tools#compat#get_supported_display_modes()
-  call add(lines, 'Available: ' . join(supported_modes, ', '))
-  
-  call genero_tools#display#echo(join(lines, "\n"))
+  call genero_tools#config#show()
 endfunction
 
 " GeneroClearCache command - clear cache

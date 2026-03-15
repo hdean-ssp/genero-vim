@@ -73,11 +73,7 @@ If `query.sh` is not in your PATH, edit `~/.vimrc` and set:
 let g:genero_tools_config.genero_tools_path = '/full/path/to/query.sh'
 ```
 
-Then reload Vim or run:
-
-```vim
-:source ~/.vimrc
-```
+Then restart Vim to load the updated configuration.
 
 ## Step 6: Test the Plugin
 
@@ -111,8 +107,17 @@ let g:genero_tools_config = {
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
-  \ 'pagination_size': 50
+  \ 'pagination_size': 50,
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
   \ }
+```
+
+### Codebase Detection
+
+The plugin automatically detects your project root by searching for markers. By default, it looks for `castle.sch` first, then falls back to `genero.conf`, `.genero`, and `.git`. Customize the markers for your project:
+
+```vim
+let g:genero_tools_config.codebase_markers = ['custom.marker', '.git']
 ```
 
 ### For Large Codebases (6M+ LOC)
@@ -128,7 +133,8 @@ let g:genero_tools_config = {
   \ 'timeout': 15000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 2000,
-  \ 'pagination_size': 100
+  \ 'pagination_size': 100,
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
   \ }
 ```
 

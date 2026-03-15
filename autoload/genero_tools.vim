@@ -165,19 +165,7 @@ endfunction
 
 " Get codebase path (detect project root)
 function! genero_tools#get_codebase_path() abort
-  " Search for genero project markers
-  let markers = ['genero.conf', '.genero', '.git']
-  let current_dir = expand('%:p:h')
-  
-  for marker in markers
-    let marker_path = finddir(marker, current_dir . ';')
-    if !empty(marker_path)
-      return fnamemodify(marker_path, ':h')
-    endif
-  endfor
-  
-  " Fall back to current working directory
-  return getcwd()
+  return genero_tools#codebase#get_root()
 endfunction
 
 " Get current module from file path

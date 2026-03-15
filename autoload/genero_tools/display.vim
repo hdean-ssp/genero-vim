@@ -8,11 +8,12 @@ function! genero_tools#display#result(result, display_mode) abort
     let formatted = genero_tools#display#format_error(a:result.error)
   endif
   
-  " Check result size and enable pagination if needed
+  " Check result size and enable pagination if needed (Requirement 17.1)
   let result_limit = genero_tools#config#get('result_limit')
   if type(a:result.data) == type([]) && len(a:result.data) > result_limit
     call genero_tools#display#echo('Warning: Result set exceeds limit (' . len(a:result.data) . ' results)')
     call genero_tools#display#echo('Suggestion: Narrow your search criteria or use pagination')
+    call genero_tools#display#echo('Examples: Use more specific terms, filter by module, or increase result_limit')
     let formatted = formatted[0:result_limit-1]
   endif
   
