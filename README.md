@@ -138,10 +138,18 @@ The plugin provides intelligent autocomplete for function and module names. Auto
 ```
 1. Open a .4gl file
 2. Start typing a function or module name
-3. Press Ctrl+X Ctrl+O to trigger omnifunc completion
-4. Select from the list of matching functions/modules
-5. Completion shows function signatures in the preview
+3. Press Tab to trigger autocomplete
+4. Use Tab/Shift+Tab or Up/Down arrows to navigate
+5. Press Enter to select
+6. Press Esc to cancel
 ```
+
+**Keybindings in Autocomplete Menu:**
+- `Tab` - Next item (or trigger if menu closed)
+- `Shift+Tab` - Previous item
+- `Up/Down` - Navigate menu
+- `Enter` - Accept selection
+- `Esc` - Cancel and close menu
 
 **Manual Control:**
 ```vim
