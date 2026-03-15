@@ -76,7 +76,11 @@ let g:genero_tools_config = {
   \ 'compiler_show_warnings': v:true,
   \ 'compiler_show_errors': v:true,
   \ 'compiler_highlight_unused': v:true,
-  \ 'compiler_sign_column': v:true
+  \ 'compiler_sign_column': v:true,
+  \ 'lua_enabled': v:true,
+  \ 'ai_enabled': v:false,
+  \ 'ai_provider': 'openai',
+  \ 'lsp_enabled': v:false
   \ }
 " Configuration options:
 "   genero_tools_path: Path to query.sh (must be in PATH)
@@ -98,6 +102,10 @@ let g:genero_tools_config = {
 "   compiler_show_errors: Display errors in quickfix
 "   compiler_highlight_unused: Highlight unused variables
 "   compiler_sign_column: Show signs in sign column
+"   lua_enabled: Enable Lua layer (Neovim only)
+"   ai_enabled: Enable AI IDE features (requires Lua layer)
+"   ai_provider: AI provider (openai|claude|local)
+"   lsp_enabled: Enable LSP integration (requires Lua layer)
 
 " Disable preview window for autocomplete
 set completeopt-=preview
@@ -161,6 +169,25 @@ set completeopt-=preview
 "   \ 'pagination_size': 100,
 "   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
 "   \ }
+"
+
+" ============================================================================
+" Neovim Lua Layer Configuration (Optional, Neovim only)
+" ============================================================================
+" Uncomment to enable Lua layer features (Neovim 0.4+ only):
+"
+" let g:genero_tools_config.lua_enabled = v:true
+" let g:genero_tools_config.ai_enabled = v:false
+" let g:genero_tools_config.ai_provider = 'openai'
+" let g:genero_tools_config.lsp_enabled = v:false
+"
+" Lua layer features:
+" - Async operations with non-blocking execution
+" - Floating windows for rich UI
+" - AI IDE features (error explanation, code generation)
+" - LSP integration (hover, goto definition, etc.)
+"
+" Note: Lua layer is optional and gracefully falls back to VimScript
 "
 
 " ============================================================================

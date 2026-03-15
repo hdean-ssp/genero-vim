@@ -10,6 +10,9 @@ let g:loaded_genero_tools = 1
 " Initialize configuration
 call genero_tools#config#init()
 
+" Initialize Lua layer if available (Neovim only)
+call genero_tools#lua_bridge#init()
+
 " Register user commands
 command! -nargs=? GeneroLookup call genero_tools#lookup_function(<q-args>)
 command! -nargs=? GeneroListModuleFiles call genero_tools#list_module_files(<q-args>)
@@ -26,6 +29,9 @@ command! -nargs=? -complete=file GeneroCompile call genero_tools#compiler#comman
 command! GeneroClearErrors call genero_tools#compiler#commands#clear_errors()
 command! GeneroNextError call genero_tools#compiler#commands#next_error()
 command! GeneroPrevError call genero_tools#compiler#commands#prev_error()
+command! GeneroAutocompileEnable call genero_tools#compiler#commands#autocompile_enable()
+command! GeneroAutocompileDisable call genero_tools#compiler#commands#autocompile_disable()
+command! GeneroAutocompileStatus call genero_tools#compiler#commands#autocompile_status()
 
 " Register keybindings if enabled
 if genero_tools#config#get('keybindings_enabled')

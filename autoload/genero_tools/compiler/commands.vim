@@ -87,3 +87,18 @@ function! genero_tools#compiler#commands#prev_error() abort
     echom result.error
   endif
 endfunction
+
+" GeneroAutocompileEnable command - enable autocompile on save
+function! genero_tools#compiler#commands#autocompile_enable() abort
+  call genero_tools#compiler#autocompile#enable()
+endfunction
+
+" GeneroAutocompileDisable command - disable autocompile on save
+function! genero_tools#compiler#commands#autocompile_disable() abort
+  call genero_tools#compiler#autocompile#disable()
+endfunction
+
+" GeneroAutocompileStatus command - show autocompile status
+function! genero_tools#compiler#commands#autocompile_status() abort
+  call genero_tools#compiler#autocompile#status()
+endfunction

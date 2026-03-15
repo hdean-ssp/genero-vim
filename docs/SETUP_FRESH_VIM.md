@@ -108,7 +108,10 @@ let g:genero_tools_config = {
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
-  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'lua_enabled': v:true,
+  \ 'ai_enabled': v:false,
+  \ 'lsp_enabled': v:false
   \ }
 ```
 
@@ -137,6 +140,25 @@ let g:genero_tools_config = {
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
   \ }
 ```
+
+### Neovim Lua Layer (Optional)
+
+For Neovim users, enable the optional Lua layer for enhanced features:
+
+```vim
+let g:genero_tools_config.lua_enabled = v:true           " Enable Lua layer
+let g:genero_tools_config.ai_enabled = v:false           " AI features (requires API key)
+let g:genero_tools_config.ai_provider = 'openai'         " AI provider
+let g:genero_tools_config.lsp_enabled = v:false          " LSP integration
+```
+
+**Lua Layer Features** (Neovim 0.4+ only):
+- Async operations with non-blocking execution
+- Floating windows for rich UI
+- AI IDE features (error explanation, code generation)
+- LSP integration (hover, goto definition)
+
+The Lua layer is optional and gracefully falls back to VimScript if unavailable.
 
 ## Display Modes
 

@@ -31,6 +31,11 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
   - Unused variable detection and highlighting
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Omnifunc autocomplete** - Function and module name completion with signatures
+- **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
+  - Async operations with non-blocking execution
+  - Floating windows for rich UI
+  - AI IDE features (error explanation, code generation)
+  - LSP integration
 - Full Vim 8.0+ and Neovim 0.4+ compatibility
 - Zero configuration changes required between editors
 
@@ -126,6 +131,9 @@ let g:genero_tools_config.keybindings_enabled = v:false
 :GeneroClearErrors                      " Clear error markers and quickfix
 :GeneroNextError                        " Jump to next error in quickfix
 :GeneroPrevError                        " Jump to previous error in quickfix
+:GeneroAutocompileEnable                " Enable autocompile on save
+:GeneroAutocompileDisable               " Disable autocompile on save
+:GeneroAutocompileStatus                " Show autocompile status
 ```
 
 ## Display Modes
@@ -207,7 +215,13 @@ let g:genero_tools_config = {
   \ 'compiler_show_warnings': v:true,
   \ 'compiler_show_errors': v:true,
   \ 'compiler_highlight_unused': v:true,
-  \ 'compiler_sign_column': v:true
+  \ 'compiler_sign_column': v:true,
+  \ 'compiler_autocompile': v:false,
+  \ 'compiler_autocompile_delay': 1000,
+  \ 'lua_enabled': v:true,
+  \ 'ai_enabled': v:false,
+  \ 'ai_provider': 'openai',
+  \ 'lsp_enabled': v:false
   \ }
 ```
 
@@ -222,6 +236,8 @@ let g:genero_tools_config.compiler_show_warnings = v:true        " Display warni
 let g:genero_tools_config.compiler_show_errors = v:true          " Display errors in quickfix
 let g:genero_tools_config.compiler_highlight_unused = v:true     " Highlight unused variables
 let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in sign column
+let g:genero_tools_config.compiler_autocompile = v:false         " Autocompile on file save
+let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 ```
 
 **Compiler Features:**
@@ -231,6 +247,30 @@ let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in
 - Unused variable detection and highlighting
 - Version-specific output parsing (auto-detects compiler version)
 - Quickfix navigation with `:GeneroNextError` and `:GeneroPrevError`
+- **Autocompile on save** - Automatically compile and update markers when file is saved
+
+### Neovim Lua Layer (Optional)
+
+For Neovim users, enable the optional Lua layer for enhanced features:
+
+```vim
+let g:genero_tools_config.lua_enabled = v:true                   " Enable Lua layer (Neovim only)
+let g:genero_tools_config.async_enabled = v:true                 " Use async operations
+let g:genero_tools_config.ui_mode = 'floating'                   " Use floating windows
+let g:genero_tools_config.lsp_enabled = v:true                   " Enable LSP integration
+let g:genero_tools_config.ai_enabled = v:true                    " Enable AI IDE features
+let g:genero_tools_config.ai_provider = 'openai'                 " AI provider (openai, claude, local)
+let g:genero_tools_config.ai_api_key = $OPENAI_API_KEY           " AI API key
+```
+
+**Lua Layer Features** (Neovim 0.4+ only):
+- **Async Operations** - Non-blocking command execution with progress indicators
+- **Floating Windows** - Rich UI for results with better formatting
+- **LSP Integration** - Hover information, goto definition, and more
+- **AI IDE Features** - Error explanation, code generation, refactoring suggestions
+- **Advanced Caching** - Lua-optimized cache with better performance
+
+The Lua layer is optional and gracefully falls back to VimScript implementations if unavailable.
 
 ### Error Handling and Large Codebase Guidance
 

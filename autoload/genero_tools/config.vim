@@ -26,7 +26,9 @@ function! genero_tools#config#init() abort
     \ 'compiler_show_warnings': v:true,
     \ 'compiler_show_errors': v:true,
     \ 'compiler_highlight_unused': v:true,
-    \ 'compiler_sign_column': v:true
+    \ 'compiler_sign_column': v:true,
+    \ 'compiler_autocompile': v:false,
+    \ 'compiler_autocompile_delay': 1000
     \ }
   
   for [key, value] in items(defaults)
@@ -66,7 +68,9 @@ function! genero_tools#config#get(key) abort
     \ 'compiler_show_warnings': v:true,
     \ 'compiler_show_errors': v:true,
     \ 'compiler_highlight_unused': v:true,
-    \ 'compiler_sign_column': v:true
+    \ 'compiler_sign_column': v:true,
+    \ 'compiler_autocompile': v:false,
+    \ 'compiler_autocompile_delay': 1000
     \ }
   
   return get(defaults, a:key, '')
