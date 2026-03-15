@@ -107,7 +107,7 @@ let g:genero_tools_config.keybindings_enabled = v:false
 
 ## Commands
 
-All keybindings are shortcuts for these commands:
+### Code Navigation Commands
 
 ```vim
 :GeneroLookup [function_name]           " Find function definition
@@ -117,12 +117,15 @@ All keybindings are shortcuts for these commands:
 :GeneroFileMetadata [file_path]         " Get file metadata
 :GeneroConfigShow                       " Display current config
 :GeneroClearCache                       " Clear result cache
+```
 
-" Compiler commands
+### Compiler Commands
+
+```vim
 :GeneroCompile [file_path]              " Compile file or entire project
-:GeneroClearErrors                      " Clear error markers
-:GeneroNextError                        " Jump to next error
-:GeneroPrevError                        " Jump to previous error
+:GeneroClearErrors                      " Clear error markers and quickfix
+:GeneroNextError                        " Jump to next error in quickfix
+:GeneroPrevError                        " Jump to previous error in quickfix
 ```
 
 ## Display Modes
@@ -210,14 +213,24 @@ let g:genero_tools_config = {
 
 ### Compiler Configuration
 
-- **compiler_enabled** - Enable/disable compiler integration (default: true)
-- **compiler_command** - Command to invoke compiler (default: 'fglcomp')
-- **compiler_version** - Compiler version for output parsing (default: 'auto', options: 'auto', '3.10', '3.20', etc.)
-- **compiler_source_dir** - Source directory for compilation (default: './src')
-- **compiler_show_warnings** - Display warnings in quickfix (default: true)
-- **compiler_show_errors** - Display errors in quickfix (default: true)
-- **compiler_highlight_unused** - Highlight unused variables (default: true)
-- **compiler_sign_column** - Show error/warning signs in sign column (default: true)
+```vim
+let g:genero_tools_config.compiler_enabled = v:true              " Enable compiler integration
+let g:genero_tools_config.compiler_command = 'fglcomp'           " Compiler command
+let g:genero_tools_config.compiler_version = 'auto'              " Version: 'auto', '3.10', '3.20', etc.
+let g:genero_tools_config.compiler_source_dir = './src'          " Source directory for compilation
+let g:genero_tools_config.compiler_show_warnings = v:true        " Display warnings in quickfix
+let g:genero_tools_config.compiler_show_errors = v:true          " Display errors in quickfix
+let g:genero_tools_config.compiler_highlight_unused = v:true     " Highlight unused variables
+let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in sign column
+```
+
+**Compiler Features:**
+- Real-time error/warning parsing with quickfix integration
+- Sign column indicators (✕ for errors, ⚠ for warnings)
+- Syntax error highlighting
+- Unused variable detection and highlighting
+- Version-specific output parsing (auto-detects compiler version)
+- Quickfix navigation with `:GeneroNextError` and `:GeneroPrevError`
 
 ### Error Handling and Large Codebase Guidance
 

@@ -21,6 +21,12 @@ command! GeneroConfigShow call genero_tools#config#show()
 command! GeneroCompleteEnable call genero_tools#complete#enable()
 command! GeneroCompleteDisable call genero_tools#complete#disable()
 
+" Register compiler commands
+command! -nargs=? -complete=file GeneroCompile call genero_tools#compiler#commands#compile(<q-args>)
+command! GeneroClearErrors call genero_tools#compiler#commands#clear_errors()
+command! GeneroNextError call genero_tools#compiler#commands#next_error()
+command! GeneroPrevError call genero_tools#compiler#commands#prev_error()
+
 " Register keybindings if enabled
 if genero_tools#config#get('keybindings_enabled')
   call genero_tools#keybindings#register()

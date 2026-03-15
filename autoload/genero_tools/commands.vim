@@ -47,3 +47,60 @@ function! genero_tools#commands#handle_memory_pressure() abort
   let cleared = genero_tools#cache#handle_memory_pressure()
   call genero_tools#display#echo('Memory pressure handled. Cleared ' . cleared . ' expired entries.')
 endfunction
+
+" GeneroCompile command - compile file or project
+function! genero_tools#commands#compile(args) abort
+  let file_path = empty(a:args) ? expand('%') : a:args
+  
+  " Initialize compiler
+  call genero_tools#compiler#init()
+  
+  " Execute compiler
+  let result = genero_tools#compiler#execute(file_path)
+  
+  if result.success
+    " Place signs if enabled
+    if genero_tools#config#get('compiler_sign_column')
+      call genero_tools#compiler#signs#place(result.errors, result.warnings, result.info)
+    endif
+    
+    " Populate quickfix list
+    call genero_tools#compiler#quickfix#populate(result, 'all')
+    
+    " Display result
+    let message = 'Compilation complete: ' . len(result.errors) . ' errors, ' . 
+                \ len(result.warnings) . ' warnings'
+    call genero_tools#display#echo(message)
+    
+    " Open quickfix window if there are errors or warnings
+    if len(result.errors) > 0 || len(result.warnings) > 0
+      copen
+    endif
+  else
+    echohl ErrorMsg | echo 'Compilation failed: ' . result.error | echohl None
+  endif
+endfunction
+
+" GeneroClearErrors command - clear error markers
+function! genero_tools#commands#clear_errors() abort
+  " Clear signs
+  call genero_tools#compiler#signs#clear()
+  
+  " Clear highlighting
+  call genero_tools#compiler#highlight#clear()
+  
+  " Clear quickfix list
+  call genero_tools#compiler#quickfix#clear()
+  
+  call genero_tools#display#echo('Error markers cleared.')
+endfunction
+
+" GeneroNextError command - jump to next error
+function! genero_tools#commands#next_error() abort
+  call genero_tools#compiler#quickfix#next()
+endfunction
+
+" GeneroPrevError command - jump to previous error
+function! genero_tools#commands#prev_error() abort
+  call genero_tools#compiler#quickfix#prev()
+endfunction

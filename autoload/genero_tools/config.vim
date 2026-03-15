@@ -18,7 +18,15 @@ function! genero_tools#config#init() abort
     \ 'async_enabled': v:true,
     \ 'result_limit': 1000,
     \ 'pagination_size': 50,
-    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+    \ 'compiler_enabled': v:false,
+    \ 'compiler_command': 'fglcomp',
+    \ 'compiler_source_dir': '.',
+    \ 'compiler_version': 'auto',
+    \ 'compiler_show_warnings': v:true,
+    \ 'compiler_show_errors': v:true,
+    \ 'compiler_highlight_unused': v:true,
+    \ 'compiler_sign_column': v:true
     \ }
   
   for [key, value] in items(defaults)
@@ -50,7 +58,15 @@ function! genero_tools#config#get(key) abort
     \ 'async_enabled': v:true,
     \ 'result_limit': 1000,
     \ 'pagination_size': 50,
-    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+    \ 'compiler_enabled': v:false,
+    \ 'compiler_command': 'fglcomp',
+    \ 'compiler_source_dir': '.',
+    \ 'compiler_version': 'auto',
+    \ 'compiler_show_warnings': v:true,
+    \ 'compiler_show_errors': v:true,
+    \ 'compiler_highlight_unused': v:true,
+    \ 'compiler_sign_column': v:true
     \ }
   
   return get(defaults, a:key, '')
