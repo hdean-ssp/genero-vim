@@ -1,6 +1,7 @@
 -- Genero-Tools Lua Layer
 -- Provides enhanced functionality for Neovim
--- All features are optional and gracefully degrade in Vim
+-- Currently focused on feature parity with Vim plugin
+-- Future enhancements: AI features, LSP integration, advanced analysis
 
 local M = {}
 
@@ -30,14 +31,6 @@ function M.setup(config)
 
   if get_config('ui_mode') == 'floating' then
     require('genero_tools.ui').init()
-  end
-
-  if get_config('lsp_enabled') then
-    require('genero_tools.lsp').init()
-  end
-
-  if get_config('ai_enabled') then
-    require('genero_tools.ai').init()
   end
 
   -- Set up autocommands for Lua features
@@ -89,8 +82,6 @@ function M.health_check()
     features = {
       async = get_config('async_enabled'),
       ui = get_config('ui_mode') == 'floating',
-      lsp = get_config('lsp_enabled'),
-      ai = get_config('ai_enabled'),
     },
   }
   return health

@@ -84,42 +84,8 @@ end
 --   context: Code context
 --   callback: VimScript function to call with results
 function M.call_ai_api(prompt, context, callback)
-  local ai_provider = vim.g.genero_tools_config.ai_provider or 'openai'
-  local ai_module = require('genero_tools.ai')
-
-  -- Execute AI call in background
-  vim.fn.jobstart({
-    'python3',
-    '-c',
-    string.format(
-      [[
-import json
-import sys
-sys.path.insert(0, '%s')
-from genero_tools.ai import call_api
-result = call_api('%s', '%s', '%s')
-print(json.dumps(result))
-]],
-      vim.fn.getcwd(),
-      ai_provider,
-      prompt:gsub("'", "\\'"),
-      context:gsub("'", "\\'")
-    ),
-  }, {
-    on_stdout = function(_, data, _)
-      local output = table.concat(data, '\n')
-      if output ~= '' then
-        local ok, result = pcall(vim.fn.json_decode, output)
-        if ok then
-          vim.fn[callback](result)
-        end
-      end
-    end,
-    on_stderr = function(_, data, _)
-      local error_msg = table.concat(data, '\n')
-      vim.notify('AI API error: ' .. error_msg, vim.log.levels.ERROR)
-    end,
-  })
+  -- Reserved for future AI features
+  -- Not implemented in current version
 end
 
 -- Execute multiple commands in parallel

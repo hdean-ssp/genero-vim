@@ -303,6 +303,7 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 
 - **[Setup Guide](docs/SETUP_FRESH_VIM.md)** - Fresh Vim installation guide
 - **[Quick Start](docs/QUICK_START.md)** - User guide with examples
+- **[Neovim Setup](docs/NEOVIM.md)** - Neovim installation and configuration
 - **[API Integration](docs/API_INTEGRATION.md)** - Complete API reference
 - **[Compatibility](docs/COMPATIBILITY.md)** - Vim/Neovim compatibility
 

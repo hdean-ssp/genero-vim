@@ -84,49 +84,7 @@ function! genero_tools#lua_bridge#show_floating_window(content, options) abort
   endtry
 endfunction
 
-" Get AI explanation for error (Lua only)
-" Args:
-"   error_message: Error message from compiler
-"   context: Code context around error
-" Returns: Explanation and suggestions
-function! genero_tools#lua_bridge#explain_error(error_message, context) abort
-  if !genero_tools#lua_bridge#available()
-    return {}
-  endif
-  
-  if !genero_tools#config#get('ai_enabled')
-    return {}
-  endif
-  
-  try
-    return luaeval('require("genero_tools.ai").explain_error(...)', [a:error_message, a:context])
-  catch
-    call genero_tools#error#log('AI error explanation failed: ' . v:exception)
-    return {}
-  endtry
-endfunction
 
-" Generate code using AI (Lua only)
-" Args:
-"   prompt: Code generation prompt
-"   context: Codebase context
-" Returns: Generated code
-function! genero_tools#lua_bridge#generate_code(prompt, context) abort
-  if !genero_tools#lua_bridge#available()
-    return ''
-  endif
-  
-  if !genero_tools#config#get('ai_enabled')
-    return ''
-  endif
-  
-  try
-    return luaeval('require("genero_tools.ai").generate_code(...)', [a:prompt, a:context])
-  catch
-    call genero_tools#error#log('AI code generation failed: ' . v:exception)
-    return ''
-  endtry
-endfunction
 
 " Initialize Lua layer
 function! genero_tools#lua_bridge#init() abort

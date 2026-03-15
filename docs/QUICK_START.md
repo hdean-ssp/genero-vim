@@ -63,7 +63,9 @@ let g:genero_tools_config = {
   \ 'display_mode': 'quickfix',
   \ 'keybindings_enabled': v:true,
   \ 'timeout': 10000,
-  \ 'async_enabled': v:true
+  \ 'async_enabled': v:true,
+  \ 'compiler_autocompile': v:false,
+  \ 'compiler_autocompile_delay': 1000
   \ }
 ```
 
