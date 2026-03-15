@@ -58,7 +58,7 @@ endfunction
 
 " Search for functions matching pattern
 function! genero_tools#complete#search_functions(pattern) abort
-  if len(a:pattern) < 2
+  if len(a:pattern) < 1
     return []
   endif
   
@@ -68,7 +68,9 @@ function! genero_tools#complete#search_functions(pattern) abort
     return cached.data
   endif
   
-  let result = genero_tools#command#execute_shell('search-functions', [a:pattern])
+  " Use search-functions with wildcard pattern
+  let search_pattern = a:pattern . '*'
+  let result = genero_tools#command#execute_shell('search-functions', [search_pattern])
   
   if result.success && type(result.data) == type([])
     call genero_tools#cache#set(cache_key, result)
@@ -80,7 +82,7 @@ endfunction
 
 " Search for modules matching pattern
 function! genero_tools#complete#search_modules(pattern) abort
-  if len(a:pattern) < 2
+  if len(a:pattern) < 1
     return []
   endif
   
@@ -90,7 +92,9 @@ function! genero_tools#complete#search_modules(pattern) abort
     return cached.data
   endif
   
-  let result = genero_tools#command#execute_shell('search-modules', [a:pattern])
+  " Use search-modules with wildcard pattern
+  let search_pattern = a:pattern . '*'
+  let result = genero_tools#command#execute_shell('search-modules', [search_pattern])
   
   if result.success && type(result.data) == type([])
     call genero_tools#cache#set(cache_key, result)
