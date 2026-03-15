@@ -198,7 +198,8 @@ let g:genero_tools_config = {
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
   \ 'compiler_enabled': v:true,
-  \ 'compiler_command': 'fglc',
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_version': 'auto',
   \ 'compiler_source_dir': './src',
   \ 'compiler_show_warnings': v:true,
   \ 'compiler_show_errors': v:true,
@@ -210,7 +211,8 @@ let g:genero_tools_config = {
 ### Compiler Configuration
 
 - **compiler_enabled** - Enable/disable compiler integration (default: true)
-- **compiler_command** - Command to invoke compiler (default: 'fglc')
+- **compiler_command** - Command to invoke compiler (default: 'fglcomp')
+- **compiler_version** - Compiler version for output parsing (default: 'auto', options: 'auto', '3.10', '3.20', etc.)
 - **compiler_source_dir** - Source directory for compilation (default: './src')
 - **compiler_show_warnings** - Display warnings in quickfix (default: true)
 - **compiler_show_errors** - Display errors in quickfix (default: true)

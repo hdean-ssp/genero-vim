@@ -361,23 +361,31 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
 - [ ] 15. Implement compiler integration
   - [ ] 15.1 Create compiler configuration system
     - Add compiler_enabled, compiler_command, compiler_source_dir to config
+    - Add compiler_version config option (e.g., '3.10', '3.20', 'auto')
     - Add compiler_show_warnings, compiler_show_errors, compiler_highlight_unused, compiler_sign_column options
     - Implement genero_tools#compiler#init() to load compiler configuration
-    - _Requirements: 18.1, 18.2, 18.3_
+    - Implement genero_tools#compiler#detect_version() to auto-detect compiler version
+    - Support version-specific parsing strategies
+    - _Requirements: 18.1, 18.2, 18.3, 18.22_
   
   - [ ] 15.2 Implement compiler command execution
     - Create genero_tools#compiler#execute() to run compiler command
     - Parse compiler output (errors, warnings, unused variables)
     - Support configurable source directory
     - Return structured result with error/warning/info entries
-    - _Requirements: 18.4, 18.5, 18.6_
+    - Route parsing to version-specific parser based on compiler_version
+    - _Requirements: 18.4, 18.5, 18.6, 18.22_
   
   - [ ] 15.3 Implement error/warning parsing
-    - Create genero_tools#compiler#parse_output() to extract errors and warnings
-    - Support multiple compiler output formats
+    - Create genero_tools#compiler#parse_output() dispatcher function
+    - Implement version-specific parsers:
+      - genero_tools#compiler#parse_v310() for fglcomp 3.10+ format
+      - genero_tools#compiler#parse_v320() for fglcomp 3.20+ format (if different)
+      - Support extensibility for future versions
     - Extract file path, line number, column, message, severity
     - Detect unused variable warnings
-    - _Requirements: 18.7, 18.8, 18.9_
+    - Handle format: filename:start_line:start_col:end_line:end_col:severity:(-code) message
+    - _Requirements: 18.7, 18.8, 18.9, 18.22, 18.23_
   
   - [ ] 15.4 Implement sign column indicators
     - Create genero_tools#compiler#signs#place() to add signs to sign column
