@@ -77,6 +77,8 @@ let g:genero_tools_config = {
   \ 'compiler_show_errors': v:true,
   \ 'compiler_highlight_unused': v:true,
   \ 'compiler_sign_column': v:true,
+  \ 'compiler_autocompile': v:false,
+  \ 'compiler_autocompile_delay': 1000,
   \ 'lua_enabled': v:true,
   \ 'ai_enabled': v:false,
   \ 'ai_provider': 'openai',
@@ -102,6 +104,8 @@ let g:genero_tools_config = {
 "   compiler_show_errors: Display errors in quickfix
 "   compiler_highlight_unused: Highlight unused variables
 "   compiler_sign_column: Show signs in sign column
+"   compiler_autocompile: Autocompile on file save
+"   compiler_autocompile_delay: Delay before autocompile (ms)
 "   lua_enabled: Enable Lua layer (Neovim only)
 "   ai_enabled: Enable AI IDE features (requires Lua layer)
 "   ai_provider: AI provider (openai|claude|local)
@@ -137,6 +141,34 @@ set completeopt-=preview
 " :GeneroFileMetadata [file_path]         - Get file metadata
 " :GeneroConfigShow                       - Display current config
 " :GeneroClearCache                       - Clear result cache
+"
+
+" ============================================================================
+" Compiler Configuration (Optional)
+" ============================================================================
+" Uncomment to enable compiler integration:
+"
+" let g:genero_tools_config.compiler_enabled = v:true
+" let g:genero_tools_config.compiler_command = 'fglcomp'
+" let g:genero_tools_config.compiler_version = 'auto'
+" let g:genero_tools_config.compiler_source_dir = './src'
+" let g:genero_tools_config.compiler_show_warnings = v:true
+" let g:genero_tools_config.compiler_show_errors = v:true
+" let g:genero_tools_config.compiler_highlight_unused = v:true
+" let g:genero_tools_config.compiler_sign_column = v:true
+"
+" Autocompile on file save (optional):
+" let g:genero_tools_config.compiler_autocompile = v:true
+" let g:genero_tools_config.compiler_autocompile_delay = 1000
+"
+" Compiler commands:
+" :GeneroCompile [file]                   - Compile file or project
+" :GeneroClearErrors                      - Clear error markers
+" :GeneroNextError                        - Jump to next error
+" :GeneroPrevError                        - Jump to previous error
+" :GeneroAutocompileEnable                - Enable autocompile for buffer
+" :GeneroAutocompileDisable               - Disable autocompile for buffer
+" :GeneroAutocompileStatus                - Show autocompile status
 "
 
 " ============================================================================
