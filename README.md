@@ -1,6 +1,6 @@
 # Vim Genero-Tools Plugin
 
-A vim plugin that integrates with genero-tools to provide code navigation and lookup for large-scale Genero codebases (thousands of files, 6M+ LOC).
+A vim plugin that brings modern IDE capabilities to the classic vim editor for Genero development. Provides code navigation, intelligent autocomplete, and compiler integration for large-scale Genero codebases (thousands of files, 6M+ LOC).
 
 ## Quick Start
 
@@ -23,12 +23,13 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 
 ## Features
 
-- Function lookup and search
-- Module and file exploration
-- Function signatures and metadata
-- Intelligent caching with LRU eviction
-- Result pagination for large codebases
-- Multiple display modes (quickfix, popup, inline, split, echo)
+- **Code Navigation** - Function lookup, module exploration, and file metadata retrieval
+- **Intelligent Autocomplete** - Function and module name completion with signatures
+- **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
+  - Sign column indicators for errors and warnings
+  - Syntax error highlighting
+  - Unused variable detection and highlighting
+- **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Omnifunc autocomplete** - Function and module name completion with signatures
 - Full Vim 8.0+ and Neovim 0.4+ compatibility
 - Zero configuration changes required between editors
@@ -116,6 +117,12 @@ All keybindings are shortcuts for these commands:
 :GeneroFileMetadata [file_path]         " Get file metadata
 :GeneroConfigShow                       " Display current config
 :GeneroClearCache                       " Clear result cache
+
+" Compiler commands
+:GeneroCompile [file_path]              " Compile file or entire project
+:GeneroClearErrors                      " Clear error markers
+:GeneroNextError                        " Jump to next error
+:GeneroPrevError                        " Jump to previous error
 ```
 
 ## Display Modes
@@ -189,9 +196,26 @@ let g:genero_tools_config = {
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
-  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_command': 'fglc',
+  \ 'compiler_source_dir': './src',
+  \ 'compiler_show_warnings': v:true,
+  \ 'compiler_show_errors': v:true,
+  \ 'compiler_highlight_unused': v:true,
+  \ 'compiler_sign_column': v:true
   \ }
 ```
+
+### Compiler Configuration
+
+- **compiler_enabled** - Enable/disable compiler integration (default: true)
+- **compiler_command** - Command to invoke compiler (default: 'fglc')
+- **compiler_source_dir** - Source directory for compilation (default: './src')
+- **compiler_show_warnings** - Display warnings in quickfix (default: true)
+- **compiler_show_errors** - Display errors in quickfix (default: true)
+- **compiler_highlight_unused** - Highlight unused variables (default: true)
+- **compiler_sign_column** - Show error/warning signs in sign column (default: true)
 
 ### Error Handling and Large Codebase Guidance
 

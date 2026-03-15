@@ -358,17 +358,79 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Recommend async_enabled for large codebases
     - _Requirements: 17.4, 17.7_
 
-- [ ] 15. Checkpoint - Ensure all core functionality works
-  - Verify all 9 core functions are implemented and callable
-  - Verify caching system works correctly
-  - Verify all display modes work in appropriate editors
-  - Verify configuration system loads and applies settings
-  - Verify error handling returns proper messages
-  - Verify large codebase optimization guidance is displayed
+- [ ] 15. Implement compiler integration
+  - [ ] 15.1 Create compiler configuration system
+    - Add compiler_enabled, compiler_command, compiler_source_dir to config
+    - Add compiler_show_warnings, compiler_show_errors, compiler_highlight_unused, compiler_sign_column options
+    - Implement genero_tools#compiler#init() to load compiler configuration
+    - _Requirements: 18.1, 18.2, 18.3_
+  
+  - [ ] 15.2 Implement compiler command execution
+    - Create genero_tools#compiler#execute() to run compiler command
+    - Parse compiler output (errors, warnings, unused variables)
+    - Support configurable source directory
+    - Return structured result with error/warning/info entries
+    - _Requirements: 18.4, 18.5, 18.6_
+  
+  - [ ] 15.3 Implement error/warning parsing
+    - Create genero_tools#compiler#parse_output() to extract errors and warnings
+    - Support multiple compiler output formats
+    - Extract file path, line number, column, message, severity
+    - Detect unused variable warnings
+    - _Requirements: 18.7, 18.8, 18.9_
+  
+  - [ ] 15.4 Implement sign column indicators
+    - Create genero_tools#compiler#signs#place() to add signs to sign column
+    - Use different signs for errors (✕), warnings (⚠), and info (ℹ)
+    - Update signs when compilation results change
+    - Clear signs when errors are cleared
+    - _Requirements: 18.10, 18.11_
+  
+  - [ ] 15.5 Implement syntax error highlighting
+    - Create genero_tools#compiler#highlight#apply() to highlight errors
+    - Use vim highlight groups for errors and warnings
+    - Support line-level and column-level highlighting
+    - Clear highlights when errors are cleared
+    - _Requirements: 18.12, 18.13_
+  
+  - [ ] 15.6 Implement unused variable highlighting
+    - Create genero_tools#compiler#highlight#unused_vars() to highlight unused variables
+    - Parse compiler output for unused variable warnings
+    - Apply distinct highlighting for unused variables
+    - Support toggling unused variable highlighting
+    - _Requirements: 18.14, 18.15_
+  
+  - [ ] 15.7 Implement compiler commands
+    - Create GeneroCompile command to compile file or project
+    - Create GeneroClearErrors command to clear error markers
+    - Create GeneroNextError command to jump to next error
+    - Create GeneroPrevError command to jump to previous error
+    - _Requirements: 18.16, 18.17, 18.18, 18.19_
+  
+  - [ ] 15.8 Implement quickfix integration
+    - Populate quickfix list with compiler errors/warnings
+    - Support filtering by severity (errors only, warnings only, all)
+    - Integrate with vim's quickfix navigation
+    - _Requirements: 18.20, 18.21_
+  
+  - [ ]* 15.9 Write property tests for compiler integration
+    - **Property 18: Compiler Output Parsing Preserves Semantics**
+    - **Property 19: Error Markers Are Placed Correctly**
+    - **Property 20: Unused Variable Detection Is Accurate**
+    - **Validates: Requirements 18.7, 18.10, 18.14**
+
+- [ ] 16. Checkpoint - Ensure compiler integration works
+  - Verify compiler command execution works
+  - Verify error/warning parsing is accurate
+  - Verify sign column indicators display correctly
+  - Verify syntax error highlighting works
+  - Verify unused variable highlighting works
+  - Verify quickfix integration works
+  - Verify all compiler commands are registered
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Integration testing
-  - [ ] 15.1 Create integration test suite
+- [ ] 17. Integration testing
+  - [ ] 16.1 Create integration test suite
     - Test end-to-end workflows for each command
     - Test with actual genero-tools CLI (if available)
     - Test vim command execution and display
@@ -378,24 +440,27 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Test asynchronous command execution
     - Test cache behavior under sustained usage
     - Test timeout handling with slow genero-tools responses
-    - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1, 7.1, 8.1, 9.1, 10.1, 11.1, 12.1, 14.1, 6.1.1, 6.1.2_
+    - Test compiler integration with actual compiler output
+    - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1, 7.1, 8.1, 9.1, 10.1, 11.1, 12.1, 14.1, 6.1.1, 6.1.2, 18.1_
   
-  - [ ]* 15.2 Write integration tests for command workflows
+  - [ ]* 16.2 Write integration tests for command workflows
     - Test lookup command with various inputs
     - Test list commands with various inputs
     - Test metadata retrieval
     - Test error scenarios
     - Test large result set handling
-    - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1_
+    - Test compiler command with various source directories
+    - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1, 18.4_
   
-  - [ ]* 15.3 Write performance tests for large codebases
+  - [ ]* 16.3 Write performance tests for large codebases
     - Test command execution time with large codebases
     - Test cache performance with many entries
     - Test pagination performance with large result sets
     - Verify timeout handling under load
-    - _Requirements: 15.2, 15.9, 6.1.1_
+    - Test compiler performance with large source directories
+    - _Requirements: 15.2, 15.9, 6.1.1, 18.5_
 
-- [ ] 17. Final checkpoint - Ensure all tests pass
+- [ ] 18. Final checkpoint - Ensure all tests pass
   - Verify all property-based tests pass
   - Verify all unit tests pass
   - Verify all integration tests pass
@@ -403,6 +468,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
   - Ensure all commands are registered and callable
   - Ensure all keybindings work correctly
   - Ensure all display modes work as expected
+  - Ensure compiler integration works correctly
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
@@ -422,3 +488,9 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
   - Asynchronous execution recommended for large codebases
   - Progress feedback essential for commands taking >2 seconds
   - Result limiting prevents overwhelming vim with thousands of results
+- **Compiler Integration Considerations:**
+  - Compiler command is configurable and can be any build tool (fglc, make, etc.)
+  - Source directory is configurable to support different project layouts
+  - Sign column indicators provide visual feedback without disrupting editing
+  - Unused variable highlighting helps identify dead code
+  - Syntax error highlighting integrates with vim's native highlighting system
