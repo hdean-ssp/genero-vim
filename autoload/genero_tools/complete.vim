@@ -35,7 +35,8 @@ function! genero_tools#complete#get_completions(base) abort
       \ 'abbr': func.name,
       \ 'menu': 'Function',
       \ 'info': func.signature,
-      \ 'kind': 'f'
+      \ 'kind': 'f',
+      \ 'icase': 1
       \ })
   endfor
   
@@ -47,7 +48,8 @@ function! genero_tools#complete#get_completions(base) abort
       \ 'abbr': module.name,
       \ 'menu': 'Module',
       \ 'info': 'Module: ' . module.name,
-      \ 'kind': 'm'
+      \ 'kind': 'm',
+      \ 'icase': 1
       \ })
   endfor
   

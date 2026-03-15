@@ -55,11 +55,11 @@ set termguicolors               " True color support (if terminal supports it)
 
 " Configure genero-tools plugin
 let g:genero_tools_config = {
-  \ 'genero_tools_path': 'query.sh',
+  \ 'genero_tools_path': '/path/to/query.sh',
   \ 'cache_enabled': v:true,
   \ 'cache_ttl': 3600,
   \ 'cache_max_size': 100,
-  \ 'display_mode': 'quickfix',
+  \ 'display_mode': 'inline',
   \ 'keybindings_enabled': v:true,
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
@@ -77,6 +77,9 @@ let g:genero_tools_config = {
 "   async_enabled: Show progress for long commands
 "   result_limit: Max results before warning
 "   pagination_size: Results per page
+
+" Disable preview window for autocomplete
+set completeopt-=preview
 
 " ============================================================================
 " Genero-Tools Keybindings
