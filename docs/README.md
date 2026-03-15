@@ -36,6 +36,12 @@ Plug 'your-username/vim-genero-tools'
 <leader>gf  " List functions in current file
 <leader>gs  " Get function signature
 <leader>gm  " Get file metadata
+
+" Compiler commands
+:GeneroCompile              " Compile current file
+:GeneroClearErrors          " Clear error markers
+:GeneroNextError            " Jump to next error
+:GeneroPrevError            " Jump to previous error
 ```
 
 ## Documentation Files

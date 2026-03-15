@@ -68,7 +68,15 @@ let g:genero_tools_config = {
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
-  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'compiler_enabled': v:false,
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_version': 'auto',
+  \ 'compiler_source_dir': './src',
+  \ 'compiler_show_warnings': v:true,
+  \ 'compiler_show_errors': v:true,
+  \ 'compiler_highlight_unused': v:true,
+  \ 'compiler_sign_column': v:true
   \ }
 " Configuration options:
 "   genero_tools_path: Path to query.sh (must be in PATH)
@@ -82,6 +90,14 @@ let g:genero_tools_config = {
 "   result_limit: Max results before warning
 "   pagination_size: Results per page
 "   codebase_markers: Project root markers (searches in order)
+"   compiler_enabled: Enable compiler integration
+"   compiler_command: Compiler command (e.g., fglcomp)
+"   compiler_version: Compiler version (auto|3.10|3.20|...)
+"   compiler_source_dir: Source directory for compilation
+"   compiler_show_warnings: Display warnings in quickfix
+"   compiler_show_errors: Display errors in quickfix
+"   compiler_highlight_unused: Highlight unused variables
+"   compiler_sign_column: Show signs in sign column
 
 " Disable preview window for autocomplete
 set completeopt-=preview

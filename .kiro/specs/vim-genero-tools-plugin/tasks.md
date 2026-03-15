@@ -358,8 +358,8 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Recommend async_enabled for large codebases
     - _Requirements: 17.4, 17.7_
 
-- [ ] 15. Implement compiler integration
-  - [ ] 15.1 Create compiler configuration system
+- [x] 15. Implement compiler integration
+  - [x] 15.1 Create compiler configuration system
     - Add compiler_enabled, compiler_command, compiler_source_dir to config
     - Add compiler_version config option (e.g., '3.10', '3.20', 'auto')
     - Add compiler_show_warnings, compiler_show_errors, compiler_highlight_unused, compiler_sign_column options
@@ -368,7 +368,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Support version-specific parsing strategies
     - _Requirements: 18.1, 18.2, 18.3, 18.22_
   
-  - [ ] 15.2 Implement compiler command execution
+  - [x] 15.2 Implement compiler command execution
     - Create genero_tools#compiler#execute() to run compiler command
     - Parse compiler output (errors, warnings, unused variables)
     - Support configurable source directory
@@ -387,7 +387,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Handle format: filename:start_line:start_col:end_line:end_col:severity:(-code) message
     - _Requirements: 18.7, 18.8, 18.9, 18.22, 18.23_
   
-  - [ ] 15.4 Implement sign column indicators
+  - [x] 15.4 Implement sign column indicators
     - Create genero_tools#compiler#signs#place() to add signs to sign column
     - Use different signs for errors (✕), warnings (⚠), and info (ℹ)
     - Update signs when compilation results change
@@ -408,14 +408,14 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Support toggling unused variable highlighting
     - _Requirements: 18.14, 18.15_
   
-  - [ ] 15.7 Implement compiler commands
+  - [x] 15.7 Implement compiler commands
     - Create GeneroCompile command to compile file or project
     - Create GeneroClearErrors command to clear error markers
     - Create GeneroNextError command to jump to next error
     - Create GeneroPrevError command to jump to previous error
     - _Requirements: 18.16, 18.17, 18.18, 18.19_
   
-  - [ ] 15.8 Implement quickfix integration
+  - [x] 15.8 Implement quickfix integration
     - Populate quickfix list with compiler errors/warnings
     - Support filtering by severity (errors only, warnings only, all)
     - Integrate with vim's quickfix navigation
