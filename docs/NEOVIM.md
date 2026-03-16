@@ -321,6 +321,46 @@ Or in **init.lua**:
 vim.keymap.set('i', '<Tab>', '<C-x><C-o>', { buffer = true })
 ```
 
+### Updating the Plugin
+
+**With lazy.nvim:**
+
+Force update the plugin:
+
+```vim
+:Lazy sync
+```
+
+Or update just genero-vim:
+
+```vim
+:Lazy update genero-vim
+```
+
+Then restart Neovim or reload the plugin:
+
+```vim
+:source ~/.config/nvim/init.lua
+```
+
+**With packer.nvim:**
+
+```vim
+:PackerSync
+```
+
+**With vim-plug:**
+
+```vim
+:PlugUpdate
+```
+
+After updating, verify the new version loaded:
+
+```vim
+:GeneroConfigShow
+```
+
 ## Feature Comparison
 
 | Feature | Vim | Neovim |
