@@ -155,10 +155,11 @@ Unused variables are highlighted when `compiler_highlight_unused` is enabled.
 
 The statusline shows:
 - Current mode
-- Git branch and diff status
 - Filename
 - File encoding and format
 - Progress and location
+
+*Note: Git/SVN branch and diff status will be added in a future update when SVN support is implemented.*
 
 ### Which-key Integration
 
