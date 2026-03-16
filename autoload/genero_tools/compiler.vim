@@ -14,7 +14,7 @@ function! genero_tools#compiler#init() abort
   let g:genero_tools_compiler_config.enabled = genero_tools#config#get('compiler_enabled')
   let g:genero_tools_compiler_config.command = genero_tools#config#get('compiler_command')
   let g:genero_tools_compiler_config.source_dir = genero_tools#config#get('compiler_source_dir')
-  let g:genero_tools_compiler_config.version = genero_tools#config#get('compiler_version')
+  let g:genero_tools_compiler_config.compiler_version = genero_tools#config#get('compiler_version')
   let g:genero_tools_compiler_config.show_warnings = genero_tools#config#get('compiler_show_warnings')
   let g:genero_tools_compiler_config.show_errors = genero_tools#config#get('compiler_show_errors')
   let g:genero_tools_compiler_config.highlight_unused = genero_tools#config#get('compiler_highlight_unused')

@@ -9,7 +9,7 @@ function! Test_compiler_config_init() abort
   call assert_equal(v:false, g:genero_tools_compiler_config.enabled)
   call assert_equal('fglcomp', g:genero_tools_compiler_config.command)
   call assert_equal('.', g:genero_tools_compiler_config.source_dir)
-  call assert_equal('auto', g:genero_tools_compiler_config.version)
+  call assert_equal('auto', g:genero_tools_compiler_config.compiler_version)
   call assert_equal(v:true, g:genero_tools_compiler_config.show_warnings)
   call assert_equal(v:true, g:genero_tools_compiler_config.show_errors)
   call assert_equal(v:true, g:genero_tools_compiler_config.highlight_unused)
