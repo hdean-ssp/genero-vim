@@ -10,6 +10,9 @@ let g:loaded_genero_tools = 1
 " Initialize configuration
 call genero_tools#config#init()
 
+" Initialize compiler autocompile if enabled
+call genero_tools#compiler#autocompile#init()
+
 " Initialize Lua layer if available (Neovim only)
 call genero_tools#lua_bridge#init()
 

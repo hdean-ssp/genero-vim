@@ -3,6 +3,13 @@
 let s:autocompile_timer = -1
 let s:last_compiled_file = ''
 
+" Initialize autocompile based on config
+function! genero_tools#compiler#autocompile#init() abort
+  if genero_tools#config#get('compiler_autocompile')
+    call genero_tools#compiler#autocompile#enable()
+  endif
+endfunction
+
 " Enable autocompile for current buffer
 function! genero_tools#compiler#autocompile#enable() abort
   if !genero_tools#config#get('compiler_enabled')
@@ -10,10 +17,13 @@ function! genero_tools#compiler#autocompile#enable() abort
     return
   endif
   
-  " Set up autocommand for current buffer
+  " Set up autocommands for current buffer
   augroup genero_compiler_autocompile
-    autocmd!
+    autocmd! * <buffer>
+    " Compile on save
     autocmd BufWritePost <buffer> call genero_tools#compiler#autocompile#on_save()
+    " Populate signs on buffer enter
+    autocmd BufEnter <buffer> call genero_tools#compiler#autocompile#on_buffer_enter()
   augroup END
   
   echom 'Autocompile enabled for current buffer'
@@ -22,10 +32,30 @@ endfunction
 " Disable autocompile for current buffer
 function! genero_tools#compiler#autocompile#disable() abort
   augroup genero_compiler_autocompile
-    autocmd! BufWritePost <buffer>
+    autocmd! * <buffer>
   augroup END
   
   echom 'Autocompile disabled for current buffer'
+endfunction
+
+" Handle buffer enter event - populate signs for current file
+function! genero_tools#compiler#autocompile#on_buffer_enter() abort
+  if !genero_tools#config#get('compiler_enabled')
+    return
+  endif
+  
+  if !genero_tools#config#get('compiler_autocompile')
+    return
+  endif
+  
+  let current_file = expand('%')
+  
+  if empty(current_file)
+    return
+  endif
+  
+  " Compile and populate signs on buffer enter
+  call genero_tools#compiler#autocompile#compile_silent(current_file)
 endfunction
 
 " Handle file save event

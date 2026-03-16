@@ -6,6 +6,11 @@ setlocal omnifunc=genero_tools#complete#omnifunc
 " Set other useful options for fgl files
 setlocal commentstring=--\ %s
 
+" Enable autocompile for fgl files if configured
+if genero_tools#config#get('compiler_autocompile')
+  call genero_tools#compiler#autocompile#enable()
+endif
+
 " Tab-based completion keybindings
 " Tab to trigger completion
 inoremap <buffer> <Tab> <C-x><C-o>
