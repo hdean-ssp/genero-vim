@@ -1,0 +1,183 @@
+-- Minimal Neovim 0.9.5 Configuration for Genero Development
+-- Copy this to ~/.config/nvim/init.lua and adjust paths as needed
+
+-- ============================================================================
+-- BASIC SETTINGS
+-- ============================================================================
+
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.smartindent = true
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.hlsearch = false
+vim.opt.incsearch = true
+vim.opt.termguicolors = true
+vim.opt.background = 'dark'
+
+-- ============================================================================
+-- LAZY.NVIM BOOTSTRAP
+-- ============================================================================
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- ============================================================================
+-- PLUGINS
+-- ============================================================================
+
+local plugins = {
+  -- Genero Tools Plugin
+  {
+    dir = vim.fn.expand("~/development/genero-vim"),
+    name = "genero-tools",
+    config = function()
+      require("genero_config")
+    end,
+  },
+
+  -- Statusline for helpful keybinding hints
+  {
+    "nvim-lualine/lualine.nvim",
+    version = "v0.9.*",
+    config = function()
+      require("lualine").setup({
+        options = {
+          theme = "auto",
+          component_separators = { left = "", right = "" },
+          section_separators = { left = "", right = "" },
+        },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch", "diff" },
+          lualine_c = { "filename" },
+          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
+        },
+        tabline = {
+          lualine_a = { "buffers" },
+          lualine_z = { "tabs" },
+        },
+      })
+    end,
+  },
+
+  -- Helpful command hints
+  {
+    "folke/which-key.nvim",
+    version = "v1.*",
+    config = function()
+      require("which-key").setup({
+        window = {
+          border = "rounded",
+          padding = { 2, 2 },
+        },
+      })
+    end,
+  },
+}
+
+require("lazy").setup(plugins, {
+  defaults = {
+    lazy = false,
+  },
+})
+
+-- ============================================================================
+-- KEYBINDINGS
+-- ============================================================================
+
+local map = vim.keymap.set
+local opts = { noremap = true, silent = true }
+
+-- Compile current file (F5)
+map("n", "<F5>", ":GeneroCompile<CR>", opts)
+
+-- Navigate errors/warnings (Ctrl+[ and Ctrl+])
+map("n", "<C-[>", ":GeneroPrevError<CR>", opts)
+map("n", "<C-]>", ":GeneroNextError<CR>", opts)
+
+-- Toggle autocompile
+map("n", "<leader>ca", ":GeneroAutocompileEnable<CR>", opts)
+map("n", "<leader>cd", ":GeneroAutocompileDisable<CR>", opts)
+
+-- Clear errors
+map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
+
+-- ============================================================================
+-- GENERO CONFIGURATION
+-- ============================================================================
+
+-- Create genero_config.lua in the same directory as this file
+-- Or configure inline here:
+
+local genero_config = {
+  compiler_enabled = true,
+  compiler_autocompile = true,
+  compiler_autocompile_delay = 500,
+  compiler_sign_column = true,
+  compiler_highlight_unused = true,
+  compiler_command = "fglcomp",
+  compiler_args = { "-M", "-W", "all" },
+  query_sh_path = os.getenv("BRODIR") .. "/etc/genero-tools/query.sh",
+  display_mode = "quickfix",
+}
+
+-- Apply configuration
+for key, value in pairs(genero_config) do
+  if not vim.g.genero_tools_config then
+    vim.g.genero_tools_config = {}
+  end
+  vim.g.genero_tools_config[key] = value
+end
+
+-- ============================================================================
+-- HELPFUL COMMANDS
+-- ============================================================================
+
+-- Show keybindings help
+vim.api.nvim_create_user_command("GeneroHelp", function()
+  print([[
+Genero Tools Keybindings:
+  F5              - Compile current file
+  Ctrl+[          - Previous error/warning
+  Ctrl+]          - Next error/warning
+  <leader>ca      - Enable autocompile
+  <leader>cd      - Disable autocompile
+  <leader>cc      - Clear errors
+
+Commands:
+  :GeneroCompile              - Compile current file
+  :GeneroAutocompileEnable    - Enable autocompile on save
+  :GeneroAutocompileDisable   - Disable autocompile on save
+  :GeneroAutocompileStatus    - Show autocompile status
+  :GeneroClearErrors          - Clear error markers
+  :GeneroNextError            - Jump to next error
+  :GeneroPrevError            - Jump to previous error
+  ]])
+end, {})
+
+-- Show help on startup
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    if vim.fn.argc() == 0 then
+      vim.cmd("GeneroHelp")
+    end
+  end,
+})
