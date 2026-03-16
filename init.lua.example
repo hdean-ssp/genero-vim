@@ -47,7 +47,30 @@ local plugins = {
     "hdean-ssp/genero-vim",
     name = "genero-tools",
     config = function()
-      require("genero_config")
+      -- Load genero configuration
+      local ok, genero_config = pcall(require, "genero_config")
+      if not ok then
+        -- If genero_config.lua doesn't exist, use inline config
+        genero_config = {
+          compiler_enabled = true,
+          compiler_autocompile = true,
+          compiler_autocompile_delay = 500,
+          compiler_sign_column = true,
+          compiler_highlight_unused = true,
+          compiler_command = "fglcomp",
+          compiler_args = { "-M", "-W", "all" },
+          query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+          display_mode = "quickfix",
+        }
+      end
+      
+      -- Apply configuration
+      if not vim.g.genero_tools_config then
+        vim.g.genero_tools_config = {}
+      end
+      for key, value in pairs(genero_config) do
+        vim.g.genero_tools_config[key] = value
+      end
     end,
   },
 
@@ -119,33 +142,6 @@ map("n", "<leader>cd", ":GeneroAutocompileDisable<CR>", opts)
 
 -- Clear errors
 map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
-
--- ============================================================================
--- GENERO CONFIGURATION
--- ============================================================================
-
--- Create genero_config.lua in the same directory as this file
--- Or configure inline here:
-
-local genero_config = {
-  compiler_enabled = true,
-  compiler_autocompile = true,
-  compiler_autocompile_delay = 500,
-  compiler_sign_column = true,
-  compiler_highlight_unused = true,
-  compiler_command = "fglcomp",
-  compiler_args = { "-M", "-W", "all" },
-  query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
-  display_mode = "quickfix",
-}
-
--- Apply configuration
-for key, value in pairs(genero_config) do
-  if not vim.g.genero_tools_config then
-    vim.g.genero_tools_config = {}
-  end
-  vim.g.genero_tools_config[key] = value
-end
 
 -- ============================================================================
 -- HELPFUL COMMANDS
