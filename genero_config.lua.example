@@ -18,7 +18,7 @@ M.compiler_args = { "-M", "-W", "all" }
 
 -- Query tool path (required for some features)
 -- Set BRODIR environment variable or update this path
-M.query_sh_path = os.getenv("BRODIR") .. "/etc/genero-tools/query.sh"
+M.query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh"
 
 -- Display mode for compilation results
 -- Options: "quickfix" (default), "floating" (Neovim only)

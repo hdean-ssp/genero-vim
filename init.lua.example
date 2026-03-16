@@ -135,7 +135,7 @@ local genero_config = {
   compiler_highlight_unused = true,
   compiler_command = "fglcomp",
   compiler_args = { "-M", "-W", "all" },
-  query_sh_path = os.getenv("BRODIR") .. "/etc/genero-tools/query.sh",
+  query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
   display_mode = "quickfix",
 }
 
