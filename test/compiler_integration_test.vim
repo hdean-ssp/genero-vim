@@ -21,11 +21,11 @@ function! Test_compiler_version_detection() abort
   call genero_tools#compiler#init()
   
   " Test get_version with 'auto' setting
-  let version = genero_tools#compiler#get_version()
+  let compiler_ver = genero_tools#compiler#get_version()
   
   " Should return a version string (either detected or default)
-  call assert_true(!empty(version))
-  call assert_match('\d\+\.\d\+', version)
+  call assert_true(!empty(compiler_ver))
+  call assert_match('\d\+\.\d\+', compiler_ver)
 endfunction
 
 " Test 3: Parse v3.10 output format

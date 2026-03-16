@@ -116,8 +116,8 @@ function! genero_tools#compiler#execute(source_path) abort
     let result.output = output
     
     " Parse output based on compiler version
-    let version = genero_tools#compiler#get_version()
-    let parsed = genero_tools#compiler#parse_output(output, version)
+    let compiler_ver = genero_tools#compiler#get_version()
+    let parsed = genero_tools#compiler#parse_output(output, compiler_ver)
     
     if parsed.success
       let result.success = v:true
