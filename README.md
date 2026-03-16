@@ -34,8 +34,6 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
   - Async operations with non-blocking execution
   - Floating windows for rich UI
-  - AI IDE features (error explanation, code generation)
-  - LSP integration
 - Full Vim 8.0+ and Neovim 0.4+ compatibility
 - Zero configuration changes required between editors
 
