@@ -114,6 +114,8 @@ vim.g.genero_tools_config = {
 
 ### Display Modes
 
+Display modes control how results are shown for both code navigation and compiler output.
+
 **init.vim:**
 ```vim
 " Floating window (recommended for Neovim)
@@ -143,6 +145,8 @@ vim.g.genero_tools_config.display_mode = 'split'
 -- Command line
 vim.g.genero_tools_config.display_mode = 'echo'
 ```
+
+**Compiler Results:** When `display_mode` is set to `'floating'` in Neovim, compiler errors and warnings will display in a floating window. In Vim or when floating windows aren't available, results fall back to the quickfix list.
 
 ### Performance (Large Codebases)
 

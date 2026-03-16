@@ -97,6 +97,13 @@ let g:genero_tools_config = {
 " <leader>gc  - Compile current file
 " <leader>gn  - Jump to next error
 " <leader>gp  - Jump to previous error
+"
+" Compiler features:
+" - Real-time error/warning parsing with quickfix integration
+" - Sign column indicators (✕ for errors, ⚠ for warnings)
+" - Syntax error highlighting (red background for errors, yellow for warnings)
+" - Unused variable detection and highlighting
+" - Automatic highlighting applied on compilation
 
 " ============================================================================
 " Genero-Tools Commands Reference
@@ -117,6 +124,13 @@ let g:genero_tools_config = {
 " :GeneroNextError                        - Jump to next error
 " :GeneroPrevError                        - Jump to previous error
 " :GeneroClearErrors                      - Clear error markers
+"
+" Compiler Features:
+" - Real-time error/warning parsing with quickfix integration
+" - Sign column indicators (✕ for errors, ⚠ for warnings)
+" - Syntax error highlighting (red background for errors, yellow for warnings)
+" - Unused variable detection and highlighting
+" - Automatic highlighting applied on compilation
 "
 " Utility:
 " :GeneroConfigShow                       - Display current config

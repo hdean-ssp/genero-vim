@@ -67,6 +67,13 @@ autocmd FileType genero,fgl call genero_tools#compiler#autocompile#enable()
 "   :GeneroNextError                - Jump to next error
 "   :GeneroPrevError                - Jump to previous error
 "
+" Compiler Features:
+"   - Real-time error/warning parsing with quickfix integration
+"   - Sign column indicators (✕ for errors, ⚠ for warnings)
+"   - Syntax error highlighting (red background for errors, yellow for warnings)
+"   - Unused variable detection and highlighting
+"   - Automatic highlighting applied on compilation
+"
 " Utility:
 "   :GeneroConfigShow               - Show configuration
 "   :GeneroClearCache               - Clear cache

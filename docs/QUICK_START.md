@@ -71,10 +71,12 @@ fglcomp -M -W all <file>
 ```
 
 Features:
-- Real-time error/warning display
+- Real-time error/warning display (in quickfix or floating window on Neovim)
 - Visual indicators in sign column
 - Unused variable highlighting
 - Quickfix integration for navigation
+- Error markers populated when opening files
+- Automatic compilation on save (with configurable delay)
 
 ## Configuration
 

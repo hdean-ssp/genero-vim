@@ -27,8 +27,9 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - **Intelligent Autocomplete** - Function and module name completion with signatures
 - **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
   - Sign column indicators for errors and warnings
-  - Syntax error highlighting
+  - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
   - Unused variable detection and highlighting
+  - Automatic highlighting applied on compilation
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Omnifunc autocomplete** - Function and module name completion with signatures
 - **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
@@ -241,11 +242,12 @@ let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before 
 **Compiler Features:**
 - Real-time error/warning parsing with quickfix integration
 - Sign column indicators (✕ for errors, ⚠ for warnings)
-- Syntax error highlighting
+- Syntax error highlighting (red background for errors, yellow for warnings)
 - Unused variable detection and highlighting
 - Version-specific output parsing (auto-detects compiler version)
 - Quickfix navigation with `:GeneroNextError` and `:GeneroPrevError`
 - **Autocompile on save** - Automatically compile and update markers when file is saved (enabled by default)
+- **Automatic highlighting** - Error/warning highlighting applied automatically on compilation
 
 ### Neovim Lua Layer (Optional)
 

@@ -17,6 +17,11 @@ let g:genero_tools_config.compiler_autocompile = v:true
 autocmd FileType genero,fgl call genero_tools#compiler#autocompile#enable()
 ```
 
+**Note:** When autocompile is enabled, the plugin automatically:
+- Compiles on file save (with configurable delay)
+- Populates error markers when opening a file
+- Updates signs and highlighting in real-time
+
 ### Or Use Commands
 
 ```vim
@@ -34,6 +39,12 @@ When enabled, files are automatically compiled when saved with the command:
 fglcomp -M -W all <file>
 ```
 
+**Behavior:**
+- Compilation is delayed by `compiler_autocompile_delay` (default 1000ms) to avoid multiple compilations during rapid edits
+- Error markers are populated when opening a file (on `BufEnter`)
+- Error markers are updated when saving a file (on `BufWritePost`)
+- Multiple rapid saves are coalesced into a single compilation
+
 **Compiler Flags:**
 - `-M` - Generate machine code (required for compilation)
 - `-W all` - Enable all warnings (recommended for code quality)
@@ -49,8 +60,16 @@ fglcomp -M -W all <file>
 
 Compiler output is displayed in multiple ways:
 
-#### Quickfix List
-Navigate errors/warnings with standard Vim commands:
+#### Display Modes
+
+Results can be displayed using the configured `display_mode`:
+
+- **Floating Window** (Neovim only) - Results in a centered floating window
+- **Quickfix List** (default) - Navigate errors/warnings with standard Vim commands
+- **Split Window** - Results in a new split window
+- **Echo** - Results displayed in command line
+
+**Quickfix Navigation:**
 ```vim
 :copen          " Open quickfix window
 :cnext          " Go to next error
@@ -65,8 +84,10 @@ Visual indicators in the left margin:
 - `ℹ` = Info (blue)
 
 #### Inline Highlighting
-- Unused variables highlighted in yellow background
-- All occurrences of unused variables highlighted
+- **Error highlighting** - Full line highlighted with red background for visibility
+- **Warning highlighting** - Column range highlighted with yellow background
+- **Unused variable highlighting** - All occurrences highlighted in yellow background
+- Highlighting applied automatically on compilation
 
 ### 3. Unused Variable Detection
 
@@ -126,6 +147,31 @@ let g:genero_tools_config = {
 | `compiler_sign_column` | bool | `true` | Show signs in sign column |
 | `compiler_autocompile` | bool | `false` | Compile on save |
 | `compiler_autocompile_delay` | number | `1000` | Delay before autocompile (ms) |
+| `display_mode` | string | `'quickfix'` | Display mode for results ('floating', 'quickfix', 'split', 'echo') |
+
+### Display Mode Configuration
+
+The `display_mode` option controls how compiler results are displayed:
+
+```vim
+" Floating window (Neovim only, recommended)
+let g:genero_tools_config.display_mode = 'floating'
+
+" Quickfix list (default, works everywhere)
+let g:genero_tools_config.display_mode = 'quickfix'
+
+" Split window
+let g:genero_tools_config.display_mode = 'split'
+
+" Command line
+let g:genero_tools_config.display_mode = 'echo'
+```
+
+**Behavior:**
+- **Floating Window:** When `display_mode = 'floating'` in Neovim, compiler results display in a centered floating window. Falls back to quickfix in Vim.
+- **Quickfix:** Standard Vim quickfix list with navigation commands.
+- **Split:** Results displayed in a new split window.
+- **Echo:** Results displayed in the command line.
 
 ## Compiler Output Format
 
@@ -163,8 +209,10 @@ con01_G.4gl:258:44:258:52:warning:(-8059) SQL statement or language instruction 
    ```vim
    :GeneroAutocompileEnable
    ```
+   
+   This sets up automatic compilation on save and populates error markers when opening files.
 
-2. **Edit your file** - Compilation happens automatically on save
+2. **Edit your file** - Compilation happens automatically on save (with 1-second delay to avoid excessive recompilation)
 
 3. **View errors** - Use quickfix to navigate:
    ```vim
@@ -172,7 +220,7 @@ con01_G.4gl:258:44:258:52:warning:(-8059) SQL statement or language instruction 
    :cnext          " Jump to next error
    ```
 
-4. **Fix issues** - Errors/warnings update automatically
+4. **Fix issues** - Errors/warnings update automatically on save
 
 5. **Verify** - When all errors are fixed, quickfix clears
 
