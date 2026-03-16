@@ -1,113 +1,127 @@
 # Vim Genero-Tools Plugin - Quick Start
 
-## Installation
+## 5-Minute Setup
 
-1. Install the plugin using your favorite plugin manager (vim-plug, vundle, etc.)
-2. Ensure `query.sh` is in your PATH or configure the path in `.vimrc`
+### 1. Install Plugin
 
-## Setup
-
-Before using the plugin, generate the genero-tools databases:
-
-```bash
-bash generate_signatures.sh /path/to/codebase
-bash generate_modules.sh /path/to/codebase
-query.sh create-dbs
-query.sh find-function test_function
+Using vim-plug, add to your `.vimrc`:
+```vim
+Plug 'hdean-ssp/genero-vim'
 ```
 
-## Basic Usage
+Then run `:PlugInstall`
 
-### Find a Function
+### 2. Basic Configuration
+
+Add to your `.vimrc`:
 ```vim
-:GeneroLookup myFunction
-<leader>gl  " Place cursor on function name
+let g:genero_tools_config = {
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
+  \ }
+
+autocmd FileType genero,fgl call genero_tools#compiler#autocompile#enable()
 ```
 
-### List Functions in Current File
-```vim
-:GeneroListFunctions
-<leader>gf
-```
+### 3. Verify Installation
 
-### Get Function Signature
 ```vim
-:GeneroFunctionSignature myFunction
-<leader>gs
-```
-
-### List Functions in a Module
-```vim
-:GeneroListModuleFiles core
-```
-
-### Get File Metadata
-```vim
-:GeneroFileMetadata ./src/utils.4gl
-<leader>gm
-```
-
-### Clear Cache & Show Config
-```vim
-:GeneroClearCache
 :GeneroConfigShow
 ```
 
-## Configuration
+## Common Commands
 
+### Code Navigation
 ```vim
-let g:genero_tools_config = {
-  \ 'genero_tools_path': 'query.sh',
-  \ 'cache_enabled': v:true,
-  \ 'cache_ttl': 3600,
-  \ 'display_mode': 'quickfix',
-  \ 'keybindings_enabled': v:true,
-  \ 'timeout': 10000,
-  \ 'async_enabled': v:true,
-  \ 'compiler_enabled': v:true,
-  \ 'compiler_autocompile': v:true,
-  \ 'compiler_autocompile_delay': 1000
-  \ }
+:GeneroLookup myFunction          " Find function
+:GeneroListFunctions              " List functions in current file
+:GeneroFunctionSignature myFunc   " Show function signature
+:GeneroFileMetadata               " Show file metadata
 ```
 
-## Display Modes
-
+### Compiler
 ```vim
-let g:genero_tools_config.display_mode = 'quickfix'  " Default
-let g:genero_tools_config.display_mode = 'popup'     " Neovim only
-let g:genero_tools_config.display_mode = 'split'
-let g:genero_tools_config.display_mode = 'echo'
+:GeneroCompile                    " Compile current file
+:GeneroNextError                  " Jump to next error
+:GeneroPrevError                  " Jump to previous error
+:GeneroAutocompileEnable          " Enable autocompile
+:GeneroAutocompileDisable         " Disable autocompile
 ```
 
-## Keybindings
+### Utility
+```vim
+:GeneroClearCache                 " Clear result cache
+:GeneroConfigShow                 " Show configuration
+```
+
+## Default Keybindings
 
 | Keybinding | Action |
 |-----------|--------|
 | `<leader>gl` | Find function under cursor |
 | `<leader>gf` | List functions in current file |
-| `<leader>gs` | Get function signature |
-| `<leader>gm` | Get file metadata |
+| `<leader>gs` | Get function signature under cursor |
+| `<leader>gm` | Get file metadata for current file |
+
+## Compiler Features
+
+The plugin automatically compiles files on save with:
+```bash
+fglcomp -M -W all <file>
+```
+
+Features:
+- Real-time error/warning display
+- Visual indicators in sign column
+- Unused variable highlighting
+- Quickfix integration for navigation
+
+## Configuration
+
+### Essential Options
+
+```vim
+let g:genero_tools_config = {
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
+  \ 'compiler_command': 'fglcomp -M -W all',
+  \ 'display_mode': 'quickfix',
+  \ 'keybindings_enabled': v:true,
+  \ }
+```
+
+### For Large Codebases
+
+```vim
+let g:genero_tools_config = {
+  \ 'cache_ttl': 7200,
+  \ 'cache_max_size': 200,
+  \ 'timeout': 15000,
+  \ 'result_limit': 2000,
+  \ 'pagination_size': 100,
+  \ }
+```
 
 ## Troubleshooting
+
+**Compiler not found:**
+```vim
+let g:genero_tools_config.compiler_command = '/path/to/fglcomp -M -W all'
+```
 
 **query.sh not found:**
 ```vim
 let g:genero_tools_config.genero_tools_path = '/path/to/query.sh'
 ```
 
-**Slow queries:**
+**Autocompile not working:**
 ```vim
-let g:genero_tools_config.cache_enabled = v:true
-let g:genero_tools_config.timeout = 15000
-```
-
-**Results not updating:**
-```vim
-:GeneroClearCache
+:GeneroAutocompileStatus
 ```
 
 ## Next Steps
 
-- Read [API_INTEGRATION.md](API_INTEGRATION.md) for detailed API documentation
-- Check [COMPATIBILITY.md](COMPATIBILITY.md) for Vim/Neovim compatibility
-- Review genero-tools API in `/genero-tools-api/api/`
+- **Fresh Install?** See [SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)
+- **Compiler Details?** See [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)
+- **Code Navigation?** See [API_INTEGRATION.md](API_INTEGRATION.md)
+- **Neovim Features?** See [NEOVIM.md](NEOVIM.md)

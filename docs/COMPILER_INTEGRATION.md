@@ -34,6 +34,10 @@ When enabled, files are automatically compiled when saved with the command:
 fglcomp -M -W all <file>
 ```
 
+**Compiler Flags:**
+- `-M` - Generate machine code (required for compilation)
+- `-W all` - Enable all warnings (recommended for code quality)
+
 **Commands:**
 ```vim
 :GeneroAutocompileEnable   " Enable for current buffer
@@ -92,7 +96,7 @@ The variable `l_description` will be highlighted throughout the file.
 ```vim
 let g:genero_tools_config = {
   \ 'compiler_enabled': v:false,
-  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_command': 'fglcomp -M -W all',
   \ 'compiler_source_dir': '.',
   \ 'compiler_version': 'auto',
   \ 'compiler_show_warnings': v:true,
@@ -104,12 +108,16 @@ let g:genero_tools_config = {
   \ }
 ```
 
+**Compiler Command Flags:**
+- `-M` - Generate machine code (required for compilation)
+- `-W all` - Enable all warnings (recommended for code quality)
+
 ### Configuration Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `compiler_enabled` | bool | `false` | Enable compiler integration |
-| `compiler_command` | string | `'fglcomp'` | Compiler command path |
+| `compiler_command` | string | `'fglcomp -M -W all'` | Compiler command with flags |
 | `compiler_source_dir` | string | `'.'` | Source directory for compilation |
 | `compiler_version` | string | `'auto'` | Compiler version ('auto', '3.10', '3.20') |
 | `compiler_show_warnings` | bool | `true` | Show warnings in quickfix |

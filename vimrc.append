@@ -35,7 +35,7 @@ let g:genero_tools_config = {
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
   \ 'compiler_enabled': v:true,
-  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_command': 'fglcomp -M -W all',
   \ 'compiler_version': 'auto',
   \ 'compiler_source_dir': '.',
   \ 'compiler_show_warnings': v:true,

@@ -4,19 +4,14 @@ Welcome to the genero-tools plugin documentation. This guide will help you get s
 
 ## Getting Started
 
-- **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes
-- **[SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)** - Fresh Vim/Neovim installation guide
+- **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes (start here)
+- **[SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)** - Detailed fresh Vim/Neovim installation guide
 
 ## User Guides
 
-### Core Features
-
 - **[COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)** - Compiler integration, autocompile, error display
-- **[API_INTEGRATION.md](API_INTEGRATION.md)** - Using genero-tools API for code navigation
-- **[COMPATIBILITY.md](COMPATIBILITY.md)** - Vim/Neovim compatibility information
-
-### Platform-Specific
-
+- **[API_INTEGRATION.md](API_INTEGRATION.md)** - Code navigation and lookup functionality
+- **[COMPATIBILITY.md](COMPATIBILITY.md)** - Vim/Neovim compatibility details
 - **[NEOVIM.md](NEOVIM.md)** - Neovim-specific features and setup
 
 ## Feature Overview

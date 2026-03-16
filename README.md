@@ -209,7 +209,7 @@ let g:genero_tools_config = {
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
   \ 'compiler_enabled': v:true,
-  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_command': 'fglcomp -M -W all',
   \ 'compiler_version': 'auto',
   \ 'compiler_source_dir': '.',
   \ 'compiler_show_warnings': v:true,
@@ -225,7 +225,7 @@ let g:genero_tools_config = {
 
 ```vim
 let g:genero_tools_config.compiler_enabled = v:true              " Enable compiler integration
-let g:genero_tools_config.compiler_command = 'fglcomp'           " Compiler command
+let g:genero_tools_config.compiler_command = 'fglcomp -M -W all' " Compiler command with flags
 let g:genero_tools_config.compiler_version = 'auto'              " Version: 'auto', '3.10', '3.20', etc.
 let g:genero_tools_config.compiler_source_dir = '.'              " Source directory for compilation
 let g:genero_tools_config.compiler_show_warnings = v:true        " Display warnings in quickfix
@@ -235,6 +235,10 @@ let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in
 let g:genero_tools_config.compiler_autocompile = v:true          " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 ```
+
+**Compiler Command Flags:**
+- `-M` - Generate machine code (required for compilation)
+- `-W all` - Enable all warnings (recommended for code quality)
 
 **Compiler Features:**
 - Real-time error/warning parsing with quickfix integration

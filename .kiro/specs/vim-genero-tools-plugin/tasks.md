@@ -4,6 +4,18 @@
 
 This implementation plan breaks down the vim genero-tools plugin into discrete coding tasks organized into logical phases. The plugin integrates with the genero-tools CLI to provide code navigation and lookup capabilities for Genero codebases. Implementation follows a bottom-up approach: core utilities first, then command execution, caching, display modes, and finally user-facing commands and keybindings.
 
+## Task Organization
+
+Tasks are organized by priority and logical dependencies:
+
+1. **Foundation** (Tasks 1-5) - Core infrastructure
+2. **Code Navigation** (Tasks 6-8) - Core lookup functionality
+3. **User-Facing Commands** (Tasks 9-10) - Commands and keybindings
+4. **Compiler Integration** (Tasks 11-12) - Compiler features and testing
+5. **Integration Testing** (Task 13) - End-to-end testing
+6. **Final Validation** (Task 14) - Comprehensive testing and checkpoint
+7. **Future Enhancements** (Task 15) - SVN diff markers (future task)
+
 ## Tasks
 
 - [x] 1. Set up project structure and core configuration
@@ -273,44 +285,55 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - **Property 14: Vim and Neovim Compatibility**
     - **Validates: Requirements 14.1, 14.5**
 
-- [x] 11. Implement user-facing commands
-  - [x] 11.1 Create GeneroLookup command
+- [x] 11. Implement codebase path detection
+  - [x] 11.1 Create codebase path detection function
+    - Implement genero_tools#get_codebase_path() to detect project root
+    - Search for genero project markers (genero.conf, .genero, etc.)
+    - Fall back to current working directory
+    - _Requirements: 1.5, 2.5, 3.5, 4.5, 5.5, 15.6_
+  
+  - [ ]* 11.2 Write property test for codebase path inclusion
+    - **Property 15: Codebase Path Is Included in Commands**
+    - **Validates: Requirements 1.5, 2.5, 3.5, 4.5, 5.5**
+
+- [x] 12. Implement user-facing commands
+  - [x] 12.1 Create GeneroLookup command
     - Accept optional function_name argument
     - Use word under cursor if no argument provided
     - Call genero_tools#lookup_function() with current codebase path
     - Display result using configured display mode
     - _Requirements: 1.1, 1.4_
   
-  - [x] 11.2 Create GeneroListModuleFiles command
+  - [x] 12.2 Create GeneroListModuleFiles command
     - Accept optional module_name argument
     - Use current file's module if no argument provided
     - Call genero_tools#list_module_files() with current codebase path
     - Display result using configured display mode
     - _Requirements: 2.1, 2.4_
   
-  - [x] 11.3 Create GeneroListFunctions command
+  - [x] 12.3 Create GeneroListFunctions command
     - Accept optional file_path argument
     - Use current file if no argument provided
     - Call genero_tools#list_functions_in_file() with current codebase path
     - Display result using configured display mode
     - _Requirements: 3.1, 3.4_
   
-  - [x] 11.4 Create GeneroFunctionSignature command
+  - [x] 12.4 Create GeneroFunctionSignature command
     - Accept optional function_name argument
     - Use word under cursor if no argument provided
     - Call genero_tools#get_function_signature() with current codebase path
     - Display result using configured display mode
     - _Requirements: 4.1, 4.4_
   
-  - [x] 11.5 Create GeneroFileMetadata command
+  - [x] 12.5 Create GeneroFileMetadata command
     - Accept optional file_path argument
     - Use current file if no argument provided
     - Call genero_tools#get_file_metadata() with current codebase path
     - Display result using configured display mode
     - _Requirements: 5.1, 5.4_
 
-- [x] 12. Implement keybindings
-  - [x] 12.1 Create keybinding registration function
+- [x] 13. Implement keybindings
+  - [x] 13.1 Create keybinding registration function
     - Implement genero_tools#keybindings#register() to set up default keybindings
     - Map <leader>gl to GeneroLookup with word under cursor
     - Map <leader>gf to GeneroListFunctions with current file
@@ -318,21 +341,10 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Map <leader>gm to GeneroFileMetadata with current file
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5_
   
-  - [x] 12.2 Integrate keybinding registration into plugin initialization
+  - [x] 13.2 Integrate keybinding registration into plugin initialization
     - Call genero_tools#keybindings#register() if keybindings_enabled is true
     - Skip registration if keybindings_enabled is false
     - _Requirements: 12.1, 12.6_
-
-- [x] 13. Implement codebase path detection
-  - [x] 13.1 Create codebase path detection function
-    - Implement genero_tools#get_codebase_path() to detect project root
-    - Search for genero project markers (genero.conf, .genero, etc.)
-    - Fall back to current working directory
-    - _Requirements: 1.5, 2.5, 3.5, 4.5, 5.5, 15.6_
-  
-  - [ ]* 13.2 Write property test for codebase path inclusion
-    - **Property 15: Codebase Path Is Included in Commands**
-    - **Validates: Requirements 1.5, 2.5, 3.5, 4.5, 5.5**
 
 - [x] 14. Implement large codebase optimization guidance
   - [x] 14.1 Add result limit guidance messages
@@ -376,7 +388,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Route parsing to version-specific parser based on compiler_version
     - _Requirements: 18.4, 18.5, 18.6, 18.22_
   
-  - [ ] 15.3 Implement error/warning parsing
+  - [x] 15.3 Implement error/warning parsing
     - Create genero_tools#compiler#parse_output() dispatcher function
     - Implement version-specific parsers:
       - genero_tools#compiler#parse_v310() for fglcomp 3.10+ format
@@ -394,14 +406,14 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Clear signs when errors are cleared
     - _Requirements: 18.10, 18.11_
   
-  - [ ] 15.5 Implement syntax error highlighting
+  - [x] 15.5 Implement syntax error highlighting
     - Create genero_tools#compiler#highlight#apply() to highlight errors
     - Use vim highlight groups for errors and warnings
     - Support line-level and column-level highlighting
     - Clear highlights when errors are cleared
     - _Requirements: 18.12, 18.13_
   
-  - [ ] 15.6 Implement unused variable highlighting
+  - [x] 15.6 Implement unused variable highlighting
     - Create genero_tools#compiler#highlight#unused_vars() to highlight unused variables
     - Parse compiler output for unused variable warnings
     - Apply distinct highlighting for unused variables
@@ -421,7 +433,15 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Integrate with vim's quickfix navigation
     - _Requirements: 18.20, 18.21_
   
-  - [ ]* 15.9 Write property tests for compiler integration
+  - [x] 15.9 Implement autocompile on save
+    - Create genero_tools#compiler#autocompile#enable() to enable autocompile
+    - Create genero_tools#compiler#autocompile#disable() to disable autocompile
+    - Create genero_tools#compiler#autocompile#status() to show status
+    - Compile on BufWritePost with configurable delay
+    - Update signs and highlighting on successful compilation
+    - _Requirements: 18.24, 18.25, 18.26_
+  
+  - [ ]* 15.10 Write property tests for compiler integration
     - **Property 18: Compiler Output Parsing Preserves Semantics**
     - **Property 19: Error Markers Are Placed Correctly**
     - **Property 20: Unused Variable Detection Is Accurate**
@@ -434,11 +454,12 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
   - Verify syntax error highlighting works
   - Verify unused variable highlighting works
   - Verify quickfix integration works
+  - Verify autocompile on save works
   - Verify all compiler commands are registered
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 17. Integration testing
-  - [ ] 16.1 Create integration test suite
+  - [ ] 17.1 Create integration test suite
     - Test end-to-end workflows for each command
     - Test with actual genero-tools CLI (if available)
     - Test vim command execution and display
@@ -451,7 +472,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Test compiler integration with actual compiler output
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1, 7.1, 8.1, 9.1, 10.1, 11.1, 12.1, 14.1, 6.1.1, 6.1.2, 18.1_
   
-  - [ ]* 16.2 Write integration tests for command workflows
+  - [ ]* 17.2 Write integration tests for command workflows
     - Test lookup command with various inputs
     - Test list commands with various inputs
     - Test metadata retrieval
@@ -460,7 +481,7 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
     - Test compiler command with various source directories
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1, 18.4_
   
-  - [ ]* 16.3 Write performance tests for large codebases
+  - [ ]* 17.3 Write performance tests for large codebases
     - Test command execution time with large codebases
     - Test cache performance with many entries
     - Test pagination performance with large result sets
