@@ -44,7 +44,7 @@ vim.opt.rtp:prepend(lazypath)
 local plugins = {
   -- Genero Tools Plugin
   {
-    dir = vim.fn.expand("~/development/genero-vim"),
+    "hdean-ssp/genero-vim",
     name = "genero-tools",
     config = function()
       require("genero_config")

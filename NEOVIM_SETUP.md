@@ -11,13 +11,7 @@ This guide helps you set up Neovim 0.9.5 with the genero-tools plugin for Genero
 
 ## Installation
 
-### 1. Clone genero-vim repository
-
-```bash
-git clone https://github.com/hdean-ssp/genero-vim.git ~/development/genero-vim
-```
-
-### 2. Set up Neovim configuration
+### 1. Set up Neovim configuration
 
 Copy the example configuration to your Neovim config directory:
 
@@ -27,13 +21,15 @@ cp init.lua.example ~/.config/nvim/init.lua
 cp genero_config.lua.example ~/.config/nvim/genero_config.lua
 ```
 
-### 3. Update paths in init.lua
+### 2. Update paths in init.lua (optional)
 
-Edit `~/.config/nvim/init.lua` and update the plugin path if needed:
+The genero-vim plugin will be automatically cloned to `~/.local/share/nvim/lazy/genero-tools/` by lazy.nvim.
+
+If you prefer to use a local development copy instead, update the plugin spec in `~/.config/nvim/init.lua`:
 
 ```lua
 {
-  dir = vim.fn.expand("~/development/genero-vim"),  -- Update this path
+  dir = vim.fn.expand("~/path/to/your/genero-vim"),  -- Use local directory
   name = "genero-tools",
   config = function()
     require("genero_config")
@@ -41,7 +37,7 @@ Edit `~/.config/nvim/init.lua` and update the plugin path if needed:
 },
 ```
 
-### 4. Set environment variables
+### 3. Set environment variables
 
 Ensure BRODIR is set in your shell:
 
@@ -55,7 +51,7 @@ Or update the query_sh_path in `genero_config.lua`:
 M.query_sh_path = "/path/to/your/brodir/etc/genero-tools/query.sh"
 ```
 
-### 5. Start Neovim
+### 4. Start Neovim
 
 ```bash
 nvim
