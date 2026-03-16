@@ -8,19 +8,13 @@ let s:unused_var_group = 'GeneroUnusedVariable'
 " Initialize highlighting
 function! genero_tools#compiler#highlight#init() abort
   " Define error highlight group - subtle red background, full line
-  if !hlexists(s:error_group)
-    execute 'highlight ' . s:error_group . ' ctermbg=52 ctermfg=NONE guibg=#5f0000 guifg=NONE'
-  endif
+  execute 'highlight ' . s:error_group . ' ctermbg=52 ctermfg=NONE guibg=#5f0000 guifg=NONE'
   
   " Define warning highlight group - subtle yellow background, column range only
-  if !hlexists(s:warning_group)
-    execute 'highlight ' . s:warning_group . ' ctermbg=58 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
-  endif
+  execute 'highlight ' . s:warning_group . ' ctermbg=58 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
   
   " Define unused variable highlight group - subtle orange background
-  if !hlexists(s:unused_var_group)
-    execute 'highlight ' . s:unused_var_group . ' ctermbg=94 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
-  endif
+  execute 'highlight ' . s:unused_var_group . ' ctermbg=94 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
 endfunction
 
 " Apply syntax error highlighting
@@ -29,6 +23,11 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   
   " Clear previous highlights
   call genero_tools#compiler#highlight#clear()
+  
+  " Debug: log if we have errors to highlight
+  if len(a:errors) > 0
+    echom 'Highlighting ' . len(a:errors) . ' errors'
+  endif
   
   " Highlight errors - entire line to draw attention
   for error in a:errors
@@ -39,7 +38,8 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
         " Use a very large length to ensure full line coverage
         call matchaddpos(s:error_group, [[error.line, 1, 9999]], 20)
       catch
-        " Silently ignore if match fails
+        " Log error for debugging
+        echom 'Error highlighting failed: ' . v:exception
       endtry
     endif
   endfor
