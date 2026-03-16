@@ -65,6 +65,9 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   if genero_tools#config#get('compiler_sign_column')
     call genero_tools#compiler#signs#update(result)
   endif
+  
+  " Apply error/warning highlighting
+  call genero_tools#compiler#highlight#apply(result.errors, result.warnings)
 endfunction
 
 " GeneroClearErrors command - clear error markers

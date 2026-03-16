@@ -34,9 +34,10 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   for error in a:errors
     if has_key(error, 'file') && has_key(error, 'line')
       try
-        " Use matchaddpos for full-line highlighting (more reliable than regex)
+        " Use matchaddpos for full-line highlighting
         " matchaddpos takes [line, col, length] where length=0 means to end of line
-        call matchaddpos(s:error_group, [[error.line, 1, 0]], 20)
+        " Use a very large length to ensure full line coverage
+        call matchaddpos(s:error_group, [[error.line, 1, 9999]], 20)
       catch
         " Silently ignore if match fails
       endtry
