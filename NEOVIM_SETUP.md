@@ -18,8 +18,9 @@ Copy the example configuration to your Neovim config directory:
 ```bash
 mkdir -p ~/.config/nvim
 cp init.lua.example ~/.config/nvim/init.lua
-cp genero_config.lua.example ~/.config/nvim/genero_config.lua
 ```
+
+The genero-tools configuration is embedded in `init.lua` and will work out of the box. If you want to customize settings in a separate file, you can create `~/.config/nvim/genero_config.lua` (see genero_config.lua.example for reference).
 
 ### 2. Update paths in init.lua (optional)
 
