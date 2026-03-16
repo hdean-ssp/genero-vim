@@ -479,6 +479,18 @@ This implementation plan breaks down the vim genero-tools plugin into discrete c
   - Ensure compiler integration works correctly
   - Ensure all tests pass, ask the user if questions arise.
 
+- [ ] 19. SVN Diff Markers Feature (Future Task)
+  - **See:** `.kiro/specs/vim-genero-tools-plugin/svn-diff-markers.md`
+  - Detect SVN working copies
+  - Retrieve and parse SVN diff output
+  - Display diff markers in sign column (added/modified/deleted)
+  - Implement caching for performance
+  - Create commands: `:GeneroSVNRefresh`, `:GeneroSVNToggle`, `:GeneroSVNStatus`
+  - Integrate with existing compiler signs (no conflicts)
+  - Support configuration options for customization
+  - Handle errors gracefully (SVN not installed, auth failures, etc.)
+  - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP

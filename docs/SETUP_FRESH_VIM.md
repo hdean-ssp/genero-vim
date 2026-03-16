@@ -109,9 +109,9 @@ let g:genero_tools_config = {
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
-  \ 'lua_enabled': v:true,
-  \ 'ai_enabled': v:false,
-  \ 'lsp_enabled': v:false
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
+  \ 'compiler_autocompile_delay': 1000
   \ }
 ```
 
@@ -131,13 +131,16 @@ let g:genero_tools_config = {
   \ 'cache_enabled': v:true,
   \ 'cache_ttl': 7200,
   \ 'cache_max_size': 200,
-  \ 'display_mode': 'inline',
+  \ 'display_mode': 'quickfix',
   \ 'keybindings_enabled': v:true,
   \ 'timeout': 15000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 2000,
   \ 'pagination_size': 100,
-  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
+  \ 'compiler_autocompile_delay': 1000
   \ }
 ```
 
@@ -147,16 +150,13 @@ For Neovim users, enable the optional Lua layer for enhanced features:
 
 ```vim
 let g:genero_tools_config.lua_enabled = v:true           " Enable Lua layer
-let g:genero_tools_config.ai_enabled = v:false           " AI features (requires API key)
-let g:genero_tools_config.ai_provider = 'openai'         " AI provider
-let g:genero_tools_config.lsp_enabled = v:false          " LSP integration
+let g:genero_tools_config.async_enabled = v:true         " Use async operations
 ```
 
 **Lua Layer Features** (Neovim 0.4+ only):
 - Async operations with non-blocking execution
 - Floating windows for rich UI
-- AI IDE features (error explanation, code generation)
-- LSP integration (hover, goto definition)
+- Better performance on large codebases
 
 The Lua layer is optional and gracefully falls back to VimScript if unavailable.
 
@@ -215,6 +215,13 @@ nnoremap <silent> <leader>gm :GeneroFileMetadata %<CR>
 :GeneroFileMetadata [file_path]         " Get file metadata
 :GeneroConfigShow                       " Display current config
 :GeneroClearCache                       " Clear result cache
+:GeneroCompile [file]                   " Compile file
+:GeneroAutocompileEnable                " Enable autocompile for buffer
+:GeneroAutocompileDisable               " Disable autocompile for buffer
+:GeneroAutocompileStatus                " Show autocompile status
+:GeneroNextError                        " Jump to next error
+:GeneroPrevError                        " Jump to previous error
+:GeneroClearErrors                      " Clear error markers
 ```
 
 ## Troubleshooting

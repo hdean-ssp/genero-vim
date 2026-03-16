@@ -64,7 +64,8 @@ let g:genero_tools_config = {
   \ 'keybindings_enabled': v:true,
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
-  \ 'compiler_autocompile': v:false,
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
   \ 'compiler_autocompile_delay': 1000
   \ }
 ```

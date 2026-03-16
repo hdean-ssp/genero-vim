@@ -252,19 +252,12 @@ For Neovim users, enable the optional Lua layer for enhanced features:
 ```vim
 let g:genero_tools_config.lua_enabled = v:true                   " Enable Lua layer (Neovim only)
 let g:genero_tools_config.async_enabled = v:true                 " Use async operations
-let g:genero_tools_config.ui_mode = 'floating'                   " Use floating windows
-let g:genero_tools_config.lsp_enabled = v:true                   " Enable LSP integration
-let g:genero_tools_config.ai_enabled = v:true                    " Enable AI IDE features
-let g:genero_tools_config.ai_provider = 'openai'                 " AI provider (openai, claude, local)
-let g:genero_tools_config.ai_api_key = $OPENAI_API_KEY           " AI API key
 ```
 
 **Lua Layer Features** (Neovim 0.4+ only):
 - **Async Operations** - Non-blocking command execution with progress indicators
 - **Floating Windows** - Rich UI for results with better formatting
-- **LSP Integration** - Hover information, goto definition, and more
-- **AI IDE Features** - Error explanation, code generation, refactoring suggestions
-- **Advanced Caching** - Lua-optimized cache with better performance
+- **Better Performance** - Optimized for large codebases
 
 The Lua layer is optional and gracefully falls back to VimScript implementations if unavailable.
 
