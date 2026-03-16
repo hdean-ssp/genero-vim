@@ -41,8 +41,16 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   let qf_result = genero_tools#compiler#quickfix#populate(result, 'all')
   
   if qf_result.success
-    " Open quickfix window
-    call genero_tools#compiler#quickfix#open()
+    " Open results using configured display mode
+    let display_mode = genero_tools#config#get('display_mode')
+    
+    if display_mode == 'floating' && has('nvim')
+      " Use floating window for Neovim
+      call genero_tools#compiler#quickfix#open_floating(result)
+    else
+      " Use quickfix for Vim or when floating not available
+      call genero_tools#compiler#quickfix#open()
+    endif
     
     " Show summary
     echom 'Compilation complete (' . elapsed . 's): ' . 

@@ -133,3 +133,66 @@ function! genero_tools#compiler#quickfix#clear() abort
       \ }
   endtry
 endfunction
+
+" Open compiler results in floating window (Neovim only)
+function! genero_tools#compiler#quickfix#open_floating(result) abort
+  if !has('nvim')
+    " Fall back to quickfix for Vim
+    return genero_tools#compiler#quickfix#open()
+  endif
+  
+  try
+    " Format results for display
+    let lines = []
+    call add(lines, '=== Compilation Results ===')
+    call add(lines, '')
+    
+    " Add errors
+    if !empty(a:result.errors)
+      call add(lines, 'ERRORS:')
+      for error in a:result.errors
+        call add(lines, printf('  %s:%d:%d - %s', error.file, error.line, error.col, error.message))
+      endfor
+      call add(lines, '')
+    endif
+    
+    " Add warnings
+    if !empty(a:result.warnings)
+      call add(lines, 'WARNINGS:')
+      for warning in a:result.warnings
+        call add(lines, printf('  %s:%d:%d - %s', warning.file, warning.line, warning.col, warning.message))
+      endfor
+      call add(lines, '')
+    endif
+    
+    " Add info
+    if !empty(a:result.info)
+      call add(lines, 'INFO:')
+      for info_item in a:result.info
+        call add(lines, printf('  %s:%d:%d - %s', info_item.file, info_item.line, info_item.col, info_item.message))
+      endfor
+    endif
+    
+    if len(lines) == 2
+      call add(lines, 'No errors or warnings')
+    endif
+    
+    " Use Lua layer if available for floating window
+    if exists('*luaeval') && genero_tools#config#get('lua_enabled')
+      call genero_tools#lua_bridge#show_floating_window(lines, 'Compilation Results')
+    else
+      " Fall back to quickfix
+      call genero_tools#compiler#quickfix#open()
+    endif
+    
+    return {
+      \ 'success': v:true,
+      \ 'error': ''
+      \ }
+  catch
+    return {
+      \ 'success': v:false,
+      \ 'error': 'Failed to open floating window: ' . v:exception
+      \ }
+  endtry
+endfunction
