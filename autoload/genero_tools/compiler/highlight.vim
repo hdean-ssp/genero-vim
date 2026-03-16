@@ -34,9 +34,9 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   for error in a:errors
     if has_key(error, 'file') && has_key(error, 'line')
       try
-        " Highlight entire line for errors (from start to end of line)
-        let pattern = '\%' . error.line . 'l.*'
-        call matchadd(s:error_group, pattern, 20)
+        " Use matchaddpos for full-line highlighting (more reliable than regex)
+        " matchaddpos takes [line, col, length] where length=0 means to end of line
+        call matchaddpos(s:error_group, [[error.line, 1, 0]], 20)
       catch
         " Silently ignore if match fails
       endtry
@@ -47,15 +47,14 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   for warning in a:warnings
     if has_key(warning, 'file') && has_key(warning, 'line') && has_key(warning, 'col') && has_key(warning, 'end_col')
       try
-        " Highlight only the specific column range for warnings
+        " Use matchaddpos for column range highlighting
         let col_count = warning.end_col - warning.col
         if col_count > 0
-          let pattern = '\%' . warning.line . 'l\%' . warning.col . 'c.\{' . col_count . '}'
+          call matchaddpos(s:warning_group, [[warning.line, warning.col, col_count]], 15)
         else
           " If no column range, highlight from col to end of line
-          let pattern = '\%' . warning.line . 'l\%' . warning.col . 'c.*'
+          call matchaddpos(s:warning_group, [[warning.line, warning.col, 0]], 15)
         endif
-        call matchadd(s:warning_group, pattern, 15)
       catch
         " Silently ignore if match fails
       endtry
