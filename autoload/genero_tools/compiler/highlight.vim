@@ -104,7 +104,13 @@ endfunction
 function! genero_tools#compiler#highlight#clear() abort
   try
     " Clear all matches in the current window
-    call clearmatches()
+    " Use a more robust approach that works in timer callbacks
+    let match_list = getmatches()
+    for match in match_list
+      if match.group == s:error_group || match.group == s:warning_group || match.group == s:unused_var_group
+        call matchdelete(match.id)
+      endif
+    endfor
     return {
       \ 'success': v:true,
       \ 'error': ''
