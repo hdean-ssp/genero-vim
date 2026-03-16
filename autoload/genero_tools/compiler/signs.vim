@@ -34,7 +34,7 @@ function! genero_tools#compiler#signs#place(errors, warnings, info) abort
   for error in a:errors
     if has_key(error, 'file') && has_key(error, 'line')
       try
-        execute 'sign place ' . sign_id . ' line=' . error.line . 
+        execute 'sign place ' . sign_id . ' group=genero_compiler line=' . error.line . 
               \ ' name=' . s:sign_error . 
               \ ' file=' . error.file
         let sign_id += 1
@@ -48,7 +48,7 @@ function! genero_tools#compiler#signs#place(errors, warnings, info) abort
   for warning in a:warnings
     if has_key(warning, 'file') && has_key(warning, 'line')
       try
-        execute 'sign place ' . sign_id . ' line=' . warning.line . 
+        execute 'sign place ' . sign_id . ' group=genero_compiler line=' . warning.line . 
               \ ' name=' . s:sign_warning . 
               \ ' file=' . warning.file
         let sign_id += 1
@@ -62,7 +62,7 @@ function! genero_tools#compiler#signs#place(errors, warnings, info) abort
   for info_item in a:info
     if has_key(info_item, 'file') && has_key(info_item, 'line')
       try
-        execute 'sign place ' . sign_id . ' line=' . info_item.line . 
+        execute 'sign place ' . sign_id . ' group=genero_compiler line=' . info_item.line . 
               \ ' name=' . s:sign_info . 
               \ ' file=' . info_item.file
         let sign_id += 1
