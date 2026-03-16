@@ -1,13 +1,25 @@
 " Genero-Tools Plugin - Compiler Syntax Highlighting
 
-" Highlight group for unused variables
+" Highlight groups for errors and warnings
+let s:error_group = 'GeneroCompilerError'
+let s:warning_group = 'GeneroCompilerWarning'
 let s:unused_var_group = 'GeneroUnusedVariable'
 
 " Initialize highlighting
 function! genero_tools#compiler#highlight#init() abort
+  " Define error highlight group - subtle red background, full line
+  if !hlexists(s:error_group)
+    execute 'highlight ' . s:error_group . ' ctermbg=52 ctermfg=NONE guibg=#5f0000 guifg=NONE'
+  endif
+  
+  " Define warning highlight group - subtle yellow background, column range only
+  if !hlexists(s:warning_group)
+    execute 'highlight ' . s:warning_group . ' ctermbg=58 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
+  endif
+  
+  " Define unused variable highlight group - subtle orange background
   if !hlexists(s:unused_var_group)
-    " Define highlight group for unused variables (yellow/orange background)
-    execute 'highlight ' . s:unused_var_group . ' ctermbg=226 ctermfg=0 guibg=#ffff00 guifg=#000000'
+    execute 'highlight ' . s:unused_var_group . ' ctermbg=94 ctermfg=NONE guibg=#5f5f00 guifg=NONE'
   endif
 endfunction
 
@@ -18,13 +30,32 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   " Clear previous highlights
   call genero_tools#compiler#highlight#clear()
   
-  " Highlight errors and warnings
-  for item in a:errors + a:warnings
-    if has_key(item, 'file') && has_key(item, 'line') && has_key(item, 'col')
+  " Highlight errors - entire line to draw attention
+  for error in a:errors
+    if has_key(error, 'file') && has_key(error, 'line')
       try
-        " Create match for the error/warning location
-        let pattern = '\%' . item.line . 'l\%' . item.col . 'c'
-        call matchadd('ErrorMsg', pattern, 10)
+        " Highlight entire line for errors (from start to end of line)
+        let pattern = '\%' . error.line . 'l.*'
+        call matchadd(s:error_group, pattern, 20)
+      catch
+        " Silently ignore if match fails
+      endtry
+    endif
+  endfor
+  
+  " Highlight warnings - only the column range
+  for warning in a:warnings
+    if has_key(warning, 'file') && has_key(warning, 'line') && has_key(warning, 'col') && has_key(warning, 'end_col')
+      try
+        " Highlight only the specific column range for warnings
+        let col_count = warning.end_col - warning.col
+        if col_count > 0
+          let pattern = '\%' . warning.line . 'l\%' . warning.col . 'c.\{' . col_count . '}'
+        else
+          " If no column range, highlight from col to end of line
+          let pattern = '\%' . warning.line . 'l\%' . warning.col . 'c.*'
+        endif
+        call matchadd(s:warning_group, pattern, 15)
       catch
         " Silently ignore if match fails
       endtry
