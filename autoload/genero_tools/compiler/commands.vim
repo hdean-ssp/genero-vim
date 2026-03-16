@@ -67,6 +67,7 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   endif
   
   " Apply error/warning highlighting
+  echom 'DEBUG: Calling highlight apply with ' . len(result.errors) . ' errors and ' . len(result.warnings) . ' warnings'
   call genero_tools#compiler#highlight#apply(result.errors, result.warnings)
 endfunction
 
