@@ -1,6 +1,8 @@
 " ============================================================================
 " Fresh Vim Configuration with Genero-Tools Plugin
 " ============================================================================
+" This is a complete vimrc example for a fresh Vim/Neovim installation
+" with genero-tools plugin configured.
 
 " ============================================================================
 " Vim-Plug Setup
@@ -16,7 +18,7 @@ endif
 " Begin plugin declarations
 call plug#begin('~/.vim/plugged')
 
-" Genero-Tools Plugin - Code navigation for Genero codebases
+" Genero-Tools Plugin - Code navigation and compiler integration for Genero
 Plug 'hdean-ssp/genero-vim'
 
 " Optional: Add other useful plugins
@@ -48,6 +50,7 @@ set smartcase                   " Smart case search
 set mouse=a                     " Enable mouse support
 set background=dark             " Dark background
 set termguicolors               " True color support (if terminal supports it)
+set completeopt-=preview        " Disable preview window for autocomplete
 
 " Set leader key to space
 let mapleader = " "
@@ -56,63 +59,29 @@ let mapleader = " "
 " Genero-Tools Plugin Configuration
 " ============================================================================
 
-" Configure genero-tools plugin
 let g:genero_tools_config = {
-  \ 'genero_tools_path': '/path/to/query.sh',
+  \ 'genero_tools_path': 'query.sh',
   \ 'cache_enabled': v:true,
   \ 'cache_ttl': 3600,
   \ 'cache_max_size': 100,
-  \ 'display_mode': 'inline',
+  \ 'display_mode': 'quickfix',
   \ 'keybindings_enabled': v:true,
   \ 'timeout': 10000,
   \ 'async_enabled': v:true,
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
-  \ 'compiler_enabled': v:false,
+  \ 'compiler_enabled': v:true,
   \ 'compiler_command': 'fglcomp',
   \ 'compiler_version': 'auto',
-  \ 'compiler_source_dir': './src',
+  \ 'compiler_source_dir': '.',
   \ 'compiler_show_warnings': v:true,
   \ 'compiler_show_errors': v:true,
   \ 'compiler_highlight_unused': v:true,
   \ 'compiler_sign_column': v:true,
-  \ 'compiler_autocompile': v:false,
+  \ 'compiler_autocompile': v:true,
   \ 'compiler_autocompile_delay': 1000,
-  \ 'lua_enabled': v:true,
-  \ 'ai_enabled': v:false,
-  \ 'ai_provider': 'openai',
-  \ 'lsp_enabled': v:false
   \ }
-" Configuration options:
-"   genero_tools_path: Path to query.sh (must be in PATH)
-"   cache_enabled: Enable result caching
-"   cache_ttl: Cache TTL in seconds (1 hour)
-"   cache_max_size: Max cache entries
-"   display_mode: Display mode (quickfix|popup|inline|split|echo)
-"   keybindings_enabled: Enable default keybindings
-"   timeout: Command timeout in ms (10s for large codebases)
-"   async_enabled: Show progress for long commands
-"   result_limit: Max results before warning
-"   pagination_size: Results per page
-"   codebase_markers: Project root markers (searches in order)
-"   compiler_enabled: Enable compiler integration
-"   compiler_command: Compiler command (e.g., fglcomp)
-"   compiler_version: Compiler version (auto|3.10|3.20|...)
-"   compiler_source_dir: Source directory for compilation
-"   compiler_show_warnings: Display warnings in quickfix
-"   compiler_show_errors: Display errors in quickfix
-"   compiler_highlight_unused: Highlight unused variables
-"   compiler_sign_column: Show signs in sign column
-"   compiler_autocompile: Autocompile on file save
-"   compiler_autocompile_delay: Delay before autocompile (ms)
-"   lua_enabled: Enable Lua layer (Neovim only)
-"   ai_enabled: Enable AI IDE features (requires Lua layer)
-"   ai_provider: AI provider (openai|claude|local)
-"   lsp_enabled: Enable LSP integration (requires Lua layer)
-
-" Disable preview window for autocomplete
-set completeopt-=preview
 
 " ============================================================================
 " Genero-Tools Keybindings
@@ -124,106 +93,44 @@ set completeopt-=preview
 " <leader>gs  - Get function signature under cursor
 " <leader>gm  - Get metadata for current file
 "
-" To customize, uncomment and modify below:
-" nnoremap <silent> <leader>gl :GeneroLookup <C-R><C-W><CR>
-" nnoremap <silent> <leader>gf :GeneroListFunctions %<CR>
-" nnoremap <silent> <leader>gs :GeneroFunctionSignature <C-R><C-W><CR>
-" nnoremap <silent> <leader>gm :GeneroFileMetadata %<CR>
+" Compiler commands:
+" <leader>gc  - Compile current file
+" <leader>gn  - Jump to next error
+" <leader>gp  - Jump to previous error
 
 " ============================================================================
 " Genero-Tools Commands Reference
 " ============================================================================
 "
+" Code Navigation:
 " :GeneroLookup [function_name]           - Find function definition
 " :GeneroListFunctions [file_path]        - List functions in file
 " :GeneroListModuleFiles [module_name]    - List files in module
 " :GeneroFunctionSignature [function_name] - Get function signature
 " :GeneroFileMetadata [file_path]         - Get file metadata
+"
+" Compiler:
+" :GeneroCompile [file]                   - Compile file
+" :GeneroAutocompileEnable                - Enable autocompile for buffer
+" :GeneroAutocompileDisable               - Disable autocompile for buffer
+" :GeneroAutocompileStatus                - Show autocompile status
+" :GeneroNextError                        - Jump to next error
+" :GeneroPrevError                        - Jump to previous error
+" :GeneroClearErrors                      - Clear error markers
+"
+" Utility:
 " :GeneroConfigShow                       - Display current config
 " :GeneroClearCache                       - Clear result cache
 "
 
 " ============================================================================
-" Compiler Configuration (Optional)
+" Autocompile on Save (Genero Files)
 " ============================================================================
-" Uncomment to enable compiler integration:
-"
-" let g:genero_tools_config.compiler_enabled = v:true
-" let g:genero_tools_config.compiler_command = 'fglcomp'
-" let g:genero_tools_config.compiler_version = 'auto'
-" let g:genero_tools_config.compiler_source_dir = './src'
-" let g:genero_tools_config.compiler_show_warnings = v:true
-" let g:genero_tools_config.compiler_show_errors = v:true
-" let g:genero_tools_config.compiler_highlight_unused = v:true
-" let g:genero_tools_config.compiler_sign_column = v:true
-"
-" Autocompile on file save (optional):
-" let g:genero_tools_config.compiler_autocompile = v:true
-" let g:genero_tools_config.compiler_autocompile_delay = 1000
-"
-" Compiler commands:
-" :GeneroCompile [file]                   - Compile file or project
-" :GeneroClearErrors                      - Clear error markers
-" :GeneroNextError                        - Jump to next error
-" :GeneroPrevError                        - Jump to previous error
-" :GeneroAutocompileEnable                - Enable autocompile for buffer
-" :GeneroAutocompileDisable               - Disable autocompile for buffer
-" :GeneroAutocompileStatus                - Show autocompile status
-"
+" Automatically enable autocompile when opening Genero files
+autocmd FileType genero,fgl call genero_tools#compiler#autocompile#enable()
 
 " ============================================================================
-" Display Mode Configuration
-" ============================================================================
-" Uncomment one of the following to change display mode:
-"
-" let g:genero_tools_config.display_mode = 'quickfix'  " Quickfix list (default)
-" let g:genero_tools_config.display_mode = 'inline'    " Popup above cursor
-" let g:genero_tools_config.display_mode = 'popup'     " Large floating window (Neovim only)
-" let g:genero_tools_config.display_mode = 'split'     " New split window
-" let g:genero_tools_config.display_mode = 'echo'      " Command line output
-"
-
-" ============================================================================
-" Large Codebase Configuration (Optional)
-" ============================================================================
-" Uncomment and customize for large codebases (6M+ LOC, thousands of files):
-"
-" let g:genero_tools_config = {
-"   \ 'genero_tools_path': 'query.sh',
-"   \ 'cache_enabled': v:true,
-"   \ 'cache_ttl': 7200,
-"   \ 'cache_max_size': 200,
-"   \ 'display_mode': 'inline',
-"   \ 'keybindings_enabled': v:true,
-"   \ 'timeout': 15000,
-"   \ 'async_enabled': v:true,
-"   \ 'result_limit': 2000,
-"   \ 'pagination_size': 100,
-"   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git']
-"   \ }
-"
-
-" ============================================================================
-" Neovim Lua Layer Configuration (Optional, Neovim only)
-" ============================================================================
-" Uncomment to enable Lua layer features (Neovim 0.4+ only):
-"
-" let g:genero_tools_config.lua_enabled = v:true
-" let g:genero_tools_config.ai_enabled = v:false
-" let g:genero_tools_config.ai_provider = 'openai'
-" let g:genero_tools_config.lsp_enabled = v:false
-"
-" Lua layer features:
-" - Async operations with non-blocking execution
-" - Floating windows for rich UI
-" - AI IDE features (error explanation, code generation)
-" - LSP integration (hover, goto definition, etc.)
-"
-" Note: Lua layer is optional and gracefully falls back to VimScript
-"
-
-" ============================================================================
-" Custom Keybindings (Optional)
+" Optional: Custom Keybindings
 " ============================================================================
 " Uncomment to add custom keybindings:
 "
@@ -232,6 +139,31 @@ set completeopt-=preview
 "
 " " Map Ctrl+C to clear cache
 " nnoremap <C-c> :GeneroClearCache<CR>
+"
+
+" ============================================================================
+" Optional: Large Codebase Configuration
+" ============================================================================
+" Uncomment and customize for large codebases (6M+ LOC, thousands of files):
+"
+" let g:genero_tools_config.cache_ttl = 7200
+" let g:genero_tools_config.cache_max_size = 200
+" let g:genero_tools_config.timeout = 15000
+" let g:genero_tools_config.result_limit = 2000
+" let g:genero_tools_config.pagination_size = 100
+"
+
+" ============================================================================
+" Optional: Neovim Lua Layer
+" ============================================================================
+" Uncomment to enable Lua layer features (Neovim 0.4+ only):
+"
+" let g:genero_tools_config.lua_enabled = v:true
+"
+" Lua layer features:
+" - Async operations with non-blocking execution
+" - Floating windows for rich UI
+" - Better performance on large codebases
 "
 
 " ============================================================================
@@ -244,8 +176,8 @@ set completeopt-=preview
 " For slow queries, increase timeout:
 " let g:genero_tools_config.timeout = 20000
 "
-" To disable keybindings:
-" let g:genero_tools_config.keybindings_enabled = v:false
+" To disable autocompile:
+" let g:genero_tools_config.compiler_autocompile = v:false
 "
 " To verify installation:
 " :GeneroConfigShow

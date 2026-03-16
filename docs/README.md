@@ -1,81 +1,168 @@
-# Vim Genero-Tools Plugin Documentation
+# Genero-Tools Documentation
 
-## Quick Navigation
+Welcome to the genero-tools plugin documentation. This guide will help you get started and understand all available features.
 
-- **[Getting Started](QUICK_START.md)** - User-friendly quick start guide
-- **[API Integration](API_INTEGRATION.md)** - Complete API integration guide
-- **[Compatibility](COMPATIBILITY.md)** - Detailed compatibility information
+## Getting Started
 
-## Overview
+- **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes
+- **[SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)** - Fresh Vim/Neovim installation guide
 
-The vim-genero-tools plugin integrates with genero-tools to provide code navigation and lookup for large-scale Genero codebases (thousands of files, 6M+ LOC).
+## User Guides
 
-### Key Features
+### Core Features
 
-- Function lookup and search
-- Module and file exploration
-- Function signatures and metadata
-- Intelligent caching with LRU eviction
-- Result pagination for large codebases
-- Multiple display modes (quickfix, popup, split, echo)
-- Full Vim 8.0+ and Neovim 0.4+ compatibility
-- Zero configuration changes required
+- **[COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)** - Compiler integration, autocompile, error display
+- **[API_INTEGRATION.md](API_INTEGRATION.md)** - Using genero-tools API for code navigation
+- **[COMPATIBILITY.md](COMPATIBILITY.md)** - Vim/Neovim compatibility information
 
-### Installation
+### Platform-Specific
 
-Using vim-plug:
-```vim
-Plug 'your-username/vim-genero-tools'
-```
+- **[NEOVIM.md](NEOVIM.md)** - Neovim-specific features and setup
 
-### Quick Start
+## Feature Overview
 
-```vim
-:GeneroLookup myFunction
-<leader>gl  " Lookup function under cursor
-<leader>gf  " List functions in current file
-<leader>gs  " Get function signature
-<leader>gm  " Get file metadata
+### Compiler Integration
 
-" Compiler commands
-:GeneroCompile              " Compile current file
-:GeneroClearErrors          " Clear error markers
-:GeneroNextError            " Jump to next error
-:GeneroPrevError            " Jump to previous error
-```
+The plugin provides real-time compilation feedback:
+- Automatic compilation on file save
+- Error and warning display in quickfix
+- Visual indicators (signs) in sign column
+- Unused variable highlighting
+- Configurable compiler command and options
 
-## Documentation Files
+**See:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)
 
-| File | Purpose |
-|------|---------|
-| QUICK_START.md | User-friendly quick start guide with examples |
-| API_INTEGRATION.md | Complete API integration and command reference |
-| COMPATIBILITY.md | Detailed compatibility information for Vim and Neovim |
+### Code Navigation
 
-## Setup
+Navigate your Genero codebase efficiently:
+- Find functions by name or pattern
+- List functions in files and modules
+- View function signatures
+- Get file metadata and references
 
-Before using the plugin, generate the genero-tools databases:
+**See:** [API_INTEGRATION.md](API_INTEGRATION.md)
 
-```bash
-bash generate_signatures.sh /path/to/codebase
-bash generate_modules.sh /path/to/codebase
-query.sh create-dbs
-```
+### Lua Layer (Neovim)
+
+Enhanced functionality for Neovim users:
+- Async operations
+- Better UI integration
+- LSP-ready architecture
+
+**See:** [NEOVIM.md](NEOVIM.md)
 
 ## Configuration
 
-The plugin works out-of-the-box with sensible defaults. Optionally customize:
+All features are configured through `g:genero_tools_config`:
 
 ```vim
 let g:genero_tools_config = {
-  \ 'genero_tools_path': 'query.sh',
-  \ 'cache_enabled': v:true,
-  \ 'display_mode': 'quickfix'
+  \ 'compiler_enabled': v:true,
+  \ 'compiler_autocompile': v:true,
+  \ 'compiler_highlight_unused': v:true,
   \ }
 ```
 
+See individual feature guides for all available options.
+
+## Troubleshooting
+
+### Common Issues
+
+**Compiler not found:**
+```vim
+let g:genero_tools_config.compiler_command = '/path/to/fglcomp'
+```
+
+**Autocompile not working:**
+```vim
+:GeneroAutocompileStatus
+```
+
+**No signs showing:**
+```vim
+let g:genero_tools_config.compiler_sign_column = v:true
+```
+
+See feature-specific guides for detailed troubleshooting.
+
+## Commands Reference
+
+### Compiler Commands
+
+```vim
+:GeneroCompile [file]              " Compile file
+:GeneroAutocompileEnable           " Enable autocompile
+:GeneroAutocompileDisable          " Disable autocompile
+:GeneroAutocompileStatus           " Show autocompile status
+:GeneroNextError                   " Jump to next error
+:GeneroPrevError                   " Jump to previous error
+:GeneroClearErrors                 " Clear error markers
+```
+
+### Navigation Commands
+
+```vim
+:GeneroLookup [function]           " Find function
+:GeneroListFunctions [file]        " List functions in file
+:GeneroFunctionSignature [func]    " Show function signature
+:GeneroFileMetadata [file]         " Show file metadata
+```
+
+### Utility Commands
+
+```vim
+:GeneroClearCache                  " Clear cache
+:GeneroConfigShow                  " Show configuration
+:GeneroCompleteEnable              " Enable completion
+:GeneroCompleteDisable             " Disable completion
+```
+
+## Development
+
+For developers working on the plugin:
+
+- **[.kiro/steering/COMPILER_DEVELOPMENT.md](../.kiro/steering/COMPILER_DEVELOPMENT.md)** - Compiler module architecture and development guide
+- **[.kiro/steering/vimscript-conventions.md](../.kiro/steering/vimscript-conventions.md)** - Code style and conventions
+- **[.kiro/steering/error-handling-patterns.md](../.kiro/steering/error-handling-patterns.md)** - Error handling patterns
+- **[.kiro/steering/lua-layer-architecture.md](../.kiro/steering/lua-layer-architecture.md)** - Lua layer design
+
+## Roadmap
+
+Future enhancements planned:
+
+- **Dead Code Detection** - Find unused functions
+- **Dependency Analysis** - Show function call chains
+- **Reference Lookup** - Find files modified for tickets
+- **Module Dependencies** - Visualize module relationships
+
+See [QUICK_ENHANCEMENTS_ROADMAP.md](../QUICK_ENHANCEMENTS_ROADMAP.md) for details.
+
 ## Support
 
-- Check the documentation files for detailed information
-- Review genero-tools API documentation in `/genero-tools-api/api/`
-- All features work identically in Vim and Neovim
+### Getting Help
+
+1. Check the relevant feature guide
+2. Review troubleshooting section
+3. Check plugin configuration with `:GeneroConfigShow`
+4. Enable verbose output with `:set verbose=9`
+
+### Reporting Issues
+
+When reporting issues, include:
+- Vim/Neovim version
+- Plugin version
+- Configuration settings
+- Steps to reproduce
+- Error messages
+
+## License
+
+See [LICENSE](../LICENSE) for license information.
+
+## Quick Links
+
+- **User Guides:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md), [API_INTEGRATION.md](API_INTEGRATION.md)
+- **Setup:** [QUICK_START.md](QUICK_START.md), [SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)
+- **Development:** [.kiro/steering/COMPILER_DEVELOPMENT.md](../.kiro/steering/COMPILER_DEVELOPMENT.md)
+- **Roadmap:** [QUICK_ENHANCEMENTS_ROADMAP.md](../QUICK_ENHANCEMENTS_ROADMAP.md)

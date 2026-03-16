@@ -167,7 +167,7 @@ function! genero_tools#compiler#parse_v310(output) abort
     endif
     
     " Parse line: filename:line:col:end_line:end_col:severity:(-code) message
-    let match = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):\(\d\+\):\(\d\+\):\(error\|warning\|info\):((-\d\+)) \(.*\)$')
+    let match = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):\(\d\+\):\(\d\+\):\(error\|warning\|info\):(-\d\+) \(.*\)$')
     
     if empty(match)
       continue
@@ -180,7 +180,8 @@ function! genero_tools#compiler#parse_v310(output) abort
       \ 'end_line': str2nr(match[4]),
       \ 'end_col': str2nr(match[5]),
       \ 'severity': match[6],
-      \ 'message': match[7]
+      \ 'message': match[7],
+      \ 'code': matchstr(line, '(-\d\+)')
       \ }
     
     " Categorize by severity

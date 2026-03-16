@@ -121,6 +121,59 @@ let g:genero_tools_config.timeout = 15000
 query.sh create-dbs
 ```
 
+## Compiler Integration
+
+### Compiler Output Format
+
+The plugin parses compiler output in the following format:
+```
+filename:start_line:start_col:end_line:end_col:severity:(-code) message
+```
+
+**Example:**
+```
+src/utils.4gl:10:5:10:15:error:(-1234) Undefined variable 'x'
+src/main.4gl:25:1:25:20:warning:(-5678) Unused variable 'temp'
+```
+
+### Parsed Error Structure
+
+Each parsed error entry contains:
+- `file` - Source file path
+- `line` - Starting line number
+- `col` - Starting column number
+- `end_line` - Ending line number
+- `end_col` - Ending column number
+- `severity` - Error level: `error`, `warning`, or `info`
+- `code` - Error code (e.g., `(-1234)`)
+- `message` - Error message text
+
+### Compiler Commands
+
+```vim
+:GeneroCompile [file_path]              " Compile file or project
+:GeneroClearErrors                      " Clear error markers
+:GeneroNextError                        " Jump to next error
+:GeneroPrevError                        " Jump to previous error
+:GeneroAutocompileEnable                " Enable autocompile on save
+:GeneroAutocompileDisable               " Disable autocompile on save
+```
+
+### Compiler Configuration
+
+```vim
+let g:genero_tools_config.compiler_enabled = v:true
+let g:genero_tools_config.compiler_command = 'fglcomp'
+let g:genero_tools_config.compiler_version = 'auto'
+let g:genero_tools_config.compiler_source_dir = './src'
+let g:genero_tools_config.compiler_show_warnings = v:true
+let g:genero_tools_config.compiler_show_errors = v:true
+let g:genero_tools_config.compiler_highlight_unused = v:true
+let g:genero_tools_config.compiler_sign_column = v:true
+let g:genero_tools_config.compiler_autocompile = v:false
+let g:genero_tools_config.compiler_autocompile_delay = 1000
+```
+
 ## References
 
 - genero-tools API: `/genero-tools-api/api/`

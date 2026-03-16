@@ -78,6 +78,11 @@ function! genero_tools#compiler#autocompile#compile_silent(file) abort
         call genero_tools#compiler#signs#update(result)
       endif
       
+      " Update highlighting if enabled
+      if genero_tools#config#get('compiler_highlight_unused')
+        call genero_tools#compiler#highlight#unused_vars(result.warnings)
+      endif
+      
       " Update quickfix if there are errors/warnings
       let error_count = len(result.errors)
       let warning_count = len(result.warnings)

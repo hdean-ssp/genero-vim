@@ -211,17 +211,13 @@ let g:genero_tools_config = {
   \ 'compiler_enabled': v:true,
   \ 'compiler_command': 'fglcomp',
   \ 'compiler_version': 'auto',
-  \ 'compiler_source_dir': './src',
+  \ 'compiler_source_dir': '.',
   \ 'compiler_show_warnings': v:true,
   \ 'compiler_show_errors': v:true,
   \ 'compiler_highlight_unused': v:true,
   \ 'compiler_sign_column': v:true,
-  \ 'compiler_autocompile': v:false,
+  \ 'compiler_autocompile': v:true,
   \ 'compiler_autocompile_delay': 1000,
-  \ 'lua_enabled': v:true,
-  \ 'ai_enabled': v:false,
-  \ 'ai_provider': 'openai',
-  \ 'lsp_enabled': v:false
   \ }
 ```
 
@@ -231,12 +227,12 @@ let g:genero_tools_config = {
 let g:genero_tools_config.compiler_enabled = v:true              " Enable compiler integration
 let g:genero_tools_config.compiler_command = 'fglcomp'           " Compiler command
 let g:genero_tools_config.compiler_version = 'auto'              " Version: 'auto', '3.10', '3.20', etc.
-let g:genero_tools_config.compiler_source_dir = './src'          " Source directory for compilation
+let g:genero_tools_config.compiler_source_dir = '.'              " Source directory for compilation
 let g:genero_tools_config.compiler_show_warnings = v:true        " Display warnings in quickfix
 let g:genero_tools_config.compiler_show_errors = v:true          " Display errors in quickfix
 let g:genero_tools_config.compiler_highlight_unused = v:true     " Highlight unused variables
 let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in sign column
-let g:genero_tools_config.compiler_autocompile = v:false         " Autocompile on file save
+let g:genero_tools_config.compiler_autocompile = v:true          " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 ```
 
@@ -247,7 +243,7 @@ let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before 
 - Unused variable detection and highlighting
 - Version-specific output parsing (auto-detects compiler version)
 - Quickfix navigation with `:GeneroNextError` and `:GeneroPrevError`
-- **Autocompile on save** - Automatically compile and update markers when file is saved
+- **Autocompile on save** - Automatically compile and update markers when file is saved (enabled by default)
 
 ### Neovim Lua Layer (Optional)
 

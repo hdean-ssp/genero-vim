@@ -1,0 +1,21 @@
+con01_G.4gl:1999:10:1999:17:error:(-4369) The symbol 'Inerface' does not represent a defined variable.
+con01_G.4gl:1811:9:1811:21:warning:(-6615) The symbol 'l_description' is unused.
+con01_G.4gl:1812:9:1812:17:warning:(-6615) The symbol 'l_premium' is unused.
+con01_G.4gl:1657:10:1657:18:warning:(-6615) The symbol 'l_gui_map' is unused.
+con01_G.4gl:1658:10:1658:17:warning:(-6615) The symbol 'l_status' is unused.
+con01_G.4gl:1104:9:1104:17:warning:(-6615) The symbol 'l_premium' is unused.
+con01_G.4gl:1105:9:1105:18:warning:(-6615) The symbol 'l_ipt_rate' is unused.
+con01_G.4gl:1106:9:1106:24:warning:(-6615) The symbol 'l_inception_date' is unused.
+con01_G.4gl:379:9:379:17:warning:(-6615) The symbol 'l_command' is unused.
+con01_G.4gl:221:9:221:20:warning:(-6615) The symbol 'l_rec_search' is unused.
+con01_G.4gl:150:10:150:17:warning:(-6615) The symbol 'l_rtcode' is unused.
+con01_G.4gl:151:10:151:20:warning:(-6615) The symbol 'l_debug_str' is unused.
+con01_G.4gl:152:10:152:20:warning:(-6615) The symbol 'l_access_no' is unused.
+con01_G.4gl:258:44:258:52:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:269:6:269:20:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:270:6:270:23:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:1139:9:1139:28:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:1142:10:1142:30:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:1210:14:1210:19:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:1618:10:1618:15:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
+con01_G.4gl:1626:13:1626:18:warning:(-8059) SQL statement or language instruction with vendor proprietary SQL syntax.
