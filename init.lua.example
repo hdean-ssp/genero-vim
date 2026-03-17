@@ -49,12 +49,12 @@ vim.opt.rtp:prepend(lazypath)
 
 local plugins = {
   -- LuaSnip - Required for Genero code snippets
-  -- Note: jsregexp build requires C99 support and Lua headers
-  -- If build fails, install: lua5.1-dev (Debian/Ubuntu) or lua-devel (RHEL/CentOS)
+  -- Note: jsregexp is optional (only needed for advanced regex in snippets)
+  -- If you need jsregexp, install Lua dev headers: lua5.1-dev (Debian/Ubuntu) or lua-devel (RHEL/CentOS)
   {
     "L3MON4D3/LuaSnip",
     version = "v2.*",
-    build = "make install_jsregexp",
+    build = "make install_jsregexp || true",  -- Continue even if jsregexp build fails
   },
 
   -- nvim-lspconfig - Pinned to 0.1.x for Neovim 0.9.5
