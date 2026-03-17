@@ -21,6 +21,28 @@ vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 
 -- ============================================================================
+-- GENERO TOOLS CONFIGURATION (must be set before plugin loads)
+-- ============================================================================
+
+vim.g.genero_tools_config = {
+  -- Compiler settings
+  compiler_enabled = true,
+  compiler_autocompile = true,
+  compiler_autocompile_delay = 500,
+  compiler_sign_column = true,
+  compiler_highlight_unused = true,
+  compiler_command = "fglcomp",
+  compiler_args = { "-M", "-W", "all" },
+  
+  -- Query tool path (adjust if needed)
+  query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+  
+  -- Display and features
+  display_mode = "quickfix",
+  snippets_enabled = true,
+}
+
+-- ============================================================================
 -- LAZY.NVIM BOOTSTRAP
 -- ============================================================================
 
@@ -58,39 +80,8 @@ local plugins = {
     branch = "main",
     dependencies = { "L3MON4D3/LuaSnip" },
     config = function()
-      -- Load genero configuration
-      local ok, genero_config = pcall(require, "genero_config")
-      if not ok then
-        -- If genero_config.lua doesn't exist, use inline config
-        -- To customize: create ~/.config/nvim/genero_config.lua with your settings
-        genero_config = {
-          -- Compiler settings
-          compiler_enabled = true,
-          compiler_autocompile = true,
-          compiler_autocompile_delay = 500,
-          compiler_sign_column = true,
-          compiler_highlight_unused = true,
-          compiler_command = "fglcomp",
-          compiler_args = { "-M", "-W", "all" },
-          
-          -- Query tool path (adjust if needed)
-          query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
-          
-          -- Display and features
-          display_mode = "quickfix",
-          snippets_enabled = true,
-        }
-      end
-      
-      -- Apply configuration
-      if not vim.g.genero_tools_config then
-        vim.g.genero_tools_config = {}
-      end
-      for key, value in pairs(genero_config) do
-        vim.g.genero_tools_config[key] = value
-      end
-
-      -- Initialize snippets module
+      -- Config is already set in vim.g.genero_tools_config above
+      -- Initialize snippets module if enabled
       local ok_snippets, snippets = pcall(require, "genero_tools.snippets")
       if ok_snippets and vim.g.genero_tools_config.snippets_enabled then
         snippets.setup()
