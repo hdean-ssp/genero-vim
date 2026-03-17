@@ -1,0 +1,13 @@
+Sign Column Stability Tests
+============================
+
+Test 1: Sign column persistent when enabled - PASS
+Test 2: Sign column visible with no errors - PASS
+Test 3: Sign column visible with errors - -1
+Test 4: Sign column visible after clearing errors - -1
+Test 5: Sign column respects disabled config - -1
+Test 6: Sign column stable across compilations - -1
+Test 7: Configuration option initialized - PASS
+Test 8: Set persistent column function - -1
+
+All tests completed

@@ -15,6 +15,16 @@ function! genero_tools#compiler#signs#init() abort
   
   " Define info sign (ℹ)
   execute 'sign define ' . s:sign_info . ' text=ℹ texthl=InfoMsg'
+  
+  " Set persistent sign column if enabled
+  call genero_tools#compiler#signs#set_persistent_column()
+endfunction
+
+" Set persistent sign column for current buffer
+function! genero_tools#compiler#signs#set_persistent_column() abort
+  if genero_tools#config#get('compiler_sign_column_always_visible')
+    setlocal signcolumn=yes
+  endif
 endfunction
 
 " Place signs for compiler errors/warnings

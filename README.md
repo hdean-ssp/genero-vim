@@ -55,6 +55,14 @@ The default leader key is backslash `\`. All keybindings work in normal mode.
 | `<leader>gs` | Get function signature under cursor | Place cursor on `process_data`, press `<space>gs` |
 | `<leader>gm` | Get metadata for current file | Press `<space>gm` to see author, tickets, dates |
 
+### SVN Commands
+
+| Command | Action |
+|---------|--------|
+| `:GeneroSVNRefresh` | Manually refresh SVN diff markers for current file |
+| `:GeneroSVNToggle` | Toggle SVN diff markers on/off for current buffer |
+| `:GeneroSVNStatus` | Show SVN status and change summary for current file |
+
 ### Usage Examples
 
 **Example 1: Lookup a function definition**
@@ -138,6 +146,8 @@ let g:genero_tools_config.keybindings_enabled = v:false
 :GeneroAutocompileDisable               " Disable autocompile on save
 :GeneroAutocompileStatus                " Show autocompile status
 ```
+
+**Note:** Error navigation commands (`:GeneroNextError`, `:GeneroPrevError`) gracefully handle empty error lists and won't display spurious error messages.
 
 ### Snippet Commands (Neovim only)
 
@@ -235,6 +245,13 @@ let g:genero_tools_config = {
   \ 'snippet_engine': 'luasnip',
   \ 'snippet_smart_expansion': v:true,
   \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
+  \ 'startup_messages': 'silent',
+  \ 'svn_enabled': v:true,
+  \ 'svn_show_added': v:true,
+  \ 'svn_show_modified': v:true,
+  \ 'svn_show_deleted': v:true,
+  \ 'svn_cache_ttl': 300,
+  \ 'svn_auto_update': v:true,
   \ }
 ```
 
@@ -277,6 +294,39 @@ let g:genero_tools_config.snippet_engine = 'luasnip'             " Snippet engin
 let g:genero_tools_config.snippet_smart_expansion = v:true       " Enable async parameter population
 let g:genero_tools_config.snippet_custom_dir = expand('~/.config/nvim/genero-snippets') " Custom snippet directory
 ```
+
+### Startup Configuration
+
+Control plugin startup behavior:
+
+```vim
+let g:genero_tools_config.startup_messages = 'silent'            " Startup messages: 'silent', 'normal', 'verbose' (default: 'silent')
+```
+
+**Startup Message Modes:**
+- `'silent'` - No startup messages (default, clean startup)
+- `'normal'` - Standard startup messages
+- `'verbose'` - Detailed startup messages for debugging
+
+### SVN Diff Markers Configuration
+
+Configure SVN diff marker display in the sign column:
+
+```vim
+let g:genero_tools_config.svn_enabled = v:true                   " Enable/disable SVN diff markers
+let g:genero_tools_config.svn_show_added = v:true                " Show added lines (+ sign)
+let g:genero_tools_config.svn_show_modified = v:true             " Show modified lines (~ sign)
+let g:genero_tools_config.svn_show_deleted = v:true              " Show deleted lines (- sign)
+let g:genero_tools_config.svn_cache_ttl = 300                    " Cache TTL in seconds (default: 300)
+let g:genero_tools_config.svn_auto_update = v:true               " Auto-update markers on file save
+```
+
+**SVN Features:**
+- Visual indicators in sign column for added, modified, and deleted lines
+- Automatic detection of SVN working copies
+- Cached diff results for performance
+- Graceful handling of binary files and authentication errors
+- See [SVN Diff Markers Documentation](docs/SVN_DIFF_MARKERS.md) for complete details
 
 **Snippet Features:**
 - Intelligent code templates for common Genero patterns

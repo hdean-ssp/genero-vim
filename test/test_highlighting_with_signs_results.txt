@@ -1,0 +1,5 @@
+Highlighting with Signs Tests
+=============================
+
+Test 1: Highlighting and signs work together - PASS
+Test 2: Clearing signs and highlights - PASS

@@ -88,6 +88,15 @@ endfunction
 
 " Navigate to next error in quickfix
 function! genero_tools#compiler#quickfix#next() abort
+  " Check if quickfix list is empty
+  let qf_list = getqflist()
+  if empty(qf_list)
+    return {
+      \ 'success': v:false,
+      \ 'error': 'No errors to navigate'
+      \ }
+  endif
+  
   try
     cnext
     return {
@@ -104,6 +113,15 @@ endfunction
 
 " Navigate to previous error in quickfix
 function! genero_tools#compiler#quickfix#prev() abort
+  " Check if quickfix list is empty
+  let qf_list = getqflist()
+  if empty(qf_list)
+    return {
+      \ 'success': v:false,
+      \ 'error': 'No errors to navigate'
+      \ }
+  endif
+  
   try
     cprevious
     return {

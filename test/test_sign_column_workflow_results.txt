@@ -1,0 +1,8 @@
+Sign Column Workflow Tests
+==========================
+
+Test 1: Complete workflow - PASS
+Test 2: Configuration persistence - PASS
+Test 3: Multiple buffers - PASS
+Test 4: Rapid error/clear cycles - PASS
+

@@ -13,6 +13,9 @@ call genero_tools#config#init()
 " Initialize compiler autocompile if enabled
 call genero_tools#compiler#autocompile#init()
 
+" Initialize SVN module
+call genero_tools#svn#init()
+
 " Initialize Lua layer if available (Neovim only)
 call genero_tools#lua_bridge#init()
 
@@ -42,6 +45,13 @@ if has('nvim')
   command! -nargs=? GeneroSnippetHelp call genero_tools#snippets#help(<q-args>)
   command! -nargs=? GeneroSnippet call genero_tools#snippets#expand(<q-args>)
 endif
+
+" Register SVN commands
+command! GeneroSVNRefresh call genero_tools#svn#commands#refresh()
+command! GeneroSVNToggle call genero_tools#svn#commands#toggle()
+command! GeneroSVNStatus call genero_tools#svn#commands#status()
+command! GeneroSVNCacheStats call genero_tools#svn#commands#cache_stats()
+command! GeneroSVNCacheClear call genero_tools#svn#commands#cache_clear()
 
 " Register keybindings if enabled
 if genero_tools#config#get('keybindings_enabled')

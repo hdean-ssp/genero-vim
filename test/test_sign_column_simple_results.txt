@@ -1,0 +1,8 @@
+Sign Column Simple Tests
+========================
+
+Test 1: Config option exists - PASS
+Test 2: Init sets signcolumn - PASS
+Test 3: Persistent column function - PASS
+Test 4: Disabled config - PASS
+

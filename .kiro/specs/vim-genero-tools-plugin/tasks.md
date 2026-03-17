@@ -11,10 +11,10 @@ Tasks are organized by priority and logical dependencies:
 1. **Foundation** (Tasks 1-5) - Core infrastructure
 2. **Code Navigation** (Tasks 6-8) - Core lookup functionality
 3. **User-Facing Commands** (Tasks 9-10) - Commands and keybindings
-4. **Compiler Integration** (Tasks 11-12) - Compiler features and testing
-5. **Integration Testing** (Task 13) - End-to-end testing
-6. **Final Validation** (Task 14) - Comprehensive testing and checkpoint
-7. **Future Enhancements** (Task 15) - SVN diff markers (future task)
+4. **Compiler Integration** (Tasks 11-15) - Compiler features and testing
+5. **Validation & Testing** (Tasks 16-18) - Checkpoints and integration testing
+6. **Future Enhancements** (Task 19) - SVN diff markers (future task)
+7. **Enhancement Tasks** (Tasks 20-26) - UI/UX improvements and bug fixes (can be done in parallel or after core completion)
 
 ## Tasks
 
@@ -500,7 +500,7 @@ Tasks are organized by priority and logical dependencies:
   - Ensure compiler integration works correctly
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 19. SVN Diff Markers Feature (Future Task)
+- [x] 19. SVN Diff Markers Feature (Future Task)
   - **See:** `.kiro/specs/vim-genero-tools-plugin/svn-diff-markers.md`
   - Detect SVN working copies
   - Retrieve and parse SVN diff output
@@ -512,8 +512,410 @@ Tasks are organized by priority and logical dependencies:
   - Handle errors gracefully (SVN not installed, auth failures, etc.)
   - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
 
+## Enhancement Tasks (E1-E3)
+
+**IMPORTANT: Enhancement tasks (20-26) can be implemented in parallel with core tasks OR after core completion. They are NOT blocking for the core plugin functionality.**
+
+These tasks improve UI/UX, fix bugs, and add integrations discovered after core implementation. The recommended approach is:
+
+**Option A (Parallel Development):** Implement enhancement tasks alongside core tasks for faster overall completion
+- Pros: Faster time-to-feature, can address issues as they're discovered
+- Cons: More context switching, requires careful coordination
+
+**Option B (Sequential Development):** Complete core tasks (1-18) first, then enhancement tasks (20-26)
+- Pros: Clear separation of concerns, easier to validate core functionality
+- Cons: Longer time to address UI/UX issues
+
+**Current Status:** Task 21 (E1.2) has been completed as a quick-win improvement. Tasks 16-18 (core validation) can proceed in parallel.
+
+---- [ ] 20. E1.1: Modernize Default Configuration
+  - **Priority:** MEDIUM
+  - **Objective:** Update default configuration to use modern, clean aesthetic with floating windows
+  - **Files:** autoload/genero_tools/config.vim, autoload/genero_tools/display.vim
+  - **Implementation Steps:**
+    - Review current config defaults in autoload/genero_tools/config.vim
+    - Add new config options for floating window display:
+      - `display_mode`: 'floating' or 'quickfix' (default: 'floating')
+      - `floating_window_border`: 'rounded', 'solid', 'shadow' (default: 'rounded')
+      - `floating_window_width`: percentage or fixed (default: 80%)
+      - `floating_window_height`: percentage or fixed (default: 60%)
+    - Update autoload/genero_tools/display.vim to support floating windows
+    - Implement floating window UI with rounded borders, padding, title bar, and scrollable content
+    - Leverage existing lua/genero_tools/ui.lua floating window support
+  - **Testing:** Verify floating windows display correctly with various result sizes
+
+- [x] 21. E1.2: Reduce Startup Noise
+  - **Priority:** HIGH
+  - **Objective:** Eliminate duplicate autocompile notifications and implement silent loading
+  - **Current Issue:** Plugin echoes three times about autocompile on file load
+  - **Files:** autoload/genero_tools/compiler/autocompile.vim, plugin/genero_tools.vim
+  - **Implementation Steps:**
+    - Review autoload/genero_tools/compiler/autocompile.vim for duplicate notifications
+    - Identify and consolidate all autocompile notification calls
+    - Update plugin/genero_tools.vim to consolidate initialization messages
+    - Add configuration option: `startup_messages` ('silent', 'normal', 'verbose', default: 'silent')
+    - Implement silent mode by default with optional verbose mode for debugging
+    - Collect all startup events and display single consolidated message or use silent mode
+  - **Testing:** Verify plugin loads silently without duplicate messages
+
+- [x] 22. E2.1: Add Line/Text Error Highlighting
+  - **Priority:** MEDIUM
+  - **Objective:** Enhance error visualization by adding line and text highlighting in addition to signs
+  - **Current State:** Only signs placed in sign column, no line highlighting
+  - **Files:** autoload/genero_tools/compiler/highlight.vim
+  - **Implementation Steps:**
+    - Review current highlight.vim implementation
+    - Add line-level highlighting for error lines (background color)
+    - Add text-level highlighting for specific error locations (column ranges)
+    - Support different highlight groups for errors vs warnings
+    - Implement clearing of highlights when errors are resolved
+    - Ensure highlights don't interfere with syntax highlighting
+  - **Testing:** Verify error lines and text are highlighted correctly with various error types
+
+- [x] 23. E2.2: Fix Sign Column Popping In/Out
+  - **Priority:** MEDIUM
+  - **Objective:** Prevent sign column from toggling visibility when errors appear/disappear
+  - **Current Issue:** Sign column visibility toggles on/off with error presence, causing visual jitter
+  - **Files:** autoload/genero_tools/compiler/signs.vim
+  - **Implementation Steps:**
+    - Review autoload/genero_tools/compiler/signs.vim sign placement logic
+    - Implement persistent sign column by setting `signcolumn=yes` in buffer
+    - Ensure sign column remains visible even when no errors present
+    - Add configuration option: `compiler_sign_column_always_visible` (default: true)
+    - Test with various error scenarios to ensure column stability
+  - **Testing:** Verify sign column remains stable when errors appear/disappear
+
+- [x] 24. E2.3: Fix Statusline "no previous error" Bug
+  - **Priority:** HIGH
+  - **Objective:** Fix statusline displaying "no previous error" without user action
+  - **Current Issue:** Statusline shows "no previous error" message unexpectedly
+  - **Files:** autoload/genero_tools/compiler/quickfix.vim
+  - **Implementation Steps:**
+    - Review autoload/genero_tools/compiler/quickfix.vim quickfix navigation logic
+    - Identify where "no previous error" message is triggered
+    - Ensure message only appears when user explicitly navigates (GeneroPrevError command)
+    - Verify quickfix list initialization doesn't trigger navigation messages
+    - Add guard conditions to prevent spurious error messages
+  - **Testing:** Verify statusline remains clean until user navigates errors
+
+- [ ] 25. E3.1: Add which-key Integration
+  - **Priority:** LOW
+  - **Objective:** Integrate keybindings with which-key plugin for better keybinding discovery
+  - **Files:** autoload/genero_tools/keybindings.vim, new: autoload/genero_tools/which_key.vim
+  - **Implementation Steps:**
+    - Create new autoload/genero_tools/which_key.vim module
+    - Detect if which-key plugin is installed
+    - Register all genero-tools keybindings with which-key
+    - Organize keybindings into logical groups:
+      - Lookup: GeneroLookup, GeneroFunctionSignature
+      - Navigation: GeneroListFunctions, GeneroListModuleFiles, GeneroFileMetadata
+      - Compiler: GeneroCompile, GeneroNextError, GeneroPrevError, GeneroClearErrors
+      - Cache: GeneroClearCache
+    - Add descriptions for each keybinding
+    - Support custom keybinding prefixes
+  - **Testing:** Verify which-key displays all genero-tools keybindings correctly
+
+- [ ] 26. E3.2: Document which-key Integration
+  - **Priority:** LOW
+  - **Objective:** Create documentation for which-key integration
+  - **Files:** new: docs/KEYBINDINGS.md
+  - **Implementation Steps:**
+    - Create docs/KEYBINDINGS.md with comprehensive keybinding documentation
+    - Document all default keybindings and their purposes
+    - Provide examples of customizing keybindings
+    - Explain which-key integration and how to use it
+    - Include troubleshooting section for keybinding issues
+    - Add examples of common keybinding customizations
+  - **Testing:** Verify documentation is clear and complete
+
+- [ ] 27. Debug File Streaming Feature
+  - **Priority:** HIGH
+  - **Objective:** Stream debug output from files in a 1/3 width split window for live debugging
+  - **Current Issue:** Compiler has no proper debug, so developers output info to specific files in a debug directory
+  - **Target State:** Users can open a split window that streams live changes from debug files while coding
+  - **Files to Create:**
+    - new: `autoload/genero_tools/debug_stream.vim` - Debug file streaming module
+    - new: `autoload/genero_tools/debug_stream/` - Debug streaming submodule directory
+    - new: `autoload/genero_tools/debug_stream/watcher.vim` - File watcher for changes
+    - new: `autoload/genero_tools/debug_stream/ui.vim` - UI for debug window
+  - **Implementation Steps:**
+    1. Create configuration options:
+       - `debug_stream_enabled`: true/false (default: false)
+       - `debug_stream_directory`: path to debug directory (default: './debug')
+       - `debug_stream_width`: percentage or fixed (default: 33% for 1/3 width)
+       - `debug_stream_auto_scroll`: true/false (default: true)
+       - `debug_stream_max_lines`: max lines to display (default: 1000)
+       - `debug_stream_refresh_interval`: ms between checks (default: 500)
+    
+    2. Implement file watcher:
+       - Create `genero_tools#debug_stream#watcher#start()` to begin watching directory
+       - Implement file change detection using file modification time
+       - Track currently selected debug file
+       - Detect new files added to debug directory
+       - Detect file deletions
+    
+    3. Implement file selector:
+       - Create `genero_tools#debug_stream#select_file()` to show file picker
+       - Display list of files in debug directory
+       - Allow user to select which file to stream
+       - Support filtering by file pattern
+       - Remember last selected file
+    
+    4. Implement streaming display:
+       - Create `genero_tools#debug_stream#ui#open()` to create split window
+       - Set split to 1/3 width (configurable)
+       - Display file name and status in window title
+       - Show file content with auto-scroll to end
+       - Implement line number display
+       - Support syntax highlighting for debug output
+    
+    5. Implement content updates:
+       - Create `genero_tools#debug_stream#update()` to refresh file content
+       - Read file changes since last update
+       - Append new lines to display buffer
+       - Maintain max line limit (configurable)
+       - Auto-scroll to end if enabled
+       - Handle file deletions gracefully
+    
+    6. Implement keybindings and commands:
+       - Create `:GeneroDebugStreamOpen` command to open debug stream
+       - Create `:GeneroDebugStreamClose` command to close debug stream
+       - Create `:GeneroDebugStreamSelect` command to select different file
+       - Create `:GeneroDebugStreamClear` command to clear display
+       - Create `:GeneroDebugStreamToggle` command to toggle on/off
+       - Create `:GeneroDebugStreamStatus` command to show status
+       - Add default keybinding (e.g., `<leader>gd` to toggle)
+    
+    7. Implement auto-refresh:
+       - Use timer to periodically check for file changes
+       - Update display when changes detected
+       - Handle timer cleanup on window close
+       - Support pause/resume functionality
+    
+    8. Implement error handling:
+       - Handle missing debug directory gracefully
+       - Handle file permission errors
+       - Handle file encoding issues
+       - Display appropriate error messages
+       - Provide recovery options
+  
+  - **Testing:** 
+    - Verify debug window opens with correct width
+    - Verify file selection works
+    - Verify content streams and updates in real-time
+    - Verify auto-scroll works correctly
+    - Verify max line limit is enforced
+    - Verify window closes cleanly
+    - Test with various file sizes and update frequencies
+    - Test error scenarios (missing directory, permission denied, etc.)
+  
+  - **Related Code:**
+    - `autoload/genero_tools/display.vim` - Display functions
+    - `autoload/genero_tools/config.vim` - Configuration
+    - `lua/genero_tools/ui.lua` - Lua UI layer (can be leveraged for advanced UI)
+
+- [ ] 28. Keybinding Help Popup (Neovim Only)
+  - **Priority:** MEDIUM
+  - **Objective:** Display a configurable popup window showing available hotkeys and their descriptions
+  - **Current Issue:** New users may not know what hotkeys are available or what they do
+  - **Target State:** Popup window appears on buffer enter (configurable) showing all available keybindings with descriptions
+  - **Neovim Only:** Uses floating windows and advanced UI features not available in Vim
+  - **Files to Create:**
+    - new: `autoload/genero_tools/help.vim` - Help system module
+    - new: `autoload/genero_tools/help/` - Help submodule directory
+    - new: `autoload/genero_tools/help/popup.vim` - Popup window management
+    - new: `autoload/genero_tools/help/keybindings.vim` - Keybinding data and formatting
+  - **Implementation Steps:**
+    1. Create configuration options:
+       - `help_popup_enabled`: true/false (default: true)
+       - `help_popup_show_on_buffer_enter`: true/false (default: true)
+       - `help_popup_show_on_startup`: true/false (default: false)
+       - `help_popup_width`: percentage or fixed (default: 50%)
+       - `help_popup_height`: percentage or fixed (default: 60%)
+       - `help_popup_position`: 'center', 'top', 'bottom' (default: 'center')
+       - `help_popup_border`: 'rounded', 'solid', 'shadow' (default: 'rounded')
+       - `help_popup_auto_close_delay`: ms to auto-close (default: 0 = manual close)
+       - `help_popup_show_categories`: true/false (default: true)
+    
+    2. Implement keybinding data structure:
+       - Create `genero_tools#help#keybindings#get_all()` to return all keybindings
+       - Organize keybindings by category:
+         - Code Navigation: GeneroLookup, GeneroListFunctions, etc.
+         - Compilation: GeneroCompile, GeneroNextError, etc.
+         - Debug: GeneroDebugStreamOpen, GeneroDebugStreamSelect, etc.
+         - Cache: GeneroClearCache
+         - Configuration: GeneroConfigShow
+       - Include descriptions for each keybinding
+       - Support custom keybinding overrides
+    
+    3. Implement popup window creation:
+       - Create `genero_tools#help#popup#open()` to create floating window
+       - Use `nvim_open_win()` for Neovim floating window
+       - Set window options (border, title, etc.)
+       - Format keybinding data for display
+       - Support scrolling for long content
+    
+    4. Implement keybinding formatting:
+       - Create `genero_tools#help#keybindings#format()` to format for display
+       - Show keybinding, command name, and description
+       - Organize by category with headers
+       - Use consistent formatting and alignment
+       - Support syntax highlighting for readability
+    
+    5. Implement popup controls:
+       - Create `genero_tools#help#popup#close()` to close popup
+       - Implement keybindings within popup:
+         - `q` or `Esc` to close
+         - `j`/`k` or arrow keys to scroll
+         - `g` to go to top
+         - `G` to go to bottom
+         - `/` to search within popup
+       - Support mouse clicks to close
+    
+    6. Implement auto-show functionality:
+       - Create `genero_tools#help#popup#show_on_buffer_enter()` for BufEnter event
+       - Create `genero_tools#help#popup#show_on_startup()` for plugin initialization
+       - Track if popup has been shown (don't spam user)
+       - Support dismissal with "don't show again" option
+    
+    7. Implement commands and keybindings:
+       - Create `:GeneroHelp` command to show help popup
+       - Create `:GeneroHelpToggle` command to toggle popup
+       - Create `:GeneroHelpClose` command to close popup
+       - Add default keybinding (e.g., `<leader>gh` to show help)
+    
+    8. Implement search functionality:
+       - Create `genero_tools#help#search#find()` to search keybindings
+       - Support searching by keybinding, command name, or description
+       - Highlight search results in popup
+       - Support case-insensitive search
+    
+    9. Implement customization:
+       - Allow users to customize keybinding descriptions
+       - Support hiding specific categories
+       - Support custom keybinding groups
+       - Support exporting keybindings to file
+  
+  - **Testing:**
+    - Verify popup opens with correct dimensions
+    - Verify keybindings are displayed correctly
+    - Verify popup closes on keybinding
+    - Verify scrolling works
+    - Verify search functionality works
+    - Verify auto-show on buffer enter works
+    - Verify auto-close delay works
+    - Test with various window sizes
+    - Test with many keybindings
+    - Verify Neovim-only features work correctly
+  
+  - **Related Code:**
+    - `autoload/genero_tools/keybindings.vim` - Keybinding setup
+    - `lua/genero_tools/ui.lua` - Lua UI layer (can be leveraged)
+    - `autoload/genero_tools/display.vim` - Display patterns
+  
+  - **Neovim Requirements:**
+    - Requires Neovim 0.5+ for floating windows
+    - Uses `nvim_open_win()` for window creation
+    - Uses `nvim_buf_set_lines()` for content
+    - Falls back gracefully if not in Neovim
+
+- [ ] 29. E4.1: Lualine Integration for Error/Warning Counts
+  - **Priority:** MEDIUM
+  - **Objective:** Create custom lualine component for Neovim that displays error and warning counts with color-coded backgrounds
+  - **Current State:** Error/warning counts only visible in quickfix list or sign column
+  - **Target State:** Lualine statusline shows "E5 W3" with red and yellow backgrounds respectively
+  - **Neovim Only:** Requires lualine plugin and Neovim-specific APIs
+  - **Files to Create:**
+    - new: `lua/genero_tools/lualine_component.lua` - Lualine component module
+  - **Implementation Steps:**
+    1. Create configuration options:
+       - `lualine_enabled`: true/false (default: true)
+       - `lualine_position`: 'left', 'right', 'center' (default: 'right')
+       - `lualine_show_errors`: true/false (default: true)
+       - `lualine_show_warnings`: true/false (default: true)
+       - `lualine_show_info`: true/false (default: false)
+       - `lualine_error_color`: hex color (default: '#ff0000')
+       - `lualine_warning_color`: hex color (default: '#ffff00')
+       - `lualine_info_color`: hex color (default: '#0000ff')
+       - `lualine_format`: 'compact' (E5 W3), 'verbose' (Errors: 5, Warnings: 3) (default: 'compact')
+    
+    2. Implement error/warning counting:
+       - Create `genero_tools#lualine#get_counts()` to count signs in current buffer
+       - Parse sign column for GeneroError, GeneroWarning, GeneroInfo signs
+       - Return counts as dictionary: {errors: N, warnings: N, info: N}
+       - Cache counts to avoid repeated parsing
+       - Update cache on compilation completion
+    
+    3. Implement lualine component:
+       - Create `genero_tools#lualine#component()` function
+       - Format counts based on `lualine_format` config
+       - Return formatted string with color information
+       - Handle case where no errors/warnings present
+       - Support dynamic updates on buffer changes
+    
+    4. Implement color configuration:
+       - Create highlight groups for lualine sections
+       - Support customization via config
+       - Use sensible defaults (red for errors, yellow for warnings, blue for info)
+       - Integrate with lualine's color system
+    
+    5. Implement registration:
+       - Create `genero_tools#lualine#register()` to register component with lualine
+       - Detect if lualine is installed
+       - Register component in appropriate section
+       - Support custom section configuration
+       - Handle registration failures gracefully
+    
+    6. Implement update mechanism:
+       - Create autocommand to update counts on compilation
+       - Update on BufEnter, BufWritePost (after autocompile)
+       - Trigger lualine refresh after update
+       - Handle buffer-specific counts
+    
+    7. Implement commands:
+       - Create `:GeneroLualineToggle` command to toggle component
+       - Create `:GeneroLualineStatus` command to show current counts
+       - Create `:GeneroLualineRefresh` command to manually refresh
+    
+    8. Implement error handling:
+       - Handle missing lualine plugin gracefully
+       - Handle Vim (non-Neovim) gracefully
+       - Handle invalid configuration options
+       - Provide helpful error messages
+  
+  - **Testing:**
+    - Verify component displays correctly in lualine
+    - Verify counts update after compilation
+    - Verify colors are applied correctly
+    - Verify format options work (compact vs verbose)
+    - Verify toggle command works
+    - Verify graceful fallback if lualine not installed
+    - Test with various error/warning counts
+    - Test with no errors/warnings
+    - Verify Neovim-only features work correctly
+  
+  - **Related Code:**
+    - `autoload/genero_tools/compiler/signs.vim` - Sign placement
+    - `autoload/genero_tools/compiler/autocompile.vim` - Compilation workflow
+    - `lua/genero_tools/ui.lua` - Lua UI layer
+    - `autoload/genero_tools/config.vim` - Configuration
+  
+  - **Neovim Requirements:**
+    - Requires Neovim 0.5+ for Lua support
+    - Requires lualine plugin (https://github.com/nvim-lualine/lualine.nvim)
+    - Uses `nvim_buf_get_lines()` to read sign column
+    - Uses lualine's component API for registration
+    - Falls back gracefully if lualine not installed
+
 ## Notes
 
+- Tasks 1-15 represent core plugin functionality and compiler integration
+- Tasks 16-18 represent validation and testing checkpoints
+- Tasks 19 represents future enhancement (SVN markers)
+- Tasks 20-26 represent enhancement tasks (E1-E3) for UI/UX improvements and bug fixes
+- Task 27 represents Debug File Streaming feature (HIGH priority, Neovim-capable)
+- Task 28 represents Keybinding Help Popup feature (MEDIUM priority, Neovim-only)
+- Task 29 represents Lualine Integration feature (MEDIUM priority, Neovim-only)
 - Tasks marked with `*` are optional and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Property tests validate universal correctness properties across all valid inputs
@@ -535,3 +937,31 @@ Tasks are organized by priority and logical dependencies:
   - Sign column indicators provide visual feedback without disrupting editing
   - Unused variable highlighting helps identify dead code
   - Syntax error highlighting integrates with vim's native highlighting system
+- **Enhancement Tasks (E1-E4):**
+  - E1: UI/UX improvements (modernize config, reduce startup noise)
+  - E2: Compiler integration bug fixes (error highlighting, sign column stability, statusline)
+  - E3: which-key integration for better keybinding discovery
+  - E4: Lualine integration for statusline error/warning counts
+  - Enhancement tasks address issues discovered during core implementation
+  - Recommended implementation order: E1.2 → E2.3 → E2.2 → E2.1 → E1.1 → E3.1 → E3.2 → E4.1
+- **Debug File Streaming (Task 27):**
+  - Provides live debugging capability for developers using file-based debug output
+  - Streams changes from debug files in a 1/3 width split window
+  - Supports file selection and auto-refresh
+  - Complements compiler integration with practical debugging workflow
+  - HIGH priority feature for improved developer experience
+- **Keybinding Help Popup (Task 28):**
+  - Provides obvious way to discover available hotkeys
+  - Configurable popup window shows all keybindings with descriptions
+  - Organized by category (Navigation, Compilation, Debug, etc.)
+  - Neovim-only feature using floating windows
+  - Auto-show on buffer enter (configurable)
+  - Supports search and customization
+  - MEDIUM priority feature for improved user onboarding
+- **Lualine Integration (Task 29):**
+  - Displays error and warning counts in statusline with color-coded backgrounds
+  - Integrates with lualine plugin for Neovim
+  - Shows "E5 W3" format with red and yellow backgrounds
+  - Automatically updates after compilation
+  - Neovim-only feature requiring lualine plugin
+  - MEDIUM priority feature for improved error visibility

@@ -1,0 +1,8 @@
+Sign Column Integration Tests
+=============================
+
+Test 1: Stability through error/clear cycles - PASS
+Test 2: Mixed errors and warnings - PASS
+Test 3: Update function maintains column - PASS
+Test 4: Failed compilation keeps column - PASS
+

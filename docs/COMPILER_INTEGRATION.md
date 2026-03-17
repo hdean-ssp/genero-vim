@@ -86,8 +86,21 @@ Visual indicators in the left margin:
 #### Inline Highlighting
 - **Error highlighting** - Full line highlighted with red background for visibility
 - **Warning highlighting** - Column range highlighted with yellow background
+- **Info highlighting** - Column range highlighted with blue background
 - **Unused variable highlighting** - All occurrences highlighted in yellow background
 - Highlighting applied automatically on compilation
+- Works in both Vim and Neovim (Neovim uses namespace-based highlights for better performance)
+
+#### Quickfix Navigation
+Navigate errors and warnings with standard Vim commands:
+```vim
+:copen          " Open quickfix window
+:cnext          " Go to next error (only if errors exist)
+:cprevious      " Go to previous error (only if errors exist)
+:cclose         " Close quickfix window
+```
+
+**Note:** Navigation commands gracefully handle empty error lists. If no errors exist, the commands return a "No errors to navigate" message instead of displaying spurious error messages.
 
 ### 3. Unused Variable Detection
 

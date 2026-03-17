@@ -1,0 +1,8 @@
+Error Highlighting Tests
+=======================
+
+Test 1: Highlight groups defined - PASS
+Test 2: Line highlighting for errors - PASS
+Test 3: Text highlighting for warnings - PASS
+Test 4: Clearing highlights - PASS
+Test 5: Apply returns success - PASS

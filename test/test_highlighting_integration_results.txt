@@ -1,0 +1,8 @@
+Error Highlighting Integration Tests
+====================================
+
+Test 1: Highlighting with compiler result - PASS
+Test 2: Clearing after compilation - PASS
+Test 3: Multiple compilations - PASS
+Test 4: Unused variable highlighting - PASS
+Test 5: Highlight colors - PASS

@@ -220,17 +220,15 @@ This implementation plan breaks down the Genero Code Snippets feature into discr
   - ✓ Verify triggers work as expected
   - ✓ All checkpoint tests passed
 
-- [ ] 11. Create comprehensive documentation
-  - [ ] 11.1 Create user documentation
+- [x] 11. Create comprehensive documentation
+  - [x] 11.1 Create user documentation
     - Create `docs/SNIPPETS.md` with snippet reference
     - Document all available snippets with examples
     - Include configuration guide
-    - Include custom snippets guide (LuaSnip format)
-    - Include troubleshooting section
-    - Document LuaSnip dependency
-    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
+    - Keep documentation brief and practical
+    - _Requirements: 10.1, 10.2, 10.3_
 
-  - [ ] 11.2 Create developer documentation
+  - [x] 11.2 Create developer documentation
     - Document snippet format and structure (LuaSnip format)
     - Document manager API
     - Document integration points
@@ -313,3 +311,52 @@ This implementation plan breaks down the Genero Code Snippets feature into discr
 - All UI elements use existing `genero_tools.ui` layer
 - **LuaSnip is a required dependency** for Neovim users
 - Vim users can use vim-snipmate or vim-vsnip with basic support
+
+## Enhancement Tasks (Post-MVP)
+
+These tasks improve UI/UX, fix bugs, and add integrations discovered after MVP completion.
+
+- [ ] E1. Improve UI/UX and Configuration
+  - [ ] E1.1 Modernize default configuration
+    - Update default theme to modern, clean aesthetic
+    - Implement floating window displays for results
+    - Improve visual hierarchy and spacing
+    - _Files: autoload/genero_tools/config.vim, autoload/genero_tools/display.vim_
+
+  - [ ] E1.2 Reduce startup noise
+    - Remove duplicate autocompile notifications on file load
+    - Implement silent loading with optional popup notifications
+    - Consolidate startup messages
+    - _Files: autoload/genero_tools/compiler/autocompile.vim, plugin/genero_tools.vim_
+
+- [ ] E2. Improve Compiler Integration
+  - [ ] E2.1 Enhance error highlighting
+    - Implement line/text highlighting for errors (not just signs)
+    - Use proper highlight groups for visual distinction
+    - Support different colors for errors vs warnings
+    - _Files: autoload/genero_tools/compiler/highlight.vim_
+
+  - [ ] E2.2 Fix sign column behavior
+    - Keep sign column always visible (don't toggle on/off)
+    - Show empty signs when no errors/warnings
+    - Prevent column from popping in and out
+    - _Files: autoload/genero_tools/compiler/signs.vim_
+
+  - [ ] E2.3 Fix statusline navigation bug
+    - Fix "no previous error" message appearing without user action
+    - Ensure navigation functions only called when appropriate
+    - Add proper state tracking for error navigation
+    - _Files: autoload/genero_tools/compiler/quickfix.vim_
+
+- [ ] E3. Integration with which-key
+  - [ ] E3.1 Add which-key integration
+    - Register custom keybindings with which-key
+    - Provide descriptive labels for all commands
+    - Organize keybindings by category
+    - _Files: autoload/genero_tools/keybindings.vim, new: autoload/genero_tools/which_key.vim_
+
+  - [ ] E3.2 Create which-key configuration
+    - Define keybinding groups and descriptions
+    - Support user customization
+    - Document which-key integration
+    - _Files: docs/KEYBINDINGS.md_

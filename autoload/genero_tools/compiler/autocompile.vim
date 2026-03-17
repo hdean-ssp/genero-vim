@@ -13,7 +13,10 @@ endfunction
 " Enable autocompile for current buffer
 function! genero_tools#compiler#autocompile#enable() abort
   if !genero_tools#config#get('compiler_enabled')
-    echom 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = v:true'
+    let startup_mode = genero_tools#config#get('startup_messages')
+    if startup_mode == 'verbose'
+      echom 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = v:true'
+    endif
     return
   endif
   
@@ -26,7 +29,10 @@ function! genero_tools#compiler#autocompile#enable() abort
     autocmd BufEnter <buffer> call genero_tools#compiler#autocompile#on_buffer_enter()
   augroup END
   
-  echom 'Autocompile enabled for current buffer'
+  let startup_mode = genero_tools#config#get('startup_messages')
+  if startup_mode == 'verbose'
+    echom 'Autocompile enabled for current buffer'
+  endif
 endfunction
 
 " Disable autocompile for current buffer
@@ -35,7 +41,10 @@ function! genero_tools#compiler#autocompile#disable() abort
     autocmd! * <buffer>
   augroup END
   
-  echom 'Autocompile disabled for current buffer'
+  let startup_mode = genero_tools#config#get('startup_messages')
+  if startup_mode == 'verbose'
+    echom 'Autocompile disabled for current buffer'
+  endif
 endfunction
 
 " Handle buffer enter event - populate signs for current file
@@ -47,6 +56,9 @@ function! genero_tools#compiler#autocompile#on_buffer_enter() abort
   if !genero_tools#config#get('compiler_autocompile')
     return
   endif
+  
+  " Set persistent sign column
+  call genero_tools#compiler#signs#set_persistent_column()
   
   let current_file = expand('%')
   
@@ -109,6 +121,11 @@ function! genero_tools#compiler#autocompile#compile_silent(file) abort
       endif
       
       " Update highlighting if enabled
+      if genero_tools#config#get('compiler_show_errors') || genero_tools#config#get('compiler_show_warnings')
+        call genero_tools#compiler#highlight#apply(result.errors, result.warnings)
+      endif
+      
+      " Highlight unused variables if enabled
       if genero_tools#config#get('compiler_highlight_unused')
         call genero_tools#compiler#highlight#unused_vars(result.warnings)
       endif
