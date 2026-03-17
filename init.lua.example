@@ -62,7 +62,9 @@ local plugins = {
       local ok, genero_config = pcall(require, "genero_config")
       if not ok then
         -- If genero_config.lua doesn't exist, use inline config
+        -- To customize: create ~/.config/nvim/genero_config.lua with your settings
         genero_config = {
+          -- Compiler settings
           compiler_enabled = true,
           compiler_autocompile = true,
           compiler_autocompile_delay = 500,
@@ -70,7 +72,11 @@ local plugins = {
           compiler_highlight_unused = true,
           compiler_command = "fglcomp",
           compiler_args = { "-M", "-W", "all" },
+          
+          -- Query tool path (adjust if needed)
           query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+          
+          -- Display and features
           display_mode = "quickfix",
           snippets_enabled = true,
         }
