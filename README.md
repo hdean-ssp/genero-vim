@@ -30,6 +30,10 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
   - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
   - Unused variable detection and highlighting
   - Automatic highlighting applied on compilation
+- **Code Snippets** (Neovim only) - Intelligent snippet expansion with smart parameter population
+  - Requires LuaSnip plugin
+  - Automatic function parameter population from genero-tools API
+  - Placeholder navigation with Tab/Shift+Tab
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Omnifunc autocomplete** - Function and module name completion with signatures
 - **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
@@ -135,6 +139,16 @@ let g:genero_tools_config.keybindings_enabled = v:false
 :GeneroAutocompileStatus                " Show autocompile status
 ```
 
+### Snippet Commands (Neovim only)
+
+```vim
+:GeneroSnippetList                      " List all available snippets
+:GeneroSnippetHelp [trigger]            " Show help for a snippet
+:GeneroSnippet [trigger]                " Expand a snippet by trigger
+```
+
+**Note**: Snippet commands are only available in Neovim with LuaSnip installed. See [Snippets Documentation](docs/SNIPPETS.md) for details.
+
 ## Display Modes
 
 Change how results are displayed by setting `display_mode`:
@@ -217,6 +231,10 @@ let g:genero_tools_config = {
   \ 'compiler_sign_column': v:true,
   \ 'compiler_autocompile': v:true,
   \ 'compiler_autocompile_delay': 1000,
+  \ 'snippets_enabled': v:true,
+  \ 'snippet_engine': 'luasnip',
+  \ 'snippet_smart_expansion': v:true,
+  \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
   \ }
 ```
 
@@ -249,6 +267,24 @@ let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before 
 - **Autocompile on save** - Automatically compile and update markers when file is saved (enabled by default)
 - **Automatic highlighting** - Error/warning highlighting applied automatically on compilation
 
+### Snippet Configuration (Neovim only)
+
+For Neovim users with LuaSnip installed, configure code snippets:
+
+```vim
+let g:genero_tools_config.snippets_enabled = v:true              " Enable/disable snippets
+let g:genero_tools_config.snippet_engine = 'luasnip'             " Snippet engine (luasnip, vim-snipmate, vim-vsnip)
+let g:genero_tools_config.snippet_smart_expansion = v:true       " Enable async parameter population
+let g:genero_tools_config.snippet_custom_dir = expand('~/.config/nvim/genero-snippets') " Custom snippet directory
+```
+
+**Snippet Features:**
+- Intelligent code templates for common Genero patterns
+- Smart parameter population from function signatures (Neovim only)
+- Placeholder navigation with Tab/Shift+Tab
+- Custom snippet support with hot-reload
+- See [Snippets Documentation](docs/SNIPPETS.md) for complete details
+
 ### Neovim Lua Layer (Optional)
 
 For Neovim users, enable the optional Lua layer for enhanced features:
@@ -256,14 +292,16 @@ For Neovim users, enable the optional Lua layer for enhanced features:
 ```vim
 let g:genero_tools_config.lua_enabled = v:true                   " Enable Lua layer (Neovim only)
 let g:genero_tools_config.async_enabled = v:true                 " Use async operations
+let g:genero_tools_config.display_mode = 'floating'              " Use floating windows
 ```
 
-**Lua Layer Features** (Neovim 0.4+ only):
+**Lua Layer Features** (Neovim 0.5+ only):
 - **Async Operations** - Non-blocking command execution with progress indicators
 - **Floating Windows** - Rich UI for results with better formatting
 - **Better Performance** - Optimized for large codebases
+- **UI Components** - Notifications, progress bars, popup menus
 
-The Lua layer is optional and gracefully falls back to VimScript implementations if unavailable.
+The Lua layer is optional and gracefully falls back to VimScript implementations if unavailable. All core functionality works in both Vim and Neovim without the Lua layer.
 
 ### Error Handling and Large Codebase Guidance
 

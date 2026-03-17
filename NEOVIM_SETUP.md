@@ -156,8 +156,6 @@ The statusline shows:
 - File encoding and format
 - Progress and location
 
-*Note: Git/SVN branch and diff status will be added in a future update when SVN support is implemented.*
-
 ### Which-key Integration
 
 Press `<leader>` to see available keybindings.

@@ -11,6 +11,7 @@ Welcome to the genero-tools plugin documentation. This guide will help you get s
 
 - **[COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)** - Compiler integration, autocompile, error display
 - **[API_INTEGRATION.md](API_INTEGRATION.md)** - Code navigation and lookup functionality
+- **[SNIPPETS.md](SNIPPETS.md)** - Code snippet expansion (Neovim only)
 - **[COMPATIBILITY.md](COMPATIBILITY.md)** - Vim/Neovim compatibility details
 - **[NEOVIM.md](NEOVIM.md)** - Neovim-specific features and setup
 
@@ -36,6 +37,16 @@ Navigate your Genero codebase efficiently:
 - Get file metadata and references
 
 **See:** [API_INTEGRATION.md](API_INTEGRATION.md)
+
+### Code Snippets (Neovim)
+
+Quickly insert common Genero code patterns:
+- Function definitions, control flow, data structures
+- Smart parameter population from function signatures
+- Custom snippet support with hot-reload
+- Tab-based placeholder navigation
+
+**See:** [SNIPPETS.md](SNIPPETS.md)
 
 ### Lua Layer (Neovim)
 
@@ -111,6 +122,9 @@ See feature-specific guides for detailed troubleshooting.
 :GeneroConfigShow                  " Show configuration
 :GeneroCompleteEnable              " Enable completion
 :GeneroCompleteDisable             " Disable completion
+:GeneroSnippetList                 " List available snippets
+:GeneroSnippetHelp {trigger}       " Show snippet help
+:GeneroSnippet {trigger}           " Expand snippet by trigger
 ```
 
 ## Development
@@ -122,16 +136,34 @@ For developers working on the plugin:
 - **[.kiro/steering/error-handling-patterns.md](../.kiro/steering/error-handling-patterns.md)** - Error handling patterns
 - **[.kiro/steering/lua-layer-architecture.md](../.kiro/steering/lua-layer-architecture.md)** - Lua layer design
 
+## Lua Layer (Neovim)
+
+The plugin includes an optional Lua layer for Neovim users that provides:
+
+- **Async Operations** - Non-blocking command execution
+- **Floating Windows** - Modern UI for results
+- **UI Components** - Progress indicators, notifications, popups
+
+Enable in your config:
+```vim
+let g:genero_tools_config.lua_enabled = v:true
+let g:genero_tools_config.async_enabled = v:true
+let g:genero_tools_config.display_mode = 'floating'
+```
+
+See [NEOVIM.md](NEOVIM.md) for complete Lua layer documentation.
+
 ## Roadmap
 
 Future enhancements planned:
 
+- **Code Snippets** - Intelligent snippet expansion with smart parameter population (Neovim)
 - **Dead Code Detection** - Find unused functions
 - **Dependency Analysis** - Show function call chains
 - **Reference Lookup** - Find files modified for tickets
 - **Module Dependencies** - Visualize module relationships
-
-See [QUICK_ENHANCEMENTS_ROADMAP.md](../QUICK_ENHANCEMENTS_ROADMAP.md) for details.
+- **LSP Integration** - Full IDE-like features for Neovim
+- **AI Features** - Error explanation and code generation (Neovim only)
 
 ## Support
 
@@ -157,7 +189,7 @@ See [LICENSE](../LICENSE) for license information.
 
 ## Quick Links
 
-- **User Guides:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md), [API_INTEGRATION.md](API_INTEGRATION.md)
+- **User Guides:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md), [API_INTEGRATION.md](API_INTEGRATION.md), [SNIPPETS.md](SNIPPETS.md)
 - **Setup:** [QUICK_START.md](QUICK_START.md), [SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)
 - **Development:** [.kiro/steering/COMPILER_DEVELOPMENT.md](../.kiro/steering/COMPILER_DEVELOPMENT.md)
 - **Roadmap:** [QUICK_ENHANCEMENTS_ROADMAP.md](../QUICK_ENHANCEMENTS_ROADMAP.md)

@@ -78,6 +78,23 @@ Features:
 - Error markers populated when opening files
 - Automatic compilation on save (with configurable delay)
 
+## Neovim Enhancements
+
+For Neovim users, enable the Lua layer for modern UI:
+
+```vim
+let g:genero_tools_config = {
+  \ 'lua_enabled': v:true,
+  \ 'async_enabled': v:true,
+  \ 'display_mode': 'floating',
+  \ }
+```
+
+This provides:
+- Async operations (non-blocking)
+- Floating windows for results
+- Better performance on large codebases
+
 ## Configuration
 
 ### Essential Options

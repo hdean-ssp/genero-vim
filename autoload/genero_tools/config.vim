@@ -28,7 +28,11 @@ function! genero_tools#config#init() abort
     \ 'compiler_highlight_unused': v:true,
     \ 'compiler_sign_column': v:true,
     \ 'compiler_autocompile': v:false,
-    \ 'compiler_autocompile_delay': 1000
+    \ 'compiler_autocompile_delay': 1000,
+    \ 'snippets_enabled': v:true,
+    \ 'snippet_engine': 'luasnip',
+    \ 'snippet_smart_expansion': v:true,
+    \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets')
     \ }
   
   for [key, value] in items(defaults)
@@ -70,7 +74,11 @@ function! genero_tools#config#get(key) abort
     \ 'compiler_highlight_unused': v:true,
     \ 'compiler_sign_column': v:true,
     \ 'compiler_autocompile': v:false,
-    \ 'compiler_autocompile_delay': 1000
+    \ 'compiler_autocompile_delay': 1000,
+    \ 'snippets_enabled': v:true,
+    \ 'snippet_engine': 'luasnip',
+    \ 'snippet_smart_expansion': v:true,
+    \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets')
     \ }
   
   return get(defaults, a:key, '')

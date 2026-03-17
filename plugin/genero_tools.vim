@@ -36,6 +36,13 @@ command! GeneroAutocompileEnable call genero_tools#compiler#commands#autocompile
 command! GeneroAutocompileDisable call genero_tools#compiler#commands#autocompile_disable()
 command! GeneroAutocompileStatus call genero_tools#compiler#commands#autocompile_status()
 
+" Register snippet commands (Neovim only)
+if has('nvim')
+  command! GeneroSnippetList call genero_tools#snippets#list()
+  command! -nargs=? GeneroSnippetHelp call genero_tools#snippets#help(<q-args>)
+  command! -nargs=? GeneroSnippet call genero_tools#snippets#expand(<q-args>)
+endif
+
 " Register keybindings if enabled
 if genero_tools#config#get('keybindings_enabled')
   call genero_tools#keybindings#register()

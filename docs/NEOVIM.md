@@ -154,7 +154,7 @@ vim.g.genero_tools_config.display_mode = 'echo'
 let g:genero_tools_config = {
   \ 'lua_enabled': v:true,
   \ 'async_enabled': v:true,
-  \ 'ui_mode': 'floating',
+  \ 'display_mode': 'floating',
   \ 'cache_enabled': v:true,
   \ 'cache_max_size': 200,
   \ 'timeout': 15000,
@@ -204,7 +204,7 @@ let mapleader = " "
 
 ### Async Operations
 
-Commands execute without blocking the editor:
+Commands execute without blocking the editor using Neovim's job control:
 
 ```vim
 let g:genero_tools_config.async_enabled = v:true
@@ -212,12 +212,18 @@ let g:genero_tools_config.async_enabled = v:true
 
 Enabled by default. Makes the plugin responsive on large codebases.
 
+**How it works:**
+- Commands run in background jobs
+- Results are processed asynchronously
+- UI remains responsive during long operations
+- Callbacks handle results when ready
+
 ### Floating Windows
 
 Results display in a centered floating window:
 
 ```vim
-let g:genero_tools_config.ui_mode = 'floating'
+let g:genero_tools_config.display_mode = 'floating'
 ```
 
 **Navigation:**
@@ -226,6 +232,17 @@ let g:genero_tools_config.ui_mode = 'floating'
 - `q` or `<Esc>` - Close window
 
 Requires Neovim 0.5+. Use quickfix mode for older versions.
+
+### UI Components
+
+The Lua layer provides modern UI components:
+
+- **Floating Windows** - Centered, bordered windows for results
+- **Popup Menus** - Interactive selection menus
+- **Notifications** - Status messages and progress indicators
+- **Progress Bars** - Visual feedback for long operations
+
+These are used automatically when `lua_enabled` is true.
 
 ## Troubleshooting
 

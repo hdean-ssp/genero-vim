@@ -42,10 +42,25 @@ vim.opt.rtp:prepend(lazypath)
 -- ============================================================================
 
 local plugins = {
+  -- LuaSnip - Required for Genero code snippets
+  {
+    "L3MON4D3/LuaSnip",
+    version = "v2.*",
+    build = "make install_jsregexp",
+  },
+
+  -- nvim-lspconfig - Pinned to 0.1.x for Neovim 0.9.5 compatibility
+  -- Version 0.2.0+ requires Neovim 0.10+
+  {
+    "neovim/nvim-lspconfig",
+    version = "v0.1.*",
+  },
+
   -- Genero Tools Plugin
   {
     "hdean-ssp/genero-vim",
     name = "genero-tools",
+    dependencies = { "L3MON4D3/LuaSnip" },
     config = function()
       -- Load genero configuration
       local ok, genero_config = pcall(require, "genero_config")
@@ -61,6 +76,7 @@ local plugins = {
           compiler_args = { "-M", "-W", "all" },
           query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
           display_mode = "quickfix",
+          snippets_enabled = true,
         }
       end
       
@@ -70,6 +86,12 @@ local plugins = {
       end
       for key, value in pairs(genero_config) do
         vim.g.genero_tools_config[key] = value
+      end
+
+      -- Initialize snippets module
+      local ok_snippets, snippets = pcall(require, "genero_tools.snippets")
+      if ok_snippets and vim.g.genero_tools_config.snippets_enabled then
+        snippets.setup()
       end
     end,
   },
@@ -102,6 +124,8 @@ local plugins = {
   },
 
   -- Helpful command hints
+  -- Pinned to v1.x for Neovim 0.9.5 compatibility
+  -- Version 2.0+ requires Neovim 0.10+
   {
     "folke/which-key.nvim",
     version = "v1.*",
@@ -143,6 +167,10 @@ map("n", "<leader>cd", ":GeneroAutocompileDisable<CR>", opts)
 -- Clear errors
 map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
 
+-- Snippet commands (Neovim only with LuaSnip)
+map("n", "<leader>sl", ":GeneroSnippetList<CR>", opts)
+map("n", "<leader>sh", ":GeneroSnippetHelp<CR>", opts)
+
 -- ============================================================================
 -- HELPFUL COMMANDS
 -- ============================================================================
@@ -157,6 +185,8 @@ Genero Tools Keybindings:
   <leader>ca      - Enable autocompile
   <leader>cd      - Disable autocompile
   <leader>cc      - Clear errors
+  <leader>sl      - List available snippets
+  <leader>sh      - Show snippet help
 
 Commands:
   :GeneroCompile              - Compile current file
@@ -166,6 +196,8 @@ Commands:
   :GeneroClearErrors          - Clear error markers
   :GeneroNextError            - Jump to next error
   :GeneroPrevError            - Jump to previous error
+  :GeneroSnippetList          - List all available snippets
+  :GeneroSnippetHelp          - Show snippet documentation
   ]])
 end, {})
 
