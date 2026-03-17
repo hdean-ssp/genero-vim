@@ -20,6 +20,12 @@ vim.opt.incsearch = true
 vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 
+-- Suppress lspconfig deprecation warning for Neovim 0.9.5
+-- This is needed because some plugins pull in lspconfig as a dependency
+if vim.fn.has("nvim-0.10") == 0 then
+  vim.g.lspconfig_suppress_deprecation_warning = true
+end
+
 -- ============================================================================
 -- LAZY.NVIM BOOTSTRAP
 -- ============================================================================
@@ -46,11 +52,11 @@ local plugins = {
   {
     "L3MON4D3/LuaSnip",
     version = "v2.*",
-    build = "make install_jsregexp",
+    build = "make install_jsregexp CC=gcc CFLAGS='-std=c99 -O2 -fPIC'",
   },
 
-  -- nvim-lspconfig - Pinned to 0.1.x for Neovim 0.9.5 compatibility
-  -- Version 0.2.0+ requires Neovim 0.10+
+  -- nvim-lspconfig - Pinned to 0.1.x for Neovim 0.9.5
+  -- This suppresses the deprecation warning on older Neovim versions
   {
     "neovim/nvim-lspconfig",
     version = "v0.1.*",
@@ -60,6 +66,7 @@ local plugins = {
   {
     "hdean-ssp/genero-vim",
     name = "genero-tools",
+    branch = "main",
     dependencies = { "L3MON4D3/LuaSnip" },
     config = function()
       -- Load genero configuration
