@@ -127,16 +127,8 @@ local plugins = {
     version = "v1.*",
     config = function()
       require("which-key").setup({
-        plugins = {
-          marks = false,
-          registers = false,
-          spelling = {
-            enabled = false,
-          },
-        },
         window = {
           border = "rounded",
-          padding = { 2, 2 },
         },
       })
     end,
