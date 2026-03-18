@@ -35,7 +35,7 @@ function! genero_tools#svn#signs#place(bufnr, changes) abort
   " Initialize signs if not already done
   if !exists('s:signs_initialized')
     call genero_tools#svn#signs#init()
-    let s:signs_initialized = v:true
+    let s:signs_initialized = 1
   endif
   
   " Clear existing SVN signs first

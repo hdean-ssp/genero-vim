@@ -16,6 +16,9 @@ The plugin is fully compatible with **Vim 8.0+** and **Neovim 0.4+** with **zero
 | Caching | ✅ | ✅ |
 | Keybindings | ✅ | ✅ |
 | Commands | ✅ | ✅ |
+| Sign column (persistent) | ✅ (7.4.2201+) | ✅ |
+| Error highlighting | ✅ | ✅ |
+| SVN diff markers | ✅ | ✅ |
 
 ## Installation
 
@@ -88,6 +91,19 @@ Default keybindings work in both editors:
 ```
 
 ## Troubleshooting
+
+### Sign column not persistent (Vim only)
+
+The persistent sign column feature (`signcolumn=yes`) requires **Vim 7.4.2201+** or Neovim. On older Vim versions, the sign column will appear/disappear as needed.
+
+To check your Vim version:
+```vim
+:echo v:version
+" Vim 7.4.2201+ shows: 704 (with patch 2201+)
+" Neovim shows: 800+ (or use :echo has('nvim'))
+```
+
+If you're on Vim 7.4 but before patch 2201, upgrade to the latest Vim 8.0+ for persistent sign column support.
 
 ### Plugin not loading
 

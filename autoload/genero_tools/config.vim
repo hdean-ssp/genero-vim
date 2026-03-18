@@ -109,7 +109,8 @@ function! genero_tools#config#show() abort
   call add(output, '')
   
   for [key, value] in items(config)
-    if type(value) == type(v:true)
+    " Check if value is a boolean (type 0 = number, and value is 0 or 1)
+    if type(value) == 0 && (value == 0 || value == 1)
       let value_str = value ? 'true' : 'false'
     else
       let value_str = string(value)

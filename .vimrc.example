@@ -58,7 +58,8 @@ set cursorline
 set cmdheight=1
 
 " Sign column (Vim 8.1.1564+ and Neovim)
-if v:version > 801 || (v:version == 801 && has('patch1564')) || has('nvim')
+" Note: Vim 8.0 doesn't support signcolumn, so we skip it
+if has('nvim') || v:version > 801 || (v:version == 801 && has('patch1564'))
   set signcolumn=yes:2
 endif
 

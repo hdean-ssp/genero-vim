@@ -7,7 +7,7 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   
   let compiler_enabled = genero_tools#config#get('compiler_enabled')
   if !compiler_enabled
-    echom 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = v:true'
+    echom 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = 1'
     return
   endif
   

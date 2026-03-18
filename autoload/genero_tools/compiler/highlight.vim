@@ -88,7 +88,7 @@ function! genero_tools#compiler#highlight#apply(errors, warnings) abort
   endfor
   
   return {
-    \ 'success': v:true,
+    \ 'success': 1,
     \ 'error': ''
     \ }
 endfunction
@@ -120,7 +120,7 @@ function! genero_tools#compiler#highlight#unused_vars(warnings) abort
   endfor
   
   return {
-    \ 'success': v:true,
+    \ 'success': 1,
     \ 'error': ''
     \ }
 endfunction
@@ -144,12 +144,12 @@ function! genero_tools#compiler#highlight#clear() abort
       endfor
     endif
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'Failed to clear highlights: ' . v:exception
       \ }
   endtry

@@ -60,6 +60,11 @@ endfunction
 
 " Display in popup window (neovim only - large floating window)
 function! genero_tools#display#popup(formatted) abort
+  if !has('nvim')
+    call genero_tools#display#echo(join(a:formatted, "\n"))
+    return
+  endif
+  
   try
     " Create popup buffer
     let buf = nvim_create_buf(v:false, v:true)
@@ -210,6 +215,11 @@ endfunction
 
 " Inline popup for Neovim using floating window
 function! genero_tools#display#inline_neovim(lines) abort
+  if !has('nvim')
+    call genero_tools#display#inline_vim(a:lines)
+    return
+  endif
+  
   try
     " Create popup buffer
     let buf = nvim_create_buf(v:false, v:true)
@@ -278,6 +288,10 @@ endfunction
 
 " Close inline window (Neovim)
 function! genero_tools#display#close_inline_window(win_id, timer_id) abort
+  if !has('nvim')
+    return
+  endif
+  
   try
     if nvim_win_is_valid(a:win_id)
       call nvim_win_close(a:win_id, v:true)

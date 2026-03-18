@@ -38,7 +38,7 @@ endfunction
 
 " Format error message for SVN disabled
 function! genero_tools#svn#error#format_disabled() abort
-  return 'SVN diff markers are disabled. Enable with: let g:genero_tools_config.svn_enabled = v:true'
+  return 'SVN diff markers are disabled. Enable with: let g:genero_tools_config.svn_enabled = 1'
 endfunction
 
 " Format error message for cache error

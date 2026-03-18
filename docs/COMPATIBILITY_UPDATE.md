@@ -25,6 +25,7 @@ The `.vimrc.example` now includes:
 | Snippets | ✗ | ✗ | ✗ | ✓ | ✓ |
 | Floating Windows | ✗ | ✗ | ✗ | ✗ | ✓ |
 | Modern UI | ✗ | ✗ | ✗ | ✗ | ✓ |
+| Persistent Sign Column | ✗ | ✗ | ✓* | ✓ | ✓ |
 
 ## Supported Versions
 
@@ -45,7 +46,7 @@ The `.vimrc.example` now includes:
 - All basic commands
 - Keybindings and window navigation
 - Relative line numbers and cursor line
-- Sign column support
+- Sign column support (persistent on 7.4.2201+)
 - Color column support
 - Autocmds for auto-resize
 
@@ -144,6 +145,8 @@ The new `.vimrc.example` is fully backward compatible:
 
 - Vi and Vim 6 users can use basic commands but won't have keybindings
 - Vim 7 users get keybindings but not plugin manager
+  - *Persistent sign column requires Vim 7.4.2201+ (use `signcolumn=yes`)
+  - Earlier Vim 7 versions have dynamic sign column (appears/disappears as needed)
 - Vim 8+ users get everything except Neovim-specific features
 - Neovim users get all features including floating windows and Lua layer
 

@@ -23,7 +23,10 @@ endfunction
 " Set persistent sign column for current buffer
 function! genero_tools#compiler#signs#set_persistent_column() abort
   if genero_tools#config#get('compiler_sign_column_always_visible')
-    setlocal signcolumn=yes
+    " Only set signcolumn if supported (Vim 7.4.2201+)
+    if v:version > 704 || (v:version == 704 && has('patch2201')) || has('nvim')
+      setlocal signcolumn=yes
+    endif
   endif
 endfunction
 
@@ -32,7 +35,7 @@ function! genero_tools#compiler#signs#place(errors, warnings, info) abort
   " Initialize signs if not already done
   if !exists('s:signs_initialized')
     call genero_tools#compiler#signs#init()
-    let s:signs_initialized = v:true
+    let s:signs_initialized = 1
   endif
   
   " Clear existing signs first

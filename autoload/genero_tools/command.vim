@@ -17,7 +17,7 @@ function! genero_tools#command#execute_shell(command, args) abort
   " Execute command with timeout
   let start_time = localtime()
   let result = {
-    \ 'success': v:false,
+    \ 'success': 0,
     \ 'data': {},
     \ 'error': '',
     \ 'timestamp': localtime()
@@ -53,7 +53,7 @@ function! genero_tools#command#execute_shell(command, args) abort
     " Parse JSON output
     try
       let data = json_decode(output)
-      let result.success = v:true
+      let result.success = 1
       let result.data = data
       let result.error = ''
       
@@ -61,7 +61,7 @@ function! genero_tools#command#execute_shell(command, args) abort
       let size_error = genero_tools#error#check_result_size(data)
       if !empty(size_error)
         let result.error = size_error
-        let result.success = v:false
+        let result.success = 0
         return result
       endif
       
@@ -99,7 +99,7 @@ function! genero_tools#command#execute(command, args, codebase_path) abort
   " Execute command with timeout
   let start_time = localtime()
   let result = {
-    \ 'success': v:false,
+    \ 'success': 0,
     \ 'data': {},
     \ 'error': '',
     \ 'timestamp': localtime()
@@ -129,7 +129,7 @@ function! genero_tools#command#execute(command, args, codebase_path) abort
     " Parse JSON output
     try
       let data = json_decode(output)
-      let result.success = v:true
+      let result.success = 1
       let result.data = data
       let result.error = ''
       
@@ -137,7 +137,7 @@ function! genero_tools#command#execute(command, args, codebase_path) abort
       let size_error = genero_tools#error#check_result_size(data)
       if !empty(size_error)
         let result.error = size_error
-        let result.success = v:false
+        let result.success = 0
         return result
       endif
       

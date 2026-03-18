@@ -17,7 +17,7 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
   
   if !a:result.success
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'count': 0,
       \ 'error': 'Compilation failed'
       \ }
@@ -48,7 +48,7 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
   call setqflist(qf_list)
   
   return {
-    \ 'success': v:true,
+    \ 'success': 1,
     \ 'count': len(qf_list),
     \ 'error': ''
     \ }
@@ -59,12 +59,12 @@ function! genero_tools#compiler#quickfix#open() abort
   try
     copen
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'Failed to open quickfix window: ' . v:exception
       \ }
   endtry
@@ -75,12 +75,12 @@ function! genero_tools#compiler#quickfix#close() abort
   try
     cclose
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'Failed to close quickfix window: ' . v:exception
       \ }
   endtry
@@ -92,7 +92,7 @@ function! genero_tools#compiler#quickfix#next() abort
   let qf_list = getqflist()
   if empty(qf_list)
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'No errors to navigate'
       \ }
   endif
@@ -100,12 +100,12 @@ function! genero_tools#compiler#quickfix#next() abort
   try
     cnext
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'No next error'
       \ }
   endtry
@@ -117,7 +117,7 @@ function! genero_tools#compiler#quickfix#prev() abort
   let qf_list = getqflist()
   if empty(qf_list)
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'No errors to navigate'
       \ }
   endif
@@ -125,12 +125,12 @@ function! genero_tools#compiler#quickfix#prev() abort
   try
     cprevious
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'No previous error'
       \ }
   endtry
@@ -141,12 +141,12 @@ function! genero_tools#compiler#quickfix#clear() abort
   try
     call setqflist([])
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'Failed to clear quickfix list: ' . v:exception
       \ }
   endtry
@@ -204,12 +204,12 @@ function! genero_tools#compiler#quickfix#open_floating(result) abort
     endif
     
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'error': ''
       \ }
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'error': 'Failed to open floating window: ' . v:exception
       \ }
   endtry

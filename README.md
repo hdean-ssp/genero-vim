@@ -103,7 +103,7 @@ nnoremap <C-l> :GeneroLookup <C-R><C-W><CR>
 To disable default keybindings:
 
 ```vim
-let g:genero_tools_config.keybindings_enabled = v:false
+let g:genero_tools_config.keybindings_enabled = 0
 ```
 
 ## Commands
@@ -216,52 +216,52 @@ The plugin works out-of-the-box with sensible defaults. Optionally customize:
 ```vim
 let g:genero_tools_config = {
   \ 'genero_tools_path': 'query.sh',
-  \ 'cache_enabled': v:true,
+  \ 'cache_enabled': 1,
   \ 'cache_ttl': 3600,
   \ 'cache_max_size': 100,
   \ 'display_mode': 'quickfix',
-  \ 'keybindings_enabled': v:true,
+  \ 'keybindings_enabled': 1,
   \ 'timeout': 10000,
-  \ 'async_enabled': v:true,
+  \ 'async_enabled': 1,
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
-  \ 'compiler_enabled': v:true,
+  \ 'compiler_enabled': 0,
   \ 'compiler_command': 'fglcomp -M -W all',
   \ 'compiler_version': 'auto',
   \ 'compiler_source_dir': '.',
-  \ 'compiler_show_warnings': v:true,
-  \ 'compiler_show_errors': v:true,
-  \ 'compiler_highlight_unused': v:true,
-  \ 'compiler_sign_column': v:true,
-  \ 'compiler_autocompile': v:true,
+  \ 'compiler_show_warnings': 1,
+  \ 'compiler_show_errors': 1,
+  \ 'compiler_highlight_unused': 1,
+  \ 'compiler_sign_column': 1,
+  \ 'compiler_autocompile': 0,
   \ 'compiler_autocompile_delay': 1000,
-  \ 'snippets_enabled': v:true,
+  \ 'snippets_enabled': 1,
   \ 'snippet_engine': 'luasnip',
-  \ 'snippet_smart_expansion': v:true,
+  \ 'snippet_smart_expansion': 1,
   \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
   \ 'startup_messages': 'silent',
-  \ 'svn_enabled': v:true,
-  \ 'svn_show_added': v:true,
-  \ 'svn_show_modified': v:true,
-  \ 'svn_show_deleted': v:true,
+  \ 'svn_enabled': 1,
+  \ 'svn_show_added': 1,
+  \ 'svn_show_modified': 1,
+  \ 'svn_show_deleted': 1,
   \ 'svn_cache_ttl': 300,
-  \ 'svn_auto_update': v:true,
+  \ 'svn_auto_update': 1,
   \ }
 ```
 
 ### Compiler Configuration
 
 ```vim
-let g:genero_tools_config.compiler_enabled = v:true              " Enable compiler integration
+let g:genero_tools_config.compiler_enabled = 1                   " Enable compiler integration
 let g:genero_tools_config.compiler_command = 'fglcomp -M -W all' " Compiler command with flags
 let g:genero_tools_config.compiler_version = 'auto'              " Version: 'auto', '3.10', '3.20', etc.
 let g:genero_tools_config.compiler_source_dir = '.'              " Source directory for compilation
-let g:genero_tools_config.compiler_show_warnings = v:true        " Display warnings in quickfix
-let g:genero_tools_config.compiler_show_errors = v:true          " Display errors in quickfix
-let g:genero_tools_config.compiler_highlight_unused = v:true     " Highlight unused variables
-let g:genero_tools_config.compiler_sign_column = v:true          " Show signs in sign column
-let g:genero_tools_config.compiler_autocompile = v:true          " Autocompile on file save
+let g:genero_tools_config.compiler_show_warnings = 1             " Display warnings in quickfix
+let g:genero_tools_config.compiler_show_errors = 1               " Display errors in quickfix
+let g:genero_tools_config.compiler_highlight_unused = 1          " Highlight unused variables
+let g:genero_tools_config.compiler_sign_column = 1               " Show signs in sign column
+let g:genero_tools_config.compiler_autocompile = 1               " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 ```
 
@@ -284,9 +284,9 @@ let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before 
 For Neovim users with LuaSnip installed, configure code snippets:
 
 ```vim
-let g:genero_tools_config.snippets_enabled = v:true              " Enable/disable snippets
+let g:genero_tools_config.snippets_enabled = 1                   " Enable/disable snippets
 let g:genero_tools_config.snippet_engine = 'luasnip'             " Snippet engine (luasnip, vim-snipmate, vim-vsnip)
-let g:genero_tools_config.snippet_smart_expansion = v:true       " Enable async parameter population
+let g:genero_tools_config.snippet_smart_expansion = 1            " Enable async parameter population
 let g:genero_tools_config.snippet_custom_dir = expand('~/.config/nvim/genero-snippets') " Custom snippet directory
 ```
 
@@ -308,12 +308,12 @@ let g:genero_tools_config.startup_messages = 'silent'            " Startup messa
 Configure SVN diff marker display in the sign column:
 
 ```vim
-let g:genero_tools_config.svn_enabled = v:true                   " Enable/disable SVN diff markers
-let g:genero_tools_config.svn_show_added = v:true                " Show added lines (+ sign)
-let g:genero_tools_config.svn_show_modified = v:true             " Show modified lines (~ sign)
-let g:genero_tools_config.svn_show_deleted = v:true              " Show deleted lines (- sign)
+let g:genero_tools_config.svn_enabled = 1                        " Enable/disable SVN diff markers
+let g:genero_tools_config.svn_show_added = 1                     " Show added lines (+ sign)
+let g:genero_tools_config.svn_show_modified = 1                  " Show modified lines (~ sign)
+let g:genero_tools_config.svn_show_deleted = 1                   " Show deleted lines (- sign)
 let g:genero_tools_config.svn_cache_ttl = 300                    " Cache TTL in seconds (default: 300)
-let g:genero_tools_config.svn_auto_update = v:true               " Auto-update markers on file save
+let g:genero_tools_config.svn_auto_update = 1                    " Auto-update markers on file save
 ```
 
 **SVN Features:**
@@ -335,8 +335,8 @@ let g:genero_tools_config.svn_auto_update = v:true               " Auto-update m
 For Neovim users, enable the optional Lua layer for enhanced features:
 
 ```vim
-let g:genero_tools_config.lua_enabled = v:true                   " Enable Lua layer (Neovim only)
-let g:genero_tools_config.async_enabled = v:true                 " Use async operations
+let g:genero_tools_config.lua_enabled = 1                        " Enable Lua layer (Neovim only)
+let g:genero_tools_config.async_enabled = 1                      " Use async operations
 let g:genero_tools_config.display_mode = 'floating'              " Use floating windows
 ```
 

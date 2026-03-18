@@ -37,7 +37,7 @@ function! genero_tools#compiler#detect_version() abort
     
     if exit_code != 0
       return {
-        \ 'success': v:false,
+        \ 'success': 0,
         \ 'version': '',
         \ 'error': 'Failed to detect compiler version. Command: ' . version_cmd
         \ }
@@ -48,7 +48,7 @@ function! genero_tools#compiler#detect_version() abort
     
     if empty(version_match)
       return {
-        \ 'success': v:false,
+        \ 'success': 0,
         \ 'version': '',
         \ 'error': 'Could not parse version from compiler output: ' . output
         \ }
@@ -58,14 +58,14 @@ function! genero_tools#compiler#detect_version() abort
     let g:genero_tools_compiler_config.detected_version = version_match
     
     return {
-      \ 'success': v:true,
+      \ 'success': 1,
       \ 'version': version_match,
       \ 'error': ''
       \ }
     
   catch
     return {
-      \ 'success': v:false,
+      \ 'success': 0,
       \ 'version': '',
       \ 'error': 'Exception during version detection: ' . v:exception
       \ }
@@ -100,7 +100,7 @@ function! genero_tools#compiler#execute(source_path) abort
   let cmd = compiler_cmd . ' -M -W all ' . genero_tools#command#escape_arg(a:source_path)
   
   let result = {
-    \ 'success': v:false,
+    \ 'success': 0,
     \ 'output': '',
     \ 'errors': [],
     \ 'warnings': [],
@@ -120,7 +120,7 @@ function! genero_tools#compiler#execute(source_path) abort
     let parsed = genero_tools#compiler#parse_output(output, compiler_ver)
     
     if parsed.success
-      let result.success = v:true
+      let result.success = 1
       let result.errors = parsed.errors
       let result.warnings = parsed.warnings
       let result.info = parsed.info
@@ -152,7 +152,7 @@ endfunction
 " Format: filename:start_line:start_col:end_line:end_col:severity:(-code) message
 function! genero_tools#compiler#parse_v310(output) abort
   let result = {
-    \ 'success': v:true,
+    \ 'success': 1,
     \ 'errors': [],
     \ 'warnings': [],
     \ 'info': [],

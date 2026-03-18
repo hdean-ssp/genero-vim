@@ -1,6 +1,6 @@
 " Genero-Tools Plugin - Progress Feedback
 
-let s:progress_shown = v:false
+let s:progress_shown = 0
 let s:command_start_time = 0
 
 " Show progress indicator
@@ -10,7 +10,7 @@ function! genero_tools#progress#show(message) abort
   endif
   
   echom a:message . ' ...'
-  let s:progress_shown = v:true
+  let s:progress_shown = 1
   let s:command_start_time = localtime()
 endfunction
 
@@ -18,7 +18,7 @@ endfunction
 function! genero_tools#progress#hide() abort
   if s:progress_shown
     echom ''
-    let s:progress_shown = v:false
+    let s:progress_shown = 0
   endif
 endfunction
 
