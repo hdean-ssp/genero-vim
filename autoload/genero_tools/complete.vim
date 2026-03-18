@@ -2,58 +2,68 @@
 
 " Main omnifunc for genero-tools completion
 function! genero_tools#complete#omnifunc(findstart, base) abort
-  if a:findstart
-    " Find the start of the word to complete
-    let line = getline('.')
-    let col = col('.') - 1
-    
-    " Find start of identifier (word characters, dots, underscores)
-    while col > 0 && line[col - 1] =~# '[a-zA-Z0-9_.]'
-      let col -= 1
-    endwhile
-    
-    return col
-  else
-    " Return list of completions
-    return genero_tools#complete#get_completions(a:base)
-  endif
+  try
+    if a:findstart
+      " Find the start of the word to complete
+      let line = getline('.')
+      let col = col('.') - 1
+      
+      " Find start of identifier (word characters, dots, underscores)
+      while col > 0 && line[col - 1] =~# '[a-zA-Z0-9_.]'
+        let col -= 1
+      endwhile
+      
+      return col
+    else
+      " Return list of completions
+      return genero_tools#complete#get_completions(a:base)
+    endif
+  catch
+    " Silently handle errors in completion
+    return a:findstart ? -1 : []
+  endtry
 endfunction
 
 " Get completions based on base string
 function! genero_tools#complete#get_completions(base) abort
-  if empty(a:base)
+  try
+    if empty(a:base)
+      return []
+    endif
+    
+    let completions = []
+    
+    " Search for functions matching the base
+    let func_results = genero_tools#complete#search_functions(a:base)
+    for func in func_results
+      call add(completions, {
+        \ 'word': func.name,
+        \ 'abbr': func.name,
+        \ 'menu': 'Function',
+        \ 'info': func.signature,
+        \ 'kind': 'f',
+        \ 'icase': 1
+        \ })
+    endfor
+    
+    " Search for modules matching the base
+    let module_results = genero_tools#complete#search_modules(a:base)
+    for module in module_results
+      call add(completions, {
+        \ 'word': module.name,
+        \ 'abbr': module.name,
+        \ 'menu': 'Module',
+        \ 'info': 'Module: ' . module.name,
+        \ 'kind': 'm',
+        \ 'icase': 1
+        \ })
+    endfor
+    
+    return completions
+  catch
+    " Silently handle errors in completion
     return []
-  endif
-  
-  let completions = []
-  
-  " Search for functions matching the base
-  let func_results = genero_tools#complete#search_functions(a:base)
-  for func in func_results
-    call add(completions, {
-      \ 'word': func.name,
-      \ 'abbr': func.name,
-      \ 'menu': 'Function',
-      \ 'info': func.signature,
-      \ 'kind': 'f',
-      \ 'icase': 1
-      \ })
-  endfor
-  
-  " Search for modules matching the base
-  let module_results = genero_tools#complete#search_modules(a:base)
-  for module in module_results
-    call add(completions, {
-      \ 'word': module.name,
-      \ 'abbr': module.name,
-      \ 'menu': 'Module',
-      \ 'info': 'Module: ' . module.name,
-      \ 'kind': 'm',
-      \ 'icase': 1
-      \ })
-  endfor
-  
-  return completions
+  endtry
 endfunction
 
 " Search for functions matching pattern
