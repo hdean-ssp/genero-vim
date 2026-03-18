@@ -222,6 +222,7 @@ The plugin provides intelligent autocomplete for function and module names. Auto
 - Module name completion
 - Cached results for performance
 - Works with partial matches (e.g., typing "val" completes "validate_input")
+- Robust error handling - completion errors are silently handled and don't interrupt editing
 
 ## Setup
 
