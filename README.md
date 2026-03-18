@@ -104,6 +104,20 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `:GeneroUnifiedSignsToggle` | Toggle unified sign column on/off |
 | `:GeneroUnifiedSignsStatus` | Show unified signs status and configuration |
 
+### which-key Integration
+
+If you have [which-key](https://github.com/folke/which-key.nvim) installed, all genero-tools keybindings are automatically registered with descriptions and organized into groups. Press `<leader>g` to see all available keybindings.
+
+**Keybinding Groups:**
+- `<leader>gl/f/s/m` - Code navigation (lookup, list functions, signature, metadata)
+- `<leader>gc*` - Compiler commands (compile, next/prev error, clear)
+- `<leader>ga*` - Cache commands (clear cache, memory pressure)
+- `<leader>gv*` - SVN commands (diff markers, status)
+- `<leader>gh` - Show help
+- `<leader>gC` - Show configuration
+
+See [which-key Integration Guide](docs/WHICH_KEY_INTEGRATION.md) for details.
+
 ### Customizing Keybindings
 
 The `.vimrc.example` uses space as the leader key. To customize:

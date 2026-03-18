@@ -55,6 +55,15 @@ command! GeneroSVNStatus call genero_tools#svn#commands#status()
 command! GeneroSVNCacheStats call genero_tools#svn#commands#cache_stats()
 command! GeneroSVNCacheClear call genero_tools#svn#commands#cache_clear()
 
+" Register debug streaming commands (Neovim only)
+if has('nvim')
+  command! -nargs=? GeneroDebugStream call genero_tools#debug_stream#start(<q-args>)
+  command! GeneroDebugStreamStop call genero_tools#debug_stream#stop()
+  command! GeneroDebugStreamToggle call genero_tools#debug_stream#toggle(genero_tools#config#get('debug_stream_directory') . '/debug.log')
+  command! GeneroDebugStreamClear call genero_tools#debug_stream#clear()
+  command! GeneroDebugStreamStatus call genero_tools#debug_stream#status()
+endif
+
 " Register sign commands
 call genero_tools#signs#commands#register()
 
@@ -66,4 +75,8 @@ endif
 " Initialize which-key integration if available
 call genero_tools#which_key#init()
 
+" Initialize debug streaming if available
+if has('nvim')
+  call genero_tools#debug_stream#init()
+endif
 

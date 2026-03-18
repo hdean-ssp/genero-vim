@@ -70,24 +70,26 @@ All genero-tools keybindings are organized under the `<leader>g` prefix:
 
 ### Enable/Disable which-key Integration
 
-By default, which-key integration is automatically enabled if which-key is installed. To disable it:
-
-```vim
-" In your vimrc/init.vim
-let g:genero_tools_config = {
-  \ 'which_key_enabled': 0,
-  \ }
-```
+which-key integration is automatically enabled if which-key is installed. The plugin detects which-key availability and gracefully handles cases where it's not installed.
 
 ### Custom Keybinding Prefix
 
-If you use a different leader key, which-key will automatically use your configured leader:
+The plugin automatically respects your configured leader key:
 
 ```vim
 " Use comma as leader
 let mapleader = ','
 
 " Genero-tools keybindings will be under <leader>g (,g)
+```
+
+### Manual Registration
+
+If automatic registration doesn't work, manually trigger it:
+
+```vim
+" In your init.vim after genero-tools loads
+call genero_tools#which_key#init()
 ```
 
 ## Usage
@@ -117,10 +119,20 @@ In the which-key popup, you can search for keybindings by typing:
 ### Automatic Registration
 
 When the plugin loads, it automatically:
-1. Detects if which-key is installed
-2. Registers all keybindings with descriptions
-3. Organizes keybindings into logical groups
-4. Updates when new keybindings are added
+1. Detects if which-key is installed via `g:which_key_map` or `:WhichKey` command
+2. Registers all keybindings with descriptions using `genero_tools#which_key#register()`
+3. Organizes keybindings into logical groups (lookup, compiler, cache, SVN, utility)
+4. Supports both which-key APIs (legacy `g:which_key_map` and modern `which_key#register()`)
+
+### API Functions
+
+The module provides these functions:
+
+- `genero_tools#which_key#init()` - Initialize which-key integration
+- `genero_tools#which_key#register()` - Register keybindings with legacy API
+- `genero_tools#which_key#register_with_api()` - Register with modern which-key API
+- `genero_tools#which_key#available()` - Check if which-key is installed
+- `genero_tools#which_key#status()` - Get integration status
 
 ### Graceful Fallback
 
@@ -128,6 +140,7 @@ If which-key is not installed:
 - Keybindings still work normally
 - No error messages are displayed
 - Plugin functions as usual
+- `genero_tools#which_key#available()` returns 0
 
 ### Custom Descriptions
 
@@ -145,34 +158,44 @@ let g:which_key_map.g = {
 
 ### which-key Popup Not Appearing
 
-1. Verify which-key is installed:
-   ```vim
-   :echo exists('g:which_key_map')
-   ```
-
-2. Check if which-key integration is enabled:
+1. Verify which-key is installed and available:
    ```vim
    :echo genero_tools#which_key#available()
    ```
 
-3. Verify your leader key:
+2. Check integration status:
+   ```vim
+   :echo genero_tools#which_key#status()
+   ```
+
+3. Manually initialize if needed:
+   ```vim
+   :call genero_tools#which_key#init()
+   ```
+
+4. Verify your leader key:
    ```vim
    :echo mapleader
    ```
 
 ### Keybindings Not Showing in which-key
 
-1. Ensure keybindings are enabled:
+1. Ensure which-key is properly installed:
    ```vim
-   let g:genero_tools_config.keybindings_enabled = 1
+   :echo exists('g:which_key_map') || exists(':WhichKey')
    ```
 
-2. Reload the plugin:
+2. Manually register keybindings:
    ```vim
-   :source plugin/genero_tools.vim
+   :call genero_tools#which_key#register()
    ```
 
-3. Check which-key status:
+3. Try the alternative API:
+   ```vim
+   :call genero_tools#which_key#register_with_api()
+   ```
+
+4. Check which-key status:
    ```vim
    :echo genero_tools#which_key#status()
    ```
