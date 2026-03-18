@@ -1,7 +1,9 @@
 " Genero-Tools Plugin - Filetype Plugin for Genero/FGL
 
-" Set omnifunc for fgl files
-setlocal omnifunc=genero_tools#complete#omnifunc
+" Set omnifunc for fgl files (only if the function exists)
+if exists('*genero_tools#complete#omnifunc')
+  setlocal omnifunc=genero_tools#complete#omnifunc
+endif
 
 " Set comment string for fgl files (# for comments)
 setlocal commentstring=#\ %s
