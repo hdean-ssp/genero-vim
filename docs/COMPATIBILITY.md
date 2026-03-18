@@ -92,6 +92,18 @@ Default keybindings work in both editors:
 
 ## Troubleshooting
 
+### Omnifunc not available
+
+The plugin safely handles cases where omnifunc is not available. The `ftplugin/fgl.vim` file checks if the omnifunc function exists before setting it:
+
+```vim
+if exists('*genero_tools#complete#omnifunc')
+  setlocal omnifunc=genero_tools#complete#omnifunc
+endif
+```
+
+This ensures the plugin loads without errors even if the complete module is not available or disabled. Autocomplete will simply not be available in those cases.
+
 ### Sign column not persistent (Vim only)
 
 The persistent sign column feature (`signcolumn=yes`) requires **Vim 7.4.2201+** or Neovim. On older Vim versions, the sign column will appear/disappear as needed.
