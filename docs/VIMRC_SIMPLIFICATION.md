@@ -6,6 +6,15 @@ The `.vimrc.example` configuration has been simplified to focus on essential set
 
 ## Changes Made
 
+### Indentation Settings Update (March 18, 2026)
+
+The indentation settings have been updated to match Genero conventions:
+- Changed from `set expandtab` (spaces) to `set noexpandtab` (tabs)
+- Updated `shiftwidth` from 2 to 4
+- Updated `tabstop` from 2 to 4
+
+**Rationale:** Genero code typically uses tabs for indentation, which is the standard in the Genero ecosystem. This change aligns the default configuration with Genero conventions.
+
 ### Settings Removed
 
 1. **Relative Line Numbers** (`set relativenumber`)
@@ -46,9 +55,9 @@ The `.vimrc.example` configuration has been simplified to focus on essential set
 - `set cursorline` - Highlight current line
 
 **Essential Indentation:**
-- `set expandtab` - Use spaces instead of tabs
-- `set shiftwidth=2` - Indent width
-- `set tabstop=2` - Tab width
+- `set noexpandtab` - Use tabs instead of spaces (Genero convention)
+- `set shiftwidth=4` - Indent width
+- `set tabstop=4` - Tab width
 
 **Essential Search:**
 - `set ignorecase` - Case-insensitive search

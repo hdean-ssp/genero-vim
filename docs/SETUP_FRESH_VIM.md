@@ -323,6 +323,24 @@ nnoremap <silent> <leader>gm :GeneroFileMetadata %<CR>
 :GeneroClearErrors                      " Clear error markers
 ```
 
+## Indentation Settings
+
+The `.vimrc.example` uses tab-based indentation to match Genero conventions:
+
+```vim
+set noexpandtab    " Use tabs instead of spaces
+set shiftwidth=4   " Indent width (4 spaces per tab)
+set tabstop=4      " Tab width (display as 4 spaces)
+```
+
+**To use spaces instead of tabs:**
+
+```vim
+set expandtab      " Use spaces instead of tabs
+set shiftwidth=4   " Indent width
+set tabstop=4      " Tab width
+```
+
 ## Troubleshooting
 
 ## Troubleshooting

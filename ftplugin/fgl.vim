@@ -12,15 +12,27 @@ if genero_tools#config#get('compiler_autocompile')
 endif
 
 " Tab-based completion keybindings
-" Tab to trigger completion
-inoremap <buffer> <Tab> <C-x><C-o>
+" Tab behavior:
+" - If completion menu is visible: navigate down
+" - If line is empty or only whitespace: insert tab character
+" - Otherwise: trigger completion
+function! s:handle_tab() abort
+  if pumvisible()
+    return "\<C-n>"
+  endif
+  
+  " Check if line before cursor is empty or only whitespace
+  let line_before = getline('.')[:col('.')-2]
+  if line_before =~# '^\s*$'
+    " Line is empty or only whitespace, insert tab
+    return "\<Tab>"
+  endif
+  
+  " Otherwise trigger completion
+  return "\<C-x>\<C-o>"
+endfunction
 
-" In completion menu:
-" - Tab/Down arrow to navigate down
-" - Shift+Tab/Up arrow to navigate up
-" - Enter to accept
-" - Esc to cancel
-inoremap <buffer> <expr> <Tab> pumvisible() ? "\<C-n>" : "\<C-x>\<C-o>"
+inoremap <buffer> <expr> <Tab> <SID>handle_tab()
 inoremap <buffer> <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <buffer> <expr> <Down> pumvisible() ? "\<C-n>" : "\<Down>"
 inoremap <buffer> <expr> <Up> pumvisible() ? "\<C-p>" : "\<Up>"
