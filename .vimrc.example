@@ -247,11 +247,8 @@ nnoremap <leader>bn :bnext<CR>
 nnoremap <leader>bp :bprev<CR>
 nnoremap <leader>bd :bdelete<CR>
 
-" Resize windows
-nnoremap <C-Up> :resize +2<CR>
-nnoremap <C-Down> :resize -2<CR>
-nnoremap <C-Left> :vertical resize -2<CR>
-nnoremap <C-Right> :vertical resize +2<CR>
+" Note: Resize window keybindings removed - they interfere with arrow key detection in Vim 8.0
+" Use :resize +2 or :vertical resize -2 commands manually if needed
 
 " Clear search highlight
 nnoremap <Esc> :nohlsearch<CR>
@@ -287,8 +284,7 @@ function! s:show_genero_help()
   echo '  Space+sh        - Show snippet help'
   echo ''
   echo 'WINDOW MANAGEMENT:'
-  echo '  Ctrl+Up/Down    - Resize window vertically'
-  echo '  Ctrl+Left/Right - Resize window horizontally'
+  echo '  Use :resize +2 or :vertical resize -2 commands'
   echo ''
   echo 'COMMENTING:'
   echo '  gcc             - Toggle comment on line'
