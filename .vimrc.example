@@ -226,8 +226,8 @@ nnoremap <leader>bn :bnext<CR>
 nnoremap <leader>bp :bprev<CR>
 nnoremap <leader>bd :bdelete<CR>
 
-" Clear search highlight
-nnoremap <Esc> :nohlsearch<CR>
+" NOTE: Do NOT remap <Esc> - it breaks arrow key detection in Vim 8.0
+" Arrow keys send escape sequences like ESC[A, and remapping Esc interferes with parsing
 
 " ============================================================================
 " HELPFUL COMMANDS
