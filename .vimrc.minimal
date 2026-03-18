@@ -1,6 +1,0 @@
-" Minimal Vim config for testing arrow keys
-set nocompatible
-set backspace=indent,eol,start
-
-" No plugins, no complex settings
-" Just basic navigation

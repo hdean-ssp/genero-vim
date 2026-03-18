@@ -42,6 +42,13 @@
 - **Fix**: Removed resize keybindings from example config
 - **Alternative**: Users can manually use `:resize +2` or `:vertical resize -2` commands, or add custom keybindings if they don't experience issues in their environment
 
+### 7. Escape Key Remapping Removed
+**File**: `.vimrc.example`
+- **Issue**: Remapping `<Esc>` to `:nohlsearch<CR>` breaks arrow key detection in Vim 8.0
+- **Why**: Arrow keys send escape sequences like `ESC[A`, `ESC[B`, etc. Remapping Escape interferes with parsing these sequences, causing arrow keys to malfunction
+- **Fix**: Removed the `nnoremap <Esc> :nohlsearch<CR>` keybinding from example config
+- **Alternative**: Use `:set hlsearch` and manually clear search highlight with `:nohlsearch` command, or use a different key combination that doesn't interfere with terminal escape sequences
+
 ## Testing
 All files pass diagnostic checks with no syntax errors.
 

@@ -32,7 +32,11 @@ The `.vimrc.example` configuration has been simplified to focus on essential set
    - Reason: Interfere with arrow key detection in Vim 8.0
    - Alternative: Use `:resize +2` or `:vertical resize -2` commands manually
 
-7. **Window Management Help Text** (from `:GeneroHelp` output)
+7. **Escape Key Remapping** (`nnoremap <Esc> :nohlsearch<CR>`)
+   - Reason: Breaks arrow key detection in Vim 8.0 (arrow keys send escape sequences like ESC[A, ESC[B)
+   - Alternative: Use `:nohlsearch` command manually or use a different key combination
+
+8. **Window Management Help Text** (from `:GeneroHelp` output)
    - Reason: Removed resize keybindings, so help text no longer needed
 
 ### Settings Kept
@@ -86,11 +90,12 @@ set linebreak
 set breakindent
 set mouse=c
 
-" Remove these keybindings
+" Remove these keybindings (they interfere with arrow key detection)
 nnoremap <C-Up> :resize +2<CR>
 nnoremap <C-Down> :resize -2<CR>
 nnoremap <C-Left> :vertical resize -2<CR>
 nnoremap <C-Right> :vertical resize +2<CR>
+nnoremap <Esc> :nohlsearch<CR>
 ```
 
 ### If You Want to Add Settings Back
