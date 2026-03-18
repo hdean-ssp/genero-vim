@@ -20,6 +20,7 @@ cp .vimrc.example ~/.vimrc
 ```
 
 Or manually create `~/.vimrc` with the contents from `.vimrc.example`. The example includes:
+- Minimal, essential settings (no conflicts or unnecessary options)
 - vim-plug plugin manager setup (Vim 8+ and Neovim only)
 - Genero-tools plugin configuration
 - Neovim-specific enhancements (lualine, which-key, tokyonight theme)
@@ -284,6 +285,9 @@ let g:genero_tools_config.display_mode = 'echo'
 | `<leader>gf` | List functions in current file |
 | `<leader>gs` | Get function signature under cursor |
 | `<leader>gm` | Get metadata for current file |
+| `F5` | Compile current file |
+| `Ctrl+,` | Jump to next error |
+| `Ctrl+.` | Jump to previous error |
 
 To disable keybindings:
 
@@ -320,6 +324,23 @@ nnoremap <silent> <leader>gm :GeneroFileMetadata %<CR>
 ```
 
 ## Troubleshooting
+
+## Troubleshooting
+
+### Arrow Keys Inserting ABCD
+
+If arrow keys insert ABCD instead of navigating, this is usually a terminal configuration issue, not a Vim issue. The `.vimrc.example` has been simplified to avoid conflicts:
+
+**Removed settings that could cause this:**
+- Resize window keybindings (Ctrl+arrow combinations)
+- Mouse support (can interfere with terminal)
+- Complex indentation settings
+
+**If you still experience issues:**
+1. Check your terminal type: `echo $TERM` (should be `xterm-256color` or similar)
+2. Try: `export TERM=xterm-256color`
+3. Verify you're using Vim, not Vi: `vim --version | head -1`
+4. Check that `set nocompatible` is at the top of your `.vimrc`
 
 ### query.sh not found
 

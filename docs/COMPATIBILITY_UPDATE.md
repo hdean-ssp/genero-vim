@@ -133,34 +133,30 @@ The configuration has been tested on:
 - Vim 8 (plugin manager and snippets)
 - Neovim 0.4+ (all features)
 
-## Keybinding Compatibility
+## Configuration Simplification
 
-### Resize Window Keybindings Removed
+### Minimal Settings Approach
 
-The resize window keybindings (`<C-Up>`, `<C-Down>`, `<C-Left>`, `<C-Right>`) have been removed from `.vimrc.example` because they interfere with arrow key detection in Vim 8.0.
+The `.vimrc.example` has been simplified to focus on essential settings only:
 
-**Why removed:**
-- Vim 8.0 has issues with Ctrl+arrow key combinations
-- These keybindings can cause unexpected behavior or key detection failures
-- The interference is particularly problematic in terminal environments
+**Removed:**
+- Relative line numbers (can cause visual confusion)
+- Color column (not essential for basic usage)
+- Smart indent (can interfere with some file types)
+- Line wrapping and break indent (simpler without)
+- Mouse support (can interfere with terminal selection)
+- Resize window keybindings (interfere with arrow key detection in Vim 8.0)
+- Window management help text (removed from `:GeneroHelp` output)
 
-**Alternative:**
-Use the manual commands instead:
-```vim
-:resize +2          " Increase window height
-:resize -2          " Decrease window height
-:vertical resize +2 " Increase window width
-:vertical resize -2 " Decrease window width
-```
+**Kept:**
+- Basic UI settings (line numbers, cursor line)
+- Essential indentation (expandtab, shiftwidth, tabstop)
+- Search settings (ignorecase, smartcase, hlsearch, incsearch)
+- Performance settings (updatetime, timeoutlen)
+- Split behavior (splitbelow, splitright)
+- Terminal colors (termguicolors, background)
 
-Or add custom keybindings if needed (test thoroughly in your environment):
-```vim
-" Only if you don't experience arrow key issues
-nnoremap <C-Up> :resize +2<CR>
-nnoremap <C-Down> :resize -2<CR>
-nnoremap <C-Left> :vertical resize -2<CR>
-nnoremap <C-Right> :vertical resize +2<CR>
-```
+**Result:** Cleaner, more compatible configuration that works across all Vim versions without conflicts.
 
 ## Backward Compatibility
 

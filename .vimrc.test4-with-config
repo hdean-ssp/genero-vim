@@ -1,0 +1,65 @@
+" TEST 4: With Plugin + Genero Config
+set nocompatible
+
+" UI & Display
+set number
+set cursorline
+
+" Indentation & Formatting
+set expandtab
+set shiftwidth=2
+set tabstop=2
+
+" Search & Navigation
+set ignorecase
+set smartcase
+set hlsearch
+set incsearch
+
+" Performance & Behavior
+set updatetime=250
+set timeoutlen=300
+set splitbelow
+set splitright
+
+" Terminal colors
+if has('termguicolors')
+  set termguicolors
+endif
+
+set background=dark
+
+" ============================================================================
+" VIM-PLUG INITIALIZATION
+" ============================================================================
+
+" Install vim-plug if not already installed
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+call plug#begin('~/.vim/plugged')
+
+" Genero Tools Plugin
+Plug 'hdean-ssp/genero-vim'
+
+call plug#end()
+
+" ============================================================================
+" GENERO TOOLS CONFIGURATION
+" ============================================================================
+
+let g:genero_tools_config = {
+  \ 'compiler_enabled': 1,
+  \ 'compiler_autocompile': 1,
+  \ 'compiler_autocompile_delay': 500,
+  \ 'compiler_sign_column': 1,
+  \ 'compiler_highlight_unused': 1,
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_args': ['-M', '-W', 'all'],
+  \ 'genero_tools_path': $BRODIR . '/etc/genero-tools/query.sh',
+  \ 'display_mode': 'inline',
+  \ 'snippets_enabled': 1,
+  \ }
