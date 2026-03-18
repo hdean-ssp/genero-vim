@@ -2,6 +2,11 @@
 " Provides VimScript interface to snippet integration functions
 " Integrates snippets with GeneroLookup and autocomplete
 
+" Ensure dependencies are loaded
+if !exists('*genero_tools#error#log')
+  runtime! autoload/genero_tools/error.vim
+endif
+
 " Offer snippet expansion after GeneroLookup
 function! genero_tools#snippets#integration#offer_after_lookup(function_name) abort
   if !has('nvim')

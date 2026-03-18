@@ -1,6 +1,11 @@
 " Genero-Tools Plugin - Error Handling Module
 " Provides error message formatting and guidance for various failure scenarios
 
+" Log an error message
+function! genero_tools#error#log(message) abort
+  echomsg '[genero-tools] ' . a:message
+endfunction
+
 " Format error for resource not found
 function! genero_tools#error#format_not_found(resource_type, resource_name) abort
   let message = 'Error: ' . a:resource_type . ' not found: ' . a:resource_name

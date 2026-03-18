@@ -1,24 +1,44 @@
--- Minimal Neovim 0.9.5 Configuration for Genero Development
+-- Modern Neovim 0.9.5 Configuration for Genero Development
 -- Copy this to ~/.config/nvim/init.lua and adjust paths as needed
 
 -- ============================================================================
 -- BASIC SETTINGS
 -- ============================================================================
 
+-- UI & Display
 vim.opt.number = true
 vim.opt.relativenumber = true
+vim.opt.termguicolors = true
+vim.opt.background = 'dark'
+vim.opt.cursorline = true
+vim.opt.cursorcolumn = false
+vim.opt.signcolumn = "yes:2"
+vim.opt.colorcolumn = "100"
+vim.opt.cmdheight = 1
+vim.opt.pumheight = 10
+
+-- Indentation & Formatting
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
 vim.opt.smartindent = true
 vim.opt.wrap = true
 vim.opt.linebreak = true
+vim.opt.breakindent = true
+
+-- Search & Navigation
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.hlsearch = false
 vim.opt.incsearch = true
-vim.opt.termguicolors = true
-vim.opt.background = 'dark'
+
+-- Performance & Behavior
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 300
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.mouse = "a"
+vim.opt.clipboard = "unnamedplus"
 
 -- ============================================================================
 -- GENERO TOOLS CONFIGURATION (must be set before plugin loads)
@@ -64,6 +84,34 @@ vim.opt.rtp:prepend(lazypath)
 -- ============================================================================
 
 local plugins = {
+  -- Modern Dark Theme - Tokyonight
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("tokyonight").setup({
+        style = "night",
+        transparent = false,
+        terminal_colors = true,
+        styles = {
+          comments = { italic = true },
+          keywords = { italic = true },
+          functions = {},
+          variables = {},
+          sidebars = "dark",
+          floats = "dark",
+        },
+        sidebars = { "qf", "help" },
+        day_brightness = 0.3,
+        hide_inactive_statusline = false,
+        dim_inactive = false,
+        lualine_bold = true,
+      })
+      vim.cmd("colorscheme tokyonight")
+    end,
+  },
+
   -- LuaSnip - Required for Genero code snippets
   -- Note: jsregexp is optional (only needed for advanced regex in snippets)
   -- If you need jsregexp, install Lua dev headers: lua5.1-dev (Debian/Ubuntu) or lua-devel (RHEL/CentOS)
@@ -89,21 +137,27 @@ local plugins = {
     end,
   },
 
-  -- Statusline for helpful keybinding hints
+  -- Modern Statusline
   {
     "nvim-lualine/lualine.nvim",
     version = "v0.9.*",
     config = function()
       require("lualine").setup({
         options = {
-          theme = "auto",
-          component_separators = { left = "", right = "" },
+          theme = "tokyonight",
+          component_separators = { left = "│", right = "│" },
           section_separators = { left = "", right = "" },
+          globalstatus = true,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          },
         },
         sections = {
           lualine_a = { "mode" },
-          -- lualine_b = { "branch", "diff" },  -- TODO: SVN support (git removed for now)
-          lualine_c = { "filename" },
+          lualine_b = { "filename", "modified" },
+          lualine_c = { "diagnostics" },
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
@@ -112,7 +166,74 @@ local plugins = {
           lualine_a = { "buffers" },
           lualine_z = { "tabs" },
         },
+        extensions = { "quickfix", "man" },
       })
+    end,
+  },
+
+  -- Floating Window UI for commands
+  {
+    "folke/noice.nvim",
+    version = "v3.*",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
+    config = function()
+      require("noice").setup({
+        lsp = {
+          override = {
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
+          },
+        },
+        presets = {
+          bottom_search = true,
+          command_palette = true,
+          long_message_to_split = true,
+          inc_rename = false,
+          lsp_doc_border = true,
+        },
+        routes = {
+          {
+            filter = {
+              event = "msg_show",
+              any = {
+                { find = "%d+L, %d+B" },
+                { find = "; after #%d+" },
+                { find = "; before #%d+" },
+              },
+            },
+            view = "mini",
+          },
+        },
+      })
+    end,
+  },
+
+  -- Notification system
+  {
+    "rcarriga/nvim-notify",
+    config = function()
+      require("notify").setup({
+        background_colour = "#000000",
+        fps = 30,
+        icons = {
+          DEBUG = "",
+          ERROR = "",
+          INFO = "",
+          TRACE = "✎",
+          WARN = "",
+        },
+        level = 2,
+        minimum_width = 50,
+        render = "default",
+        stages = "fade_in_slide_out",
+        timeout = 3000,
+        top_down = true,
+      })
+      vim.notify = require("notify")
     end,
   },
 
@@ -124,8 +245,127 @@ local plugins = {
     version = "v1.*",
     config = function()
       require("which-key").setup({
+        plugins = {
+          marks = true,
+          registers = true,
+          spelling = {
+            enabled = true,
+            suggestions = 9,
+          },
+          presets = {
+            operators = true,
+            motions = true,
+            text_objects = true,
+            windows = true,
+            nav = true,
+            z = true,
+            g = true,
+          },
+        },
+        icons = {
+          breadcrumb = "»",
+          separator = "➜",
+          group = "+",
+        },
+        popup_mappings = {
+          scroll_down = "<c-d>",
+          scroll_up = "<c-u>",
+        },
         window = {
           border = "rounded",
+          position = "bottom",
+          margin = { 1, 0, 1, 0 },
+          padding = { 2, 2, 2, 2 },
+          winblend = 0,
+        },
+        layout = {
+          height = { min = 4, max = 25 },
+          width = { min = 20, max = 50 },
+          spacing = 3,
+          align = "left",
+        },
+        show_help = true,
+        show_keys = true,
+      })
+    end,
+  },
+
+  -- Indent guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    config = function()
+      require("ibl").setup({
+        indent = { char = "│", highlight = "IblIndent" },
+        whitespace = {
+          highlight = "IblWhitespace",
+          remove_blankline_trail = false,
+        },
+        scope = { enabled = true, highlight = "IblScope" },
+      })
+    end,
+  },
+
+  -- Better UI for vim.ui.select and vim.ui.input
+  {
+    "stevearc/dressing.nvim",
+    config = function()
+      require("dressing").setup({
+        input = {
+          enabled = true,
+          default_prompt = "➜ ",
+          prompt_align = "left",
+          insert_only = true,
+          start_in_insert = true,
+          border = "rounded",
+          relative = "cursor",
+          prefer_width = 40,
+          width = nil,
+          max_width = { 140, 0.9 },
+          min_width = { 20, 0.2 },
+          buf_options = {},
+          win_options = {
+            wrap = false,
+            list = true,
+            listchars = "extends:…",
+            sidescrolloff = 0,
+          },
+          get_config = nil,
+        },
+        select = {
+          enabled = true,
+          backend = { "telescope", "fzf", "builtin" },
+          trim_prompt = true,
+          telescope = nil,
+          fzf = {
+            window = {
+              yoffset = -0.5,
+            },
+          },
+          builtin = {
+            border = "rounded",
+            relative = "editor",
+            buf_options = {},
+            win_options = {
+              cursorline = true,
+              cursorlineopt = "both",
+            },
+            width = nil,
+            max_width = { 80, 0.8 },
+            min_width = { 40, 0.2 },
+            height = nil,
+            max_height = 0.9,
+            mappings = {
+              ["<Esc>"] = "Close",
+              ["<C-c>"] = "Close",
+              ["<CR>"] = "Confirm",
+            },
+            override = function(conf)
+              return conf
+            end,
+          },
+          format_item_override = {},
+          get_config = nil,
         },
       })
     end,
@@ -163,24 +403,60 @@ map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
 map("n", "<leader>sl", ":GeneroSnippetList<CR>", opts)
 map("n", "<leader>sh", ":GeneroSnippetHelp<CR>", opts)
 
+-- Window navigation
+map("n", "<C-h>", "<C-w>h", opts)
+map("n", "<C-j>", "<C-w>j", opts)
+map("n", "<C-k>", "<C-w>k", opts)
+map("n", "<C-l>", "<C-w>l", opts)
+
+-- Buffer navigation
+map("n", "<leader>bn", ":bnext<CR>", opts)
+map("n", "<leader>bp", ":bprev<CR>", opts)
+map("n", "<leader>bd", ":bdelete<CR>", opts)
+
+-- Resize windows
+map("n", "<C-Up>", ":resize +2<CR>", opts)
+map("n", "<C-Down>", ":resize -2<CR>", opts)
+map("n", "<C-Left>", ":vertical resize -2<CR>", opts)
+map("n", "<C-Right>", ":vertical resize +2<CR>", opts)
+
+-- Clear search highlight
+map("n", "<Esc>", ":nohlsearch<CR>", opts)
+
 -- ============================================================================
--- HELPFUL COMMANDS
+-- HELPFUL COMMANDS & AUTOCMDS
 -- ============================================================================
 
 -- Show keybindings help
 vim.api.nvim_create_user_command("GeneroHelp", function()
   print([[
-Genero Tools Keybindings:
+╔════════════════════════════════════════════════════════════════╗
+║           Genero Tools Keybindings & Commands                  ║
+╚════════════════════════════════════════════════════════════════╝
+
+COMPILATION:
   F5              - Compile current file
-  Ctrl+[          - Previous error/warning
-  Ctrl+]          - Next error/warning
-  <leader>ca      - Enable autocompile
-  <leader>cd      - Disable autocompile
-  <leader>cc      - Clear errors
+  <leader>ca      - Enable autocompile on save
+  <leader>cd      - Disable autocompile on save
+  <leader>cc      - Clear error markers
+
+NAVIGATION:
+  Ctrl+[          - Jump to previous error/warning
+  Ctrl+]          - Jump to next error/warning
+  Ctrl+h/j/k/l    - Navigate between windows
+  <leader>bn      - Next buffer
+  <leader>bp      - Previous buffer
+  <leader>bd      - Delete current buffer
+
+SNIPPETS:
   <leader>sl      - List available snippets
   <leader>sh      - Show snippet help
 
-Commands:
+WINDOW MANAGEMENT:
+  Ctrl+Up/Down    - Resize window vertically
+  Ctrl+Left/Right - Resize window horizontally
+
+COMMANDS:
   :GeneroCompile              - Compile current file
   :GeneroAutocompileEnable    - Enable autocompile on save
   :GeneroAutocompileDisable   - Disable autocompile on save
@@ -190,14 +466,35 @@ Commands:
   :GeneroPrevError            - Jump to previous error
   :GeneroSnippetList          - List all available snippets
   :GeneroSnippetHelp          - Show snippet documentation
+  :GeneroHelp                 - Show this help
+
+TIPS:
+  • Press <leader> to see available keybindings
+  • Use Ctrl+h/j/k/l to navigate between split windows
+  • Autocompile is enabled by default (500ms delay)
+  • Errors appear in the sign column and quickfix list
   ]])
 end, {})
 
--- Show help on startup
+-- Show help on startup if no files are opened
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     if vim.fn.argc() == 0 then
       vim.cmd("GeneroHelp")
     end
+  end,
+})
+
+-- Highlight on yank
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank({ higroup = "IncSearch", timeout = 200 })
+  end,
+})
+
+-- Auto-resize splits when window is resized
+vim.api.nvim_create_autocmd("VimResized", {
+  callback = function()
+    vim.cmd("tabdo wincmd =")
   end,
 })

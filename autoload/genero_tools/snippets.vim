@@ -3,6 +3,11 @@
 " Exposes snippet commands and keybindings
 " Neovim-only feature
 
+" Ensure dependencies are loaded
+if !exists('*genero_tools#error#log')
+  runtime! autoload/genero_tools/error.vim
+endif
+
 " List all available snippets
 function! genero_tools#snippets#list() abort
   if !has('nvim')

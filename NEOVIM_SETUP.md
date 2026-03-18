@@ -1,6 +1,6 @@
 # Neovim 0.9.5 Setup for Genero Development
 
-This guide helps you set up Neovim 0.9.5 with the genero-tools plugin for Genero development.
+This guide helps you set up Neovim 0.9.5 with the genero-tools plugin for Genero development with a modern, beautiful UI.
 
 ## Prerequisites
 
@@ -70,6 +70,15 @@ Lazy.nvim will automatically download and install plugins on first launch.
 | `<leader>ca` | Enable autocompile on save |
 | `<leader>cd` | Disable autocompile on save |
 | `<leader>cc` | Clear error markers |
+| `<leader>sl` | List available snippets |
+| `<leader>sh` | Show snippet help |
+| `Ctrl+h/j/k/l` | Navigate between windows |
+| `<leader>bn` | Next buffer |
+| `<leader>bp` | Previous buffer |
+| `<leader>bd` | Delete current buffer |
+| `Ctrl+Up/Down` | Resize window vertically |
+| `Ctrl+Left/Right` | Resize window horizontally |
+| `<leader>` | Show available keybindings (which-key) |
 
 ## Commands
 
@@ -84,14 +93,54 @@ Lazy.nvim will automatically download and install plugins on first launch.
 :GeneroHelp                 " Show this help
 ```
 
-## Configuration
+## Customization
 
-Edit `~/.config/nvim/genero_config.lua` to customize:
+The configuration is highly customizable. Here are some common tweaks:
 
-- Compiler command and arguments
-- Autocompile behavior
-- Error highlighting and signs
-- Display mode for results
+### Change the Color Scheme
+
+In `init.lua`, modify the Tokyonight setup:
+
+```lua
+require("tokyonight").setup({
+  style = "night",  -- Options: "night", "storm", "day", "moon"
+  transparent = false,  -- Set to true for transparent background
+  -- ... other options
+})
+```
+
+### Disable Floating Windows
+
+If you prefer traditional UI, disable Noice:
+
+```lua
+-- Comment out or remove the noice.nvim plugin entry
+```
+
+### Customize Keybindings
+
+Add your own keybindings after the existing ones:
+
+```lua
+local map = vim.keymap.set
+local opts = { noremap = true, silent = true }
+
+-- Your custom keybindings
+map("n", "<leader>xx", ":YourCommand<CR>", opts)
+```
+
+### Adjust Statusline
+
+Modify the lualine configuration to show/hide components:
+
+```lua
+sections = {
+  lualine_a = { "mode" },
+  lualine_b = { "filename", "modified" },
+  lualine_c = { "diagnostics" },
+  -- Add or remove components as needed
+},
+```
 
 ## Troubleshooting
 
@@ -133,32 +182,40 @@ This configuration is tested for Neovim 0.9.5 only. If you have version issues:
 
 ## Features
 
-### Autocompile on Save
+### Modern Dark Theme
+- **Tokyonight** color scheme with beautiful dark aesthetics
+- Optimized for readability and reduced eye strain
+- Consistent colors across all UI elements
 
+### Floating Windows & Modern UI
+- **Noice.nvim** for floating command palette and messages
+- **Dressing.nvim** for beautiful input/select dialogs
+- **Indent-blankline** for visual indent guides
+- Smooth animations and transitions
+
+### Enhanced Statusline
+- **Lualine** with Tokyonight theme integration
+- Shows mode, filename, diagnostics, encoding, and location
+- Buffer and tab navigation in the tabline
+
+### Helpful Features
+- **Which-key** integration for discovering keybindings (press `<leader>`)
+- **Nvim-notify** for elegant notifications
+- Automatic window resizing
+- Highlight on yank for visual feedback
+- Improved window navigation with Ctrl+hjkl
+
+### Autocompile on Save
 By default, autocompile is enabled. Files are compiled automatically when saved with a 500ms delay to avoid multiple compilations.
 
 ### Error Highlighting
-
 Errors and warnings are highlighted in the editor with:
 - Signs in the gutter (left margin)
 - Inline highlighting
 - Quickfix list for navigation
 
 ### Unused Variable Detection
-
 Unused variables are highlighted when `compiler_highlight_unused` is enabled.
-
-### Helpful Statusline
-
-The statusline shows:
-- Current mode
-- Filename
-- File encoding and format
-- Progress and location
-
-### Which-key Integration
-
-Press `<leader>` to see available keybindings.
 
 ## Next Steps
 
