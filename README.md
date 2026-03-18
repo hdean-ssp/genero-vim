@@ -250,6 +250,25 @@ let g:genero_tools_config = {
   \ }
 ```
 
+### Codebase Detection
+
+The `codebase_markers` option identifies project root directories. The plugin searches for these markers to determine the codebase root:
+
+```vim
+let g:genero_tools_config.codebase_markers = ['castle.sch', 'genero.conf', '.genero', '.git']
+```
+
+**Flexible Configuration:**
+- Accepts a list of marker filenames (default)
+- Also accepts a single string, which is automatically converted to a list
+- Useful for single-marker projects: `let g:genero_tools_config.codebase_markers = 'castle.sch'`
+
+**Common Markers:**
+- `castle.sch` - Genero project schema file
+- `genero.conf` - Genero configuration file
+- `.genero` - Genero project directory marker
+- `.git` - Git repository root
+
 ### Compiler Configuration
 
 ```vim
