@@ -199,6 +199,11 @@ The plugin provides intelligent autocomplete for function and module names. Auto
 6. Press Esc to cancel
 ```
 
+**Tab Behavior (Smart):**
+- **Completion menu visible** - Navigate down in menu
+- **Empty line or only whitespace** - Insert tab character (for indentation)
+- **Otherwise** - Trigger autocomplete
+
 **Keybindings in Autocomplete Menu:**
 - `Tab` - Next item (or trigger if menu closed)
 - `Shift+Tab` - Previous item

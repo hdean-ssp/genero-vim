@@ -3,8 +3,8 @@
 " Set omnifunc for genero files
 setlocal omnifunc=genero_tools#complete#omnifunc
 
-" Set other useful options for genero files
-setlocal commentstring=--\ %s
+" Set comment string for genero files (# for comments)
+setlocal commentstring=#\ %s
 
 " Enable autocompile for genero files if configured
 if genero_tools#config#get('compiler_autocompile')
