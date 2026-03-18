@@ -74,10 +74,10 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `<space>bp` | Previous buffer (Vim 7+) |
 | `<space>bd` | Delete buffer (Vim 7+) |
 | `Ctrl+h/j/k/l` | Navigate between windows (Vim 7+) |
-| `Ctrl+Up/Down` | Resize window vertically (Vim 7+) |
-| `Ctrl+Left/Right` | Resize window horizontally (Vim 7+) |
 | `gcc` | Toggle comment on line (Neovim only) |
 | `gbc` | Toggle block comment (Neovim only) |
+
+**Note:** Resize window keybindings (`Ctrl+Up/Down/Left/Right`) have been removed from the default config as they interfere with arrow key detection in Vim 8.0. Use `:resize +2` or `:vertical resize -2` commands manually, or add custom keybindings if needed.
 
 ### SVN Commands
 

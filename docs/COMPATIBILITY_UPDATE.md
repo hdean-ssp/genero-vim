@@ -133,6 +133,35 @@ The configuration has been tested on:
 - Vim 8 (plugin manager and snippets)
 - Neovim 0.4+ (all features)
 
+## Keybinding Compatibility
+
+### Resize Window Keybindings Removed
+
+The resize window keybindings (`<C-Up>`, `<C-Down>`, `<C-Left>`, `<C-Right>`) have been removed from `.vimrc.example` because they interfere with arrow key detection in Vim 8.0.
+
+**Why removed:**
+- Vim 8.0 has issues with Ctrl+arrow key combinations
+- These keybindings can cause unexpected behavior or key detection failures
+- The interference is particularly problematic in terminal environments
+
+**Alternative:**
+Use the manual commands instead:
+```vim
+:resize +2          " Increase window height
+:resize -2          " Decrease window height
+:vertical resize +2 " Increase window width
+:vertical resize -2 " Decrease window width
+```
+
+Or add custom keybindings if needed (test thoroughly in your environment):
+```vim
+" Only if you don't experience arrow key issues
+nnoremap <C-Up> :resize +2<CR>
+nnoremap <C-Down> :resize -2<CR>
+nnoremap <C-Left> :vertical resize -2<CR>
+nnoremap <C-Right> :vertical resize +2<CR>
+```
+
 ## Backward Compatibility
 
 The new `.vimrc.example` is fully backward compatible:

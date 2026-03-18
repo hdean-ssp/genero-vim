@@ -36,6 +36,12 @@
 - **Issue**: Error messages referenced `v:true` in enable instructions
 - **Fix**: Changed to use `1` instead of `v:true`
 
+### 6. Resize Window Keybindings Removed
+**File**: `.vimrc.example`
+- **Issue**: Ctrl+arrow key combinations (`<C-Up>`, `<C-Down>`, `<C-Left>`, `<C-Right>`) interfere with arrow key detection in Vim 8.0
+- **Fix**: Removed resize keybindings from example config
+- **Alternative**: Users can manually use `:resize +2` or `:vertical resize -2` commands, or add custom keybindings if they don't experience issues in their environment
+
 ## Testing
 All files pass diagnostic checks with no syntax errors.
 

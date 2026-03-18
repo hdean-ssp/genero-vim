@@ -6,6 +6,38 @@
 set nocompatible
 
 " ============================================================================
+" BASIC SETTINGS (MINIMAL - for arrow key compatibility)
+" ============================================================================
+
+" UI & Display
+set number
+set cursorline
+
+" Indentation & Formatting
+set expandtab
+set shiftwidth=2
+set tabstop=2
+
+" Search & Navigation
+set ignorecase
+set smartcase
+set hlsearch
+set incsearch
+
+" Performance & Behavior
+set updatetime=250
+set timeoutlen=300
+set splitbelow
+set splitright
+
+" Terminal colors (Vim 8+ and Neovim)
+if has('termguicolors')
+  set termguicolors
+endif
+
+set background=dark
+
+" ============================================================================
 " VIM-PLUG INITIALIZATION
 " ============================================================================
 
@@ -49,59 +81,6 @@ if has('nvim')
 endif
 
 call plug#end()
-
-" ============================================================================
-" BASIC SETTINGS
-" ============================================================================
-
-" UI & Display
-set number
-set relativenumber
-set cursorline
-set cmdheight=1
-
-" Sign column (Vim 8.1.1564+ and Neovim)
-" Note: Vim 8.0 doesn't support signcolumn, so we skip it
-if has('nvim') || v:version > 801 || (v:version == 801 && has('patch1564'))
-  set signcolumn=yes:2
-endif
-
-" Color column (Vim 8+)
-set colorcolumn=100
-
-" Indentation & Formatting
-set expandtab
-set shiftwidth=2
-set tabstop=2
-set smartindent
-set wrap
-set linebreak
-set breakindent
-
-" Search & Navigation
-set ignorecase
-set smartcase
-set hlsearch
-set incsearch
-
-" Performance & Behavior
-set updatetime=250
-set timeoutlen=300
-set splitbelow
-set splitright
-
-" Mouse support (Vim 8+)
-" Note: If arrow keys insert ABCD, comment out the next line
-if v:version >= 800
-  set mouse=c
-endif
-
-" Terminal colors (Vim 8+ and Neovim)
-if has('termguicolors')
-  set termguicolors
-endif
-
-set background=dark
 
 " ============================================================================
 " GENERO TOOLS CONFIGURATION
@@ -247,9 +226,6 @@ nnoremap <leader>bn :bnext<CR>
 nnoremap <leader>bp :bprev<CR>
 nnoremap <leader>bd :bdelete<CR>
 
-" Note: Resize window keybindings removed - they interfere with arrow key detection in Vim 8.0
-" Use :resize +2 or :vertical resize -2 commands manually if needed
-
 " Clear search highlight
 nnoremap <Esc> :nohlsearch<CR>
 
@@ -282,9 +258,6 @@ function! s:show_genero_help()
   echo 'SNIPPETS:'
   echo '  Space+sl        - List available snippets'
   echo '  Space+sh        - Show snippet help'
-  echo ''
-  echo 'WINDOW MANAGEMENT:'
-  echo '  Use :resize +2 or :vertical resize -2 commands'
   echo ''
   echo 'COMMENTING:'
   echo '  gcc             - Toggle comment on line'
@@ -325,21 +298,3 @@ endif
 
 " Auto-resize splits when window is resized
 autocmd VimResized * wincmd =
-
-
-" ============================================================================
-" TROUBLESHOOTING
-" ============================================================================
-
-" If arrow keys insert ABCD instead of navigating:
-" 1. Make sure 'set nocompatible' is at the top of this file (it is!)
-" 2. Try one of these solutions:
-"    - Remove or comment out 'set mouse=a' above
-"    - Change 'set mouse=a' to 'set mouse=c' (command-line only)
-"    - Check your terminal type: echo $TERM (should be xterm-256color or similar)
-"    - Try: export TERM=xterm-256color
-" 3. If still having issues, add this to your ~/.bashrc or ~/.zshrc:
-"    export TERM=xterm-256color
-"    alias vi=vim
-" 4. Verify Vim is actually Vim 8+, not Vi:
-"    vim --version | head -1
