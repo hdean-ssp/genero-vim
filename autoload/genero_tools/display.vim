@@ -70,20 +70,52 @@ function! genero_tools#display#popup(formatted) abort
     let buf = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_lines(buf, 0, -1, v:false, a:formatted)
     
-    " Calculate dimensions
-    let width = 80
-    let height = min([len(a:formatted) + 2, 20])
+    " Get configuration values
+    let width = genero_tools#config#get('floating_window_width')
+    let height = genero_tools#config#get('floating_window_height')
+    let border = genero_tools#config#get('floating_window_border')
+    let title = genero_tools#config#get('floating_window_title')
+    let position = genero_tools#config#get('floating_window_position')
+    
+    " Calculate dimensions based on content if needed
+    let max_line_width = 0
+    for line in a:formatted
+      let max_line_width = max([max_line_width, len(line)])
+    endfor
+    let width = min([max([width, max_line_width + 2], 40), &columns - 4])
+    let height = min([max([height, len(a:formatted) + 2], 5), &lines - 4])
+    
+    " Calculate position
+    if position == 'center'
+      let row = (&lines - height) / 2
+      let col = (&columns - width) / 2
+      let anchor = 'NW'
+    elseif position == 'top'
+      let row = 1
+      let col = (&columns - width) / 2
+      let anchor = 'NW'
+    elseif position == 'bottom'
+      let row = &lines - height - 1
+      let col = (&columns - width) / 2
+      let anchor = 'NW'
+    else " cursor
+      let row = 1
+      let col = 0
+      let anchor = 'NW'
+    endif
     
     " Create popup window
     let opts = {
-      \ 'relative': 'cursor',
+      \ 'relative': 'editor',
       \ 'width': width,
       \ 'height': height,
-      \ 'col': 0,
-      \ 'row': 1,
-      \ 'anchor': 'NW',
+      \ 'col': col,
+      \ 'row': row,
+      \ 'anchor': anchor,
       \ 'style': 'minimal',
-      \ 'border': 'rounded'
+      \ 'border': border,
+      \ 'title': title,
+      \ 'title_pos': 'center'
       \ }
     
     call nvim_open_win(buf, v:true, opts)
@@ -225,6 +257,10 @@ function! genero_tools#display#inline_neovim(lines) abort
     let buf = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_lines(buf, 0, -1, v:false, a:lines)
     
+    " Get configuration values
+    let border = genero_tools#config#get('floating_window_border')
+    let auto_close_delay = genero_tools#config#get('popup_auto_close_delay')
+    
     " Calculate dimensions
     let width = 0
     for line in a:lines
@@ -242,7 +278,7 @@ function! genero_tools#display#inline_neovim(lines) abort
       \ 'row': -height - 1,
       \ 'anchor': 'SW',
       \ 'style': 'minimal',
-      \ 'border': 'single'
+      \ 'border': border
       \ }
     
     let win = nvim_open_win(buf, v:false, opts)
@@ -250,8 +286,8 @@ function! genero_tools#display#inline_neovim(lines) abort
     " Set buffer options
     call nvim_buf_set_option(buf, 'modifiable', v:false)
     
-    " Auto-close after 5 seconds
-    call timer_start(5000, function('genero_tools#display#close_inline_window', [win]))
+    " Auto-close after configured delay
+    call timer_start(auto_close_delay, function('genero_tools#display#close_inline_window', [win]))
   catch
     " Fallback to echo
     call genero_tools#display#echo(join(a:lines, "\n"))

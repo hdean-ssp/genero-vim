@@ -40,6 +40,12 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('svn_show_deleted', 1)
   call genero_tools#config#init_key('svn_cache_ttl', 300)
   call genero_tools#config#init_key('svn_auto_update', 1)
+  call genero_tools#config#init_key('floating_window_border', 'rounded')
+  call genero_tools#config#init_key('floating_window_width', 80)
+  call genero_tools#config#init_key('floating_window_height', 20)
+  call genero_tools#config#init_key('floating_window_position', 'center')
+  call genero_tools#config#init_key('floating_window_title', 'Genero-Tools')
+  call genero_tools#config#init_key('popup_auto_close_delay', 5000)
 endfunction
 
 " Initialize a single config key with type safety
@@ -139,6 +145,18 @@ function! genero_tools#config#get(key) abort
     return 300
   elseif a:key == 'svn_auto_update'
     return 1
+  elseif a:key == 'floating_window_border'
+    return 'rounded'
+  elseif a:key == 'floating_window_width'
+    return 80
+  elseif a:key == 'floating_window_height'
+    return 20
+  elseif a:key == 'floating_window_position'
+    return 'center'
+  elseif a:key == 'floating_window_title'
+    return 'Genero-Tools'
+  elseif a:key == 'popup_auto_close_delay'
+    return 5000
   else
     return ''
   endif

@@ -101,21 +101,36 @@ function! genero_tools#compiler#highlight#unused_vars(warnings) abort
   let unused_warnings = filter(copy(a:warnings), 
     \ "v:val.message =~? 'unused' && v:val.code == '(-6615)'")
   
-  " Extract variable names and highlight them
+  " Get current buffer number
+  let bufnr = bufnr('%')
+  
+  " Highlight unused variables at their specific locations only
   for warning in unused_warnings
-    if has_key(warning, 'message')
-      " Extract variable name from message: "The symbol 'l_description' is unused."
-      let var_match = matchstr(warning.message, "symbol '\\zs[^']*\\ze'")
-      
-      if !empty(var_match)
-        try
-          " Highlight all occurrences of this variable in the current buffer
-          let pattern = '\<' . var_match . '\>'
-          call matchadd(s:unused_var_group, pattern, 11)
-        catch
-          " Silently ignore if match fails
-        endtry
-      endif
+    if has_key(warning, 'line')
+      try
+        if has('nvim')
+          " Neovim: highlight text range (0-indexed)
+          let col_start = get(warning, 'col', 1) - 1
+          let col_end = get(warning, 'end_col', col_start + 1)
+          if col_end <= col_start
+            let col_end = -1  " Highlight to end of line
+          endif
+          call nvim_buf_add_highlight(bufnr, s:highlight_namespace, s:unused_var_group, warning.line - 1, col_start, col_end)
+        else
+          " Vim: use matchaddpos for column range highlighting
+          let col_start = get(warning, 'col', 1)
+          let col_end = get(warning, 'end_col', col_start + 1)
+          let col_count = col_end - col_start
+          if col_count > 0
+            call matchaddpos(s:unused_var_group, [[warning.line, col_start, col_count]], 11)
+          else
+            " If no column range, highlight from col to end of line
+            call matchaddpos(s:unused_var_group, [[warning.line, col_start, 0]], 11)
+          endif
+        endif
+      catch
+        " Silently ignore if highlight fails
+      endtry
     endif
   endfor
   

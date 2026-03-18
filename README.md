@@ -281,6 +281,12 @@ let g:genero_tools_config = {
   \ 'svn_show_deleted': 1,
   \ 'svn_cache_ttl': 300,
   \ 'svn_auto_update': 1,
+  \ 'floating_window_border': 'rounded',
+  \ 'floating_window_width': 80,
+  \ 'floating_window_height': 20,
+  \ 'floating_window_position': 'center',
+  \ 'floating_window_title': 'Genero-Tools',
+  \ 'popup_auto_close_delay': 5000,
   \ }
 ```
 
@@ -342,6 +348,21 @@ let g:genero_tools_config.snippet_engine = 'luasnip'             " Snippet engin
 let g:genero_tools_config.snippet_smart_expansion = 1            " Enable async parameter population
 let g:genero_tools_config.snippet_custom_dir = expand('~/.config/nvim/genero-snippets') " Custom snippet directory
 ```
+
+### Floating Window Configuration (Neovim only)
+
+For Neovim users, customize floating window appearance and behavior:
+
+```vim
+let g:genero_tools_config.floating_window_border = 'rounded'     " Border style: 'rounded', 'solid', 'shadow', 'none'
+let g:genero_tools_config.floating_window_width = 80             " Window width in columns
+let g:genero_tools_config.floating_window_height = 20            " Window height in lines
+let g:genero_tools_config.floating_window_position = 'center'    " Position: 'center', 'top', 'bottom', 'left', 'right'
+let g:genero_tools_config.floating_window_title = 'Genero-Tools' " Window title (empty string to hide)
+let g:genero_tools_config.popup_auto_close_delay = 5000          " Auto-close delay in ms (0 = manual close only)
+```
+
+See [Floating Window Configuration Guide](docs/FLOATING_WINDOW_CONFIGURATION.md) for detailed options and examples.
 
 ### Startup Configuration
 

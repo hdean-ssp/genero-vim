@@ -11,7 +11,7 @@ end
 -- Show floating window with content
 -- Args:
 --   content: Content to display (string or list of strings)
---   options: Display options {title, width, height, border, etc.}
+--   options: Display options {title, width, height, border, position, etc.}
 function M.show_floating_window(content, options)
   if not vim.fn.has('nvim') then
     error('Floating windows require Neovim')
@@ -22,9 +22,20 @@ function M.show_floating_window(content, options)
   -- Normalize content to list of strings
   local lines = type(content) == 'string' and vim.split(content, '\n') or content
 
-  -- Calculate dimensions
-  local width = options.width or math.min(80, vim.o.columns - 4)
-  local height = options.height or math.min(#lines + 2, vim.o.lines - 4)
+  -- Get configuration values from Vim config
+  local config_border = vim.fn['genero_tools#config#get']('floating_window_border')
+  local config_width = vim.fn['genero_tools#config#get']('floating_window_width')
+  local config_height = vim.fn['genero_tools#config#get']('floating_window_height')
+  local config_position = vim.fn['genero_tools#config#get']('floating_window_position')
+  local config_title = vim.fn['genero_tools#config#get']('floating_window_title')
+
+  -- Calculate dimensions with config defaults
+  local width = options.width or config_width or math.min(80, vim.o.columns - 4)
+  local height = options.height or config_height or math.min(#lines + 2, vim.o.lines - 4)
+
+  -- Ensure reasonable bounds
+  width = math.max(40, math.min(width, vim.o.columns - 4))
+  height = math.max(5, math.min(height, vim.o.lines - 4))
 
   -- Create buffer
   local buf = vim.api.nvim_create_buf(false, true)
@@ -34,19 +45,41 @@ function M.show_floating_window(content, options)
   vim.api.nvim_buf_set_option(buf, 'modifiable', false)
   vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
 
-  -- Calculate window position (center of screen)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
+  -- Calculate window position based on config
+  local position = options.position or config_position or 'center'
+  local row, col, anchor
 
-  -- Create window
+  if position == 'center' then
+    row = math.floor((vim.o.lines - height) / 2)
+    col = math.floor((vim.o.columns - width) / 2)
+    anchor = 'NW'
+  elseif position == 'top' then
+    row = 1
+    col = math.floor((vim.o.columns - width) / 2)
+    anchor = 'NW'
+  elseif position == 'bottom' then
+    row = vim.o.lines - height - 1
+    col = math.floor((vim.o.columns - width) / 2)
+    anchor = 'NW'
+  else -- cursor
+    row = 1
+    col = 0
+    anchor = 'NW'
+  end
+
+  -- Create window with config values
+  local border = options.border or config_border or 'rounded'
+  local title = options.title or config_title or 'Genero-Tools'
+
   local win = vim.api.nvim_open_win(buf, true, {
     relative = 'editor',
     row = row,
     col = col,
     width = width,
     height = height,
-    border = options.border or 'rounded',
-    title = options.title or 'Genero-Tools',
+    anchor = anchor,
+    border = border,
+    title = title,
     title_pos = 'center',
   })
 
@@ -90,6 +123,10 @@ function M.show_popup_menu(items, callback)
     error('Popup menus require Neovim')
   end
 
+  -- Get configuration values
+  local config_border = vim.fn['genero_tools#config#get']('floating_window_border')
+  local config_position = vim.fn['genero_tools#config#get']('floating_window_position')
+
   local lines = {}
   for i, item in ipairs(items) do
     local display = type(item) == 'string' and item or item.display or tostring(item)
@@ -104,8 +141,24 @@ function M.show_popup_menu(items, callback)
   end, lines))) + 2
 
   local height = math.min(#lines + 2, 20)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
+
+  -- Calculate position based on config
+  local position = config_position or 'center'
+  local row, col
+
+  if position == 'center' then
+    row = math.floor((vim.o.lines - height) / 2)
+    col = math.floor((vim.o.columns - width) / 2)
+  elseif position == 'top' then
+    row = 1
+    col = math.floor((vim.o.columns - width) / 2)
+  elseif position == 'bottom' then
+    row = vim.o.lines - height - 1
+    col = math.floor((vim.o.columns - width) / 2)
+  else -- cursor
+    row = 1
+    col = 0
+  end
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative = 'editor',
@@ -113,7 +166,7 @@ function M.show_popup_menu(items, callback)
     col = col,
     width = width,
     height = height,
-    border = 'rounded',
+    border = config_border or 'rounded',
   })
 
   -- Set up selection keybindings
