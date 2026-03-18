@@ -6,56 +6,60 @@ function! genero_tools#config#init() abort
     let g:genero_tools_config = {}
   endif
   
-  " Set defaults for missing keys
-  let defaults = {
-    \ 'genero_tools_path': 'query.sh',
-    \ 'cache_enabled': 1,
-    \ 'cache_ttl': 3600,
-    \ 'cache_max_size': 100,
-    \ 'display_mode': 'quickfix',
-    \ 'keybindings_enabled': 1,
-    \ 'timeout': 10000,
-    \ 'async_enabled': 1,
-    \ 'result_limit': 1000,
-    \ 'pagination_size': 50,
-    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
-    \ 'compiler_enabled': 0,
-    \ 'compiler_command': 'fglcomp',
-    \ 'compiler_source_dir': '.',
-    \ 'compiler_version': 'auto',
-    \ 'compiler_show_warnings': 1,
-    \ 'compiler_show_errors': 1,
-    \ 'compiler_highlight_unused': 1,
-    \ 'compiler_sign_column': 1,
-    \ 'compiler_sign_column_always_visible': 1,
-    \ 'compiler_autocompile': 0,
-    \ 'compiler_autocompile_delay': 1000,
-    \ 'snippets_enabled': 1,
-    \ 'snippet_engine': 'luasnip',
-    \ 'snippet_smart_expansion': 1,
-    \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
-    \ 'startup_messages': 'silent',
-    \ 'svn_enabled': 1,
-    \ 'svn_show_added': 1,
-    \ 'svn_show_modified': 1,
-    \ 'svn_show_deleted': 1,
-    \ 'svn_cache_ttl': 300,
-    \ 'svn_auto_update': 1
-    \ }
-  
-  for [key, value] in items(defaults)
-    if !has_key(g:genero_tools_config, key)
-      let g:genero_tools_config[key] = value
-    else
-      " Type checking and conversion for codebase_markers
-      if key == 'codebase_markers' && type(g:genero_tools_config[key]) != type([])
+  " Initialize each config key individually to avoid type mismatches
+  call genero_tools#config#init_key('genero_tools_path', 'query.sh')
+  call genero_tools#config#init_key('cache_enabled', 1)
+  call genero_tools#config#init_key('cache_ttl', 3600)
+  call genero_tools#config#init_key('cache_max_size', 100)
+  call genero_tools#config#init_key('display_mode', 'quickfix')
+  call genero_tools#config#init_key('keybindings_enabled', 1)
+  call genero_tools#config#init_key('timeout', 10000)
+  call genero_tools#config#init_key('async_enabled', 1)
+  call genero_tools#config#init_key('result_limit', 1000)
+  call genero_tools#config#init_key('pagination_size', 50)
+  call genero_tools#config#init_key('codebase_markers', ['castle.sch', 'genero.conf', '.genero', '.git'])
+  call genero_tools#config#init_key('compiler_enabled', 0)
+  call genero_tools#config#init_key('compiler_command', 'fglcomp')
+  call genero_tools#config#init_key('compiler_source_dir', '.')
+  call genero_tools#config#init_key('compiler_version', 'auto')
+  call genero_tools#config#init_key('compiler_show_warnings', 1)
+  call genero_tools#config#init_key('compiler_show_errors', 1)
+  call genero_tools#config#init_key('compiler_highlight_unused', 1)
+  call genero_tools#config#init_key('compiler_sign_column', 1)
+  call genero_tools#config#init_key('compiler_sign_column_always_visible', 1)
+  call genero_tools#config#init_key('compiler_autocompile', 0)
+  call genero_tools#config#init_key('compiler_autocompile_delay', 1000)
+  call genero_tools#config#init_key('snippets_enabled', 1)
+  call genero_tools#config#init_key('snippet_engine', 'luasnip')
+  call genero_tools#config#init_key('snippet_smart_expansion', 1)
+  call genero_tools#config#init_key('snippet_custom_dir', expand('~/.config/nvim/genero-snippets'))
+  call genero_tools#config#init_key('startup_messages', 'silent')
+  call genero_tools#config#init_key('svn_enabled', 1)
+  call genero_tools#config#init_key('svn_show_added', 1)
+  call genero_tools#config#init_key('svn_show_modified', 1)
+  call genero_tools#config#init_key('svn_show_deleted', 1)
+  call genero_tools#config#init_key('svn_cache_ttl', 300)
+  call genero_tools#config#init_key('svn_auto_update', 1)
+endfunction
+
+" Initialize a single config key with type safety
+function! genero_tools#config#init_key(key, default_value) abort
+  if !has_key(g:genero_tools_config, a:key)
+    let g:genero_tools_config[a:key] = a:default_value
+  else
+    " Type checking and conversion for list values
+    if a:key == 'codebase_markers'
+      if type(g:genero_tools_config[a:key]) != type([])
         " Convert string to list if needed
-        if type(g:genero_tools_config[key]) == type('')
-          let g:genero_tools_config[key] = [g:genero_tools_config[key]]
+        if type(g:genero_tools_config[a:key]) == type('')
+          let g:genero_tools_config[a:key] = [g:genero_tools_config[a:key]]
+        else
+          " If it's neither string nor list, use default
+          let g:genero_tools_config[a:key] = a:default_value
         endif
       endif
     endif
-  endfor
+  endif
 endfunction
 
 " Get configuration value
@@ -69,43 +73,75 @@ function! genero_tools#config#get(key) abort
   endif
   
   " Return sensible defaults if key not found
-  let defaults = {
-    \ 'genero_tools_path': 'query.sh',
-    \ 'cache_enabled': 1,
-    \ 'cache_ttl': 3600,
-    \ 'cache_max_size': 100,
-    \ 'display_mode': 'quickfix',
-    \ 'keybindings_enabled': 1,
-    \ 'timeout': 10000,
-    \ 'async_enabled': 1,
-    \ 'result_limit': 1000,
-    \ 'pagination_size': 50,
-    \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
-    \ 'compiler_enabled': 0,
-    \ 'compiler_command': 'fglcomp',
-    \ 'compiler_source_dir': '.',
-    \ 'compiler_version': 'auto',
-    \ 'compiler_show_warnings': 1,
-    \ 'compiler_show_errors': 1,
-    \ 'compiler_highlight_unused': 1,
-    \ 'compiler_sign_column': 1,
-    \ 'compiler_sign_column_always_visible': 1,
-    \ 'compiler_autocompile': 0,
-    \ 'compiler_autocompile_delay': 1000,
-    \ 'snippets_enabled': 1,
-    \ 'snippet_engine': 'luasnip',
-    \ 'snippet_smart_expansion': 1,
-    \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
-    \ 'startup_messages': 'silent',
-    \ 'svn_enabled': 1,
-    \ 'svn_show_added': 1,
-    \ 'svn_show_modified': 1,
-    \ 'svn_show_deleted': 1,
-    \ 'svn_cache_ttl': 300,
-    \ 'svn_auto_update': 1
-    \ }
-  
-  return get(defaults, a:key, '')
+  if a:key == 'genero_tools_path'
+    return 'query.sh'
+  elseif a:key == 'cache_enabled'
+    return 1
+  elseif a:key == 'cache_ttl'
+    return 3600
+  elseif a:key == 'cache_max_size'
+    return 100
+  elseif a:key == 'display_mode'
+    return 'quickfix'
+  elseif a:key == 'keybindings_enabled'
+    return 1
+  elseif a:key == 'timeout'
+    return 10000
+  elseif a:key == 'async_enabled'
+    return 1
+  elseif a:key == 'result_limit'
+    return 1000
+  elseif a:key == 'pagination_size'
+    return 50
+  elseif a:key == 'codebase_markers'
+    return ['castle.sch', 'genero.conf', '.genero', '.git']
+  elseif a:key == 'compiler_enabled'
+    return 0
+  elseif a:key == 'compiler_command'
+    return 'fglcomp'
+  elseif a:key == 'compiler_source_dir'
+    return '.'
+  elseif a:key == 'compiler_version'
+    return 'auto'
+  elseif a:key == 'compiler_show_warnings'
+    return 1
+  elseif a:key == 'compiler_show_errors'
+    return 1
+  elseif a:key == 'compiler_highlight_unused'
+    return 1
+  elseif a:key == 'compiler_sign_column'
+    return 1
+  elseif a:key == 'compiler_sign_column_always_visible'
+    return 1
+  elseif a:key == 'compiler_autocompile'
+    return 0
+  elseif a:key == 'compiler_autocompile_delay'
+    return 1000
+  elseif a:key == 'snippets_enabled'
+    return 1
+  elseif a:key == 'snippet_engine'
+    return 'luasnip'
+  elseif a:key == 'snippet_smart_expansion'
+    return 1
+  elseif a:key == 'snippet_custom_dir'
+    return expand('~/.config/nvim/genero-snippets')
+  elseif a:key == 'startup_messages'
+    return 'silent'
+  elseif a:key == 'svn_enabled'
+    return 1
+  elseif a:key == 'svn_show_added'
+    return 1
+  elseif a:key == 'svn_show_modified'
+    return 1
+  elseif a:key == 'svn_show_deleted'
+    return 1
+  elseif a:key == 'svn_cache_ttl'
+    return 300
+  elseif a:key == 'svn_auto_update'
+    return 1
+  else
+    return ''
+  endif
 endfunction
 
 " Display current configuration

@@ -91,9 +91,9 @@ set splitbelow
 set splitright
 
 " Mouse support (Vim 8+)
-" Note: If arrow keys insert ABCD, try removing this line or using 'set mouse=c'
+" Note: If arrow keys insert ABCD, comment out the next line
 if v:version >= 800
-  set mouse=a
+  set mouse=c
 endif
 
 " Terminal colors (Vim 8+ and Neovim)

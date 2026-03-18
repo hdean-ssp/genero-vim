@@ -317,6 +317,15 @@ Control plugin startup behavior:
 let g:genero_tools_config.startup_messages = 'silent'            " Startup messages: 'silent', 'normal', 'verbose' (default: 'silent')
 ```
 
+### Configuration Type Handling
+
+The plugin automatically handles type conversions for flexibility:
+
+- **`codebase_markers`** - Accepts both list and string formats
+  - List format (recommended): `['castle.sch', 'genero.conf', '.git']`
+  - String format (auto-converted): `'castle.sch'` → `['castle.sch']`
+  - Useful for single-marker projects or simple configurations
+
 **Startup Message Modes:**
 - `'silent'` - No startup messages (default, clean startup)
 - `'normal'` - Standard startup messages
