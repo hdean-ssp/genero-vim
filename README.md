@@ -78,6 +78,7 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `<space>cc` | Clear error markers |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
+| `<space>gd` | Toggle debug stream (Neovim only) |
 | `<space>bn` | Next buffer (Vim 7+) |
 | `<space>bp` | Previous buffer (Vim 7+) |
 | `<space>bd` | Delete buffer (Vim 7+) |
@@ -186,6 +187,18 @@ let g:genero_tools_config.keybindings_enabled = 0
 ```
 
 **Note**: Snippet commands are only available in Neovim with LuaSnip installed. See [Snippets Documentation](docs/SNIPPETS.md) for details.
+
+### Debug Streaming Commands (Neovim only)
+
+```vim
+:GeneroDebugStreamToggle                " Toggle debug stream window on/off
+:GeneroDebugStreamOpen                  " Open debug stream window
+:GeneroDebugStreamClose                 " Close debug stream window
+:GeneroDebugStreamSelect                " Select a different debug file to stream
+:GeneroDebugStreamClear                 " Clear debug output
+```
+
+**Note**: Debug streaming is only available in Neovim. See [Debug Streaming Documentation](docs/DEBUG_STREAMING.md) for details.
 
 ## Display Modes
 

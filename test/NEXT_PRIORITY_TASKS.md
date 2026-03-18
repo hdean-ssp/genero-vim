@@ -7,46 +7,44 @@
 
 ---
 
-## Immediate Priority (Next 2 Tasks - Feature Implementation)
+## Immediate Priority (Integration Testing & Validation)
 
-### Task 25: Add which-key Integration ⭐ START HERE
-**Priority:** HIGH | **Effort:** 2-3 hours | **Blocking:** No
+### Task 17: Integration Testing ⭐ START HERE
+**Priority:** HIGH | **Effort:** 4-6 hours | **Blocking:** No
 
-Improve keybinding discovery and UX:
-- Create `autoload/genero_tools/which_key.vim`
-- Detect if which-key plugin installed
-- Register all keybindings with which-key
-- Organize into logical groups:
-  - Lookup (symbol search, definition, references)
-  - Navigation (quickfix, error navigation)
-  - Compiler (compile, autocompile toggle)
-  - Cache (clear, refresh)
-  - SVN (diff markers, status)
-- Add descriptions for each keybinding
-- Graceful fallback if which-key not installed
+Create comprehensive integration tests:
+- End-to-end workflows for each command
+- Test with actual genero-tools CLI
+- Vim and Neovim compatibility
+- Keybinding functionality
+- Pagination with large result sets (1000+)
+- Asynchronous command execution
+- Cache behavior under sustained usage
+- Timeout handling
+- SVN diff markers integration
+- which-key integration
+- Debug streaming feature
 
-**Deliverable:** which-key integration module with all keybindings registered
+**Deliverable:** Integration test suite with 50+ tests
 
 ---
 
-### Task 27: Debug File Streaming Feature
-**Priority:** HIGH | **Effort:** 6-8 hours | **Blocking:** No
+### Task 18: Final Checkpoint - All Tests Pass
+**Priority:** HIGH | **Effort:** 2-3 hours | **Blocking:** No
 
-Stream debug output in split window:
-- Create `autoload/genero_tools/debug_stream.vim`
-- File watcher for debug directory
-- 1/3 width split window display
-- Live streaming of debug file changes
-- Auto-scroll and max line limits (1000 lines)
-- Configuration options:
-  - `debug_stream_enabled`: enable/disable
-  - `debug_stream_width`: split width percentage
-  - `debug_stream_max_lines`: max lines to display
-  - `debug_stream_auto_scroll`: auto-scroll on new content
-- Keybinding to toggle debug stream
-- Clear debug stream command
+Ensure complete system validation:
+- All property-based tests pass
+- All unit tests pass
+- All integration tests pass
+- Plugin loads without errors
+- All commands registered and callable
+- All keybindings work correctly
+- All display modes work as expected
+- SVN diff markers work correctly
+- which-key integration works
+- Debug streaming works
 
-**Deliverable:** Debug streaming feature with UI and file watcher
+**Deliverable:** Final verification report
 
 ---
 
@@ -68,48 +66,45 @@ Verify all compiler features work correctly:
 
 ---
 
-## Secondary Priority (Testing & Validation)
+## Completed Features
 
-### Task 17: Integration Testing
-**Priority:** MEDIUM | **Effort:** 4-6 hours | **Blocking:** No (deferred until features complete)
+### Task 20: Modernize Default Configuration ✅ COMPLETE
+**Status:** DONE | **Effort:** 3-4 hours
 
-Create comprehensive integration tests:
-- End-to-end workflows for each command
-- Test with actual genero-tools CLI
-- Vim and Neovim compatibility
-- Keybinding functionality
-- Pagination with large result sets (1000+)
-- Asynchronous command execution
-- Cache behavior under sustained usage
-- Timeout handling
-- SVN diff markers integration
-- which-key integration
-- Debug streaming feature
+Floating window support fully implemented:
+- ✅ `display_mode`: 'floating' or 'quickfix'
+- ✅ `floating_window_border`: 'rounded', 'solid', 'shadow', 'none'
+- ✅ `floating_window_width`: configurable columns
+- ✅ `floating_window_height`: configurable lines
+- ✅ `floating_window_position`: 'center', 'top', 'bottom', 'cursor'
+- ✅ `floating_window_title`: customizable title
+- ✅ `popup_auto_close_delay`: auto-close timeout
+- ✅ Full documentation in docs/FLOATING_WINDOW_CONFIGURATION.md
+- ✅ Integration with nvim-notify for notifications
 
-**Status:** Deferred until Tasks 25 and 27 complete
+### Task 25: Add which-key Integration ✅ COMPLETE
+**Status:** DONE | **Effort:** 2-3 hours
 
-**Deliverable:** Integration test suite with 50+ tests
+Keybinding discovery fully implemented:
+- ✅ Automatic detection of which-key plugin
+- ✅ All keybindings registered with descriptions
+- ✅ Organized into 5 logical groups
+- ✅ Graceful fallback if which-key not installed
+- ✅ Full documentation in docs/WHICH_KEY_INTEGRATION.md
 
----
+### Task 27: Debug File Streaming Feature ✅ COMPLETE
+**Status:** DONE | **Effort:** 6-8 hours
 
-### Task 18: Final Checkpoint - All Tests Pass
-**Priority:** MEDIUM | **Effort:** 2-3 hours | **Blocking:** No (deferred until features complete)
-
-Ensure complete system validation:
-- All property-based tests pass
-- All unit tests pass
-- All integration tests pass
-- Plugin loads without errors
-- All commands registered and callable
-- All keybindings work correctly
-- All display modes work as expected
-- SVN diff markers work correctly
-- which-key integration works
-- Debug streaming works
-
-**Status:** Deferred until Tasks 25 and 27 complete
-
-**Deliverable:** Final verification report
+Debug streaming fully implemented:
+- ✅ File watcher with 500ms polling
+- ✅ Split window display (1/3 width, configurable)
+- ✅ Real-time content updates
+- ✅ Auto-scroll to latest content
+- ✅ Line limits (1000 default, configurable)
+- ✅ Commands: start, stop, toggle, clear, status
+- ✅ Keybinding: `<leader>gd` to toggle
+- ✅ which-key integration
+- ✅ Full documentation in docs/DEBUG_STREAMING.md
 
 ---
 
@@ -138,28 +133,34 @@ Ensure complete system validation:
 
 | Task | Priority | Effort | Status | Impact | Notes |
 |------|----------|--------|--------|--------|-------|
-| 25: which-key | HIGH | 2-3h | ⏳ **START** | UX | Keybinding discovery |
-| 27: Debug Streaming | HIGH | 6-8h | ⏳ | Feature | File watcher + UI |
-| 17: Integration Tests | MEDIUM | 4-6h | ⏳ | Validation | After features done |
-| 18: Final Checkpoint | MEDIUM | 2-3h | ⏳ | Validation | After features done |
+| 17: Integration Tests | HIGH | 4-6h | ⏳ **START** | Validation | All features ready |
+| 18: Final Checkpoint | HIGH | 2-3h | ⏳ | Validation | After Task 17 |
 | 16: Compiler Checkpoint | HIGH | 2-3h | ⏸️ | Blocking | Deferred - needs compiler |
+| 25: which-key | HIGH | 2-3h | ✅ **DONE** | UX | Keybinding discovery |
+| 27: Debug Streaming | HIGH | 6-8h | ✅ **DONE** | Feature | File watcher + UI |
 | 20: Floating Windows | MEDIUM | 3-4h | ✅ **DONE** | UX | Already implemented |
 
 ---
 
 ## Recommended Next Step
 
-**Start with Task 25 (which-key Integration)** - Quick win that improves UX significantly. Then proceed to Task 27 (Debug Streaming) for advanced developer features. After both features are complete, run comprehensive integration testing (Tasks 17-18).
+**Start with Task 17 (Integration Testing)** - All features are now implemented and ready for comprehensive testing. Create end-to-end tests for:
+- All commands and keybindings
+- which-key integration
+- Debug streaming feature
+- Floating window display
+- SVN diff markers
+- Compiler integration
+- Cache behavior
+- Error handling
 
 **Estimated Timeline:**
-- Task 25: 2-3 hours
-- Task 27: 6-8 hours
-- Tasks 17-18: 6-9 hours
-- **Total to Production:** ~2 weeks (Tasks 25, 27, 17-18)
-- **Task 16 Timeline:** When compiler access becomes available
+- Task 17: 4-6 hours
+- Task 18: 2-3 hours
+- **Total to production:** ~1 week
 
 ---
 
 **Date:** March 18, 2026  
-**Last Updated:** Reordered tasks - defer integration testing until features complete  
-**Status:** Ready to implement which-key integration
+**Last Updated:** All features complete - ready for integration testing  
+**Status:** Ready to begin comprehensive testing phase
