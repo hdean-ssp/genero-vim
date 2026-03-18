@@ -95,12 +95,17 @@ Visual indicators in the left margin:
 Navigate errors and warnings with standard Vim commands:
 ```vim
 :copen          " Open quickfix window
-:cnext          " Go to next error (only if errors exist)
-:cprevious      " Go to previous error (only if errors exist)
+:cnext          " Go to next error
+:cprevious      " Go to previous error
 :cclose         " Close quickfix window
 ```
 
-**Note:** Navigation commands gracefully handle empty error lists. If no errors exist, the commands return a "No errors to navigate" message instead of displaying spurious error messages.
+**Navigation Behavior:**
+- When errors exist, navigation displays the current error position (e.g., "Error 2 of 5")
+- When at the end of the error list, `:cnext` returns "No next error (at end of list)"
+- When at the start of the error list, `:cprevious` returns "No previous error (at start of list)"
+- When no errors exist, both commands return "No errors to navigate. Run :GeneroCompile first."
+- Error messages are clear and actionable, helping users understand what to do next
 
 ### 3. Unused Variable Detection
 
