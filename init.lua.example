@@ -2,8 +2,11 @@
 -- Copy this to ~/.config/nvim/init.lua and adjust paths as needed
 
 -- ============================================================================
--- BASIC SETTINGS
+-- LEADER KEY
 -- ============================================================================
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
 -- UI & Display
 vim.opt.number = true
@@ -62,7 +65,7 @@ vim.g.genero_tools_config = {
   -- genero_tools_path = vim.fn.expand("~/personal/genero-tools/query.sh"),
   
   -- Display and features
-  display_mode = "quickfix",
+  display_mode = "inline",
   snippets_enabled = true,
 }
 
@@ -440,21 +443,21 @@ vim.api.nvim_create_user_command("GeneroHelp", function()
 
 COMPILATION:
   F5              - Compile current file
-  <leader>ca      - Enable autocompile on save
-  <leader>cd      - Disable autocompile on save
-  <leader>cc      - Clear error markers
+  Space+ca        - Enable autocompile on save
+  Space+cd        - Disable autocompile on save
+  Space+cc        - Clear error markers
 
 NAVIGATION:
   Ctrl+,          - Jump to previous error/warning
   Ctrl+.          - Jump to next error/warning
   Ctrl+h/j/k/l    - Navigate between windows
-  <leader>bn      - Next buffer
-  <leader>bp      - Previous buffer
-  <leader>bd      - Delete current buffer
+  Space+bn        - Next buffer
+  Space+bp        - Previous buffer
+  Space+bd        - Delete current buffer
 
 SNIPPETS:
-  <leader>sl      - List available snippets
-  <leader>sh      - Show snippet help
+  Space+sl        - List available snippets
+  Space+sh        - Show snippet help
 
 WINDOW MANAGEMENT:
   Ctrl+Up/Down    - Resize window vertically
@@ -473,7 +476,7 @@ COMMANDS:
   :GeneroHelp                 - Show this help
 
 TIPS:
-  • Press <leader> to see available keybindings
+  • Press Space to see available keybindings
   • Use Ctrl+h/j/k/l to navigate between split windows
   • Autocompile is enabled by default (500ms delay)
   • Errors appear in the sign column and quickfix list

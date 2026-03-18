@@ -14,9 +14,9 @@ nvim
 | `F5` | Compile current file |
 | `Ctrl+,` | Previous error |
 | `Ctrl+.` | Next error |
-| `<leader>ca` | Enable autocompile |
-| `<leader>cd` | Disable autocompile |
-| `<leader>cc` | Clear errors |
+| `Space+ca` | Enable autocompile |
+| `Space+cd` | Disable autocompile |
+| `Space+cc` | Clear errors |
 
 ## Snippets
 
@@ -42,15 +42,15 @@ nvim
 
 | Key | Action |
 |-----|--------|
-| `<leader>bn` | Next buffer |
-| `<leader>bp` | Previous buffer |
-| `<leader>bd` | Delete buffer |
+| `Space+bn` | Next buffer |
+| `Space+bp` | Previous buffer |
+| `Space+bd` | Delete buffer |
 
 ## Discovery
 
 | Key | Action |
 |-----|--------|
-| `<leader>` | Show all keybindings |
+| `Space` | Show all keybindings |
 | `:GeneroHelp` | Show Genero help |
 
 ## Commands

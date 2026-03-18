@@ -206,3 +206,40 @@ sections = {
 - [Lualine Documentation](https://github.com/nvim-lualine/lualine.nvim)
 - [Which-key Documentation](https://github.com/folke/which-key.nvim)
 - [Neovim Documentation](https://neovim.io/doc/user/)
+
+
+## Display Mode Configuration
+
+The default display mode for query results is now **`inline`**, which shows results in a modern floating window above the cursor. This provides a non-intrusive way to view query results without disrupting your workflow.
+
+### Available Display Modes
+
+```lua
+display_mode = "inline",  -- Floating window above cursor (default, modern)
+-- Other options:
+-- display_mode = "popup",    -- Large floating window (Neovim only)
+-- display_mode = "split",    -- New split window
+-- display_mode = "quickfix", -- Quickfix list (traditional)
+-- display_mode = "echo",     -- Command line output
+```
+
+### Display Mode Comparison
+
+| Mode | Appearance | Best For | Notes |
+|------|-----------|----------|-------|
+| `inline` | Floating window above cursor | Quick lookups | Non-intrusive, auto-closes |
+| `popup` | Large centered floating window | Detailed results | Neovim only |
+| `split` | New split window | Extended browsing | Persistent, can resize |
+| `quickfix` | Quickfix list | Navigation | Traditional, integrates with `:cn`, `:cp` |
+| `echo` | Command line | Minimal output | Simple text display |
+
+### Customizing Display Mode
+
+To change the display mode, edit your `init.lua`:
+
+```lua
+vim.g.genero_tools_config = {
+  -- ... other config ...
+  display_mode = "popup",  -- Change to your preferred mode
+}
+```

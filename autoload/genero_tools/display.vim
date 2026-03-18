@@ -223,7 +223,7 @@ function! genero_tools#display#inline_neovim(lines) abort
     let width = min([width + 2, 100])
     let height = len(a:lines)
     
-    " Create floating window above cursor
+    " Create floating window just above cursor
     let opts = {
       \ 'relative': 'cursor',
       \ 'width': width,

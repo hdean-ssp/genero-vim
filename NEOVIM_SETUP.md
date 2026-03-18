@@ -70,18 +70,18 @@ Lazy.nvim will automatically download and install plugins on first launch.
 | `F5` | Compile current file |
 | `Ctrl+,` | Jump to previous error/warning |
 | `Ctrl+.` | Jump to next error/warning |
-| `<leader>ca` | Enable autocompile on save |
-| `<leader>cd` | Disable autocompile on save |
-| `<leader>cc` | Clear error markers |
-| `<leader>sl` | List available snippets |
-| `<leader>sh` | Show snippet help |
+| `Space+ca` | Enable autocompile on save |
+| `Space+cd` | Disable autocompile on save |
+| `Space+cc` | Clear error markers |
+| `Space+sl` | List available snippets |
+| `Space+sh` | Show snippet help |
 | `Ctrl+h/j/k/l` | Navigate between windows |
-| `<leader>bn` | Next buffer |
-| `<leader>bp` | Previous buffer |
-| `<leader>bd` | Delete current buffer |
+| `Space+bn` | Next buffer |
+| `Space+bp` | Previous buffer |
+| `Space+bd` | Delete current buffer |
 | `Ctrl+Up/Down` | Resize window vertically |
 | `Ctrl+Left/Right` | Resize window horizontally |
-| `<leader>` | Show available keybindings (which-key) |
+| `Space` | Show available keybindings (which-key) |
 
 ## Commands
 
