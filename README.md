@@ -2,6 +2,8 @@
 
 A vim plugin that brings modern IDE capabilities to the classic vim editor for Genero development. Provides code navigation, intelligent autocomplete, and compiler integration for large-scale Genero codebases (thousands of files, 6M+ LOC).
 
+**Compatibility:** Vi, Vim 7+, Vim 8+, and Neovim 0.4+. Advanced features (plugins, floating windows, snippets) require Vim 8+ or Neovim.
+
 ## Quick Start
 
 ```vim
@@ -14,10 +16,17 @@ A vim plugin that brings modern IDE capabilities to the classic vim editor for G
 
 ## Installation
 
-Using vim-plug:
+Using vim-plug (Vim 8+ and Neovim only):
 ```vim
 Plug 'hdean-ssp/genero-vim'
 ```
+
+**Quick Setup:** Copy the provided `.vimrc.example` to get started immediately:
+```bash
+cp .vimrc.example ~/.vimrc
+```
+
+This includes vim-plug setup (Vim 8+ and Neovim), genero-tools configuration, keybindings, and Neovim enhancements. Works with Vi, Vim 7+, Vim 8+, and Neovim.
 
 See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instructions.
 
@@ -39,21 +48,36 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
   - Async operations with non-blocking execution
   - Floating windows for rich UI
-- Full Vim 8.0+ and Neovim 0.4+ compatibility
+- **Vi/Vim 7+ Compatible** - Works with Vi, Vim 7+, Vim 8+, and Neovim
+- **Advanced Features** (Vim 8+ and Neovim) - Plugin manager, snippets, modern UI
 - Zero configuration changes required between editors
 
 ## Keybindings
 
-The default leader key is backslash `\`. All keybindings work in normal mode.
+The default leader key is space `<space>` (configured in `.vimrc.example`). All keybindings work in normal mode.
 
-### Default Keybindings
+**Note:** Advanced keybindings (window navigation, buffer management) require Vim 7+. Vi and Vim 6 users can use basic commands directly (`:GeneroCompile`, `:GeneroNextError`, etc.).
 
-| Keybinding | Action | Example |
-|-----------|--------|---------|
-| `<leader>gl` | Find function under cursor | Place cursor on `validate_input`, press `<space>gl` |
-| `<leader>gf` | List functions in current file | Press `<space>gf` to see all functions |
-| `<leader>gs` | Get function signature under cursor | Place cursor on `process_data`, press `<space>gs` |
-| `<leader>gm` | Get metadata for current file | Press `<space>gm` to see author, tickets, dates |
+### Default Keybindings (from `.vimrc.example`, Vim 7+ and Neovim)
+
+| Keybinding | Action |
+|-----------|--------|
+| `F5` | Compile current file |
+| `Ctrl+,` | Jump to previous error |
+| `Ctrl+.` | Jump to next error |
+| `<space>ca` | Enable autocompile |
+| `<space>cd` | Disable autocompile |
+| `<space>cc` | Clear error markers |
+| `<space>sl` | List snippets |
+| `<space>sh` | Show snippet help |
+| `<space>bn` | Next buffer (Vim 7+) |
+| `<space>bp` | Previous buffer (Vim 7+) |
+| `<space>bd` | Delete buffer (Vim 7+) |
+| `Ctrl+h/j/k/l` | Navigate between windows (Vim 7+) |
+| `Ctrl+Up/Down` | Resize window vertically (Vim 7+) |
+| `Ctrl+Left/Right` | Resize window horizontally (Vim 7+) |
+| `gcc` | Toggle comment on line (Neovim only) |
+| `gbc` | Toggle block comment (Neovim only) |
 
 ### SVN Commands
 
@@ -63,56 +87,17 @@ The default leader key is backslash `\`. All keybindings work in normal mode.
 | `:GeneroSVNToggle` | Toggle SVN diff markers on/off for current buffer |
 | `:GeneroSVNStatus` | Show SVN status and change summary for current file |
 
-### Usage Examples
-
-**Example 1: Lookup a function definition**
-```
-1. Open a .4gl file
-2. Place cursor on a function name: validate_input
-3. Press <space>gl
-4. Results appear in inline popup (or quickfix, depending on display_mode)
-```
-
-**Example 2: Get function signature**
-```
-1. Open a .4gl file
-2. Place cursor on a function name: calculate_total
-3. Press <space>gs
-4. Function signature appears (parameters, return types)
-```
-
-**Example 3: List all functions in current file**
-```
-1. Open a .4gl file
-2. Press <space>gf
-3. All functions in the file are listed with line numbers
-```
-
-**Example 4: Get file metadata**
-```
-1. Open a .4gl file
-2. Press <space>gm
-3. File metadata appears (author, ticket codes, created/modified dates)
-```
-
 ### Customizing Keybindings
 
-To use different keybindings, add to your `.vimrc`:
+The `.vimrc.example` uses space as the leader key. To customize:
 
 ```vim
-" Use space as leader instead of backslash
-let mapleader = " "
+" Change leader key
+let mapleader = ','  " Use comma instead of space
 
-" Now keybindings are: <space>gl, <space>gf, etc.
-```
-
-Or map to completely different keys:
-
-```vim
-nnoremap <silent> <C-l> :GeneroLookup <C-R><C-W><CR>
-nnoremap <silent> <C-f> :GeneroListFunctions %<CR>
-nnoremap <silent> <C-s> :GeneroFunctionSignature <C-R><C-W><CR>
-nnoremap <silent> <C-m> :GeneroFileMetadata %<CR>
+" Or map to different keys
+nnoremap <F6> :GeneroCompile<CR>
+nnoremap <C-l> :GeneroLookup <C-R><C-W><CR>
 ```
 
 To disable default keybindings:
@@ -133,6 +118,7 @@ let g:genero_tools_config.keybindings_enabled = v:false
 :GeneroFileMetadata [file_path]         " Get file metadata
 :GeneroConfigShow                       " Display current config
 :GeneroClearCache                       " Clear result cache
+:GeneroHelp                             " Show keybindings and commands (from .vimrc.example)
 ```
 
 ### Compiler Commands
@@ -206,13 +192,22 @@ The plugin provides intelligent autocomplete for function and module names. Auto
 
 ## Setup
 
-Before using the plugin, generate genero-tools databases:
+Before using the plugin, ensure genero-tools is installed and configured:
 
 ```bash
+# Generate genero-tools databases
 bash generate_signatures.sh /path/to/codebase
 bash generate_modules.sh /path/to/codebase
 query.sh create-dbs
 ```
+
+Then copy the example configuration:
+
+```bash
+cp .vimrc.example ~/.vimrc
+```
+
+Start Vim and plugins will install automatically. See [Setup Guide](docs/SETUP_FRESH_VIM.md) for details.
 
 ## Configuration
 
@@ -390,8 +385,16 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 
 ## Requirements
 
-- Vim 8.0+ or Neovim 0.4+
+- Vi, Vim 7+, Vim 8+, or Neovim 0.4+
 - genero-tools CLI installed and in PATH
+
+**Note:** Advanced features require Vim 8+ or Neovim:
+- Plugin manager (vim-plug) - Vim 8+ and Neovim only
+- Code snippets - Vim 8.2+ and Neovim only
+- Floating windows - Neovim only
+- Modern UI enhancements - Neovim only
+
+Basic functionality (code navigation, compiler integration) works in Vi and Vim 7+.
 
 ## License
 

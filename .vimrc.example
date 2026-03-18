@@ -55,9 +55,15 @@ call plug#end()
 set number
 set relativenumber
 set cursorline
-set signcolumn=yes:2
-set colorcolumn=100
 set cmdheight=1
+
+" Sign column (Vim 8.1.1564+ and Neovim)
+if v:version > 801 || (v:version == 801 && has('patch1564')) || has('nvim')
+  set signcolumn=yes:2
+endif
+
+" Color column (Vim 8+)
+set colorcolumn=100
 
 " Indentation & Formatting
 set expandtab
@@ -314,3 +320,4 @@ endif
 
 " Auto-resize splits when window is resized
 autocmd VimResized * wincmd =
+

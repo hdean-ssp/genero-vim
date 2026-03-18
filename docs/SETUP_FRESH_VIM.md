@@ -4,10 +4,12 @@ This guide walks you through setting up the genero-tools plugin on a completely 
 
 ## Prerequisites
 
-- Vim 8.0+ or Neovim 0.4+
+- Vi, Vim 7+, Vim 8+, or Neovim 0.4+
 - `query.sh` from genero-tools (must be in PATH or configured)
-- Git (for vim-plug installation)
-- curl (for vim-plug auto-installation)
+- Git (for vim-plug installation, Vim 8+ and Neovim only)
+- curl (for vim-plug auto-installation, Vim 8+ and Neovim only)
+
+**Note:** The `.vimrc.example` is compatible with Vi and all Vim versions. Advanced features (plugins, floating windows, snippets) require Vim 8+ or Neovim.
 
 ## Step 1: Create Fresh `.vimrc`
 
@@ -18,21 +20,24 @@ cp .vimrc.example ~/.vimrc
 ```
 
 Or manually create `~/.vimrc` with the contents from `.vimrc.example`. The example includes:
-- vim-plug plugin manager setup
+- vim-plug plugin manager setup (Vim 8+ and Neovim only)
 - Genero-tools plugin configuration
 - Neovim-specific enhancements (lualine, which-key, tokyonight theme)
-- Sensible defaults for both Vim and Neovim
+- Sensible defaults for Vi, Vim 7+, Vim 8+, and Neovim
 - Helpful keybindings and commands
+- Compatibility checks for different Vim versions
 
-## Step 2: Install Vim-Plug
+## Step 2: Install Vim-Plug (Vim 8+ and Neovim only)
 
-The `.vimrc` includes automatic vim-plug installation. When you start Vim for the first time, it will:
+**Note:** vim-plug is only used in Vim 8+ and Neovim. Vi and Vim 7 users can use the plugin directly without vim-plug.
+
+The `.vimrc` includes automatic vim-plug installation for Vim 8+ and Neovim. When you start Vim for the first time, it will:
 
 1. Download vim-plug to `~/.vim/autoload/plug.vim`
 2. Automatically run `:PlugInstall` to install all plugins
 3. Reload your configuration
 
-The `.vimrc.example` includes these plugins:
+The `.vimrc.example` includes these plugins (Vim 8+ and Neovim only):
 - **genero-vim** - Genero-tools plugin
 - **LuaSnip** - Code snippets (Vim 8.2+ and Neovim)
 - **lualine.nvim** - Modern statusline (Vim 8+ and Neovim)
@@ -41,12 +46,23 @@ The `.vimrc.example` includes these plugins:
 - **Comment.nvim** - Easy commenting (Neovim only)
 - **indent-blankline.nvim** - Visual indentation guides (Neovim only)
 
-Alternatively, install vim-plug manually:
+Alternatively, install vim-plug manually (Vim 8+ and Neovim only):
 
 ```bash
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 ```
+
+### For Vi and Vim 7 Users
+
+If you're using Vi or Vim 7, the plugin manager section is automatically skipped. You can still use the genero-tools plugin by:
+
+1. Cloning the repository to your vim plugins directory:
+```bash
+git clone https://github.com/hdean-ssp/genero-vim ~/.vim/plugin/genero-vim
+```
+
+2. Or copying the plugin files directly to `~/.vim/plugin/` and `~/.vim/autoload/`
 
 ## Step 3: Start Vim and Install Plugins
 
@@ -54,16 +70,26 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 vim
 ```
 
+**For Vim 8+ and Neovim:**
 Vim will automatically:
 - Install vim-plug (if not already installed)
-- Install the genero-tools plugin
-- Load your configuration
+- Install all plugins from the `.vimrc.example` configuration
+- Load your configuration with all keybindings and settings
 
 If plugins don't install automatically, run:
 
 ```vim
 :PlugInstall
 ```
+
+**For Vi and Vim 7:**
+The plugin manager section is skipped. The genero-tools plugin will be loaded directly if installed in your plugin directory.
+
+After startup, you'll have:
+- Genero-tools plugin ready to use
+- Compiler integration with autocompile enabled (Vim 8+ and Neovim)
+- Keybindings configured (F5 for compile, Ctrl+, and Ctrl+. for error navigation)
+- Neovim enhancements (if using Neovim)
 
 ## Step 4: Verify Installation
 
@@ -97,7 +123,7 @@ Try these commands:
 " Test function lookup
 :GeneroLookup test_function
 
-" Test with keybinding (place cursor on a function name)
+" Test with keybinding (place cursor on a function name, Vim 7+ only)
 <leader>gl
 
 " Show configuration
@@ -105,9 +131,64 @@ Try these commands:
 
 " Clear cache
 :GeneroClearCache
+
+" Compile current file (F5 key)
+:GeneroCompile
+
+" Show help (Vim 7+ only)
+:GeneroHelp
+```
+
+The `.vimrc.example` includes a `:GeneroHelp` command that displays all available keybindings and commands (Vim 7+ only).
+
+**For Vi and Vim 6 Users:**
+Use the basic commands directly:
+```vim
+:GeneroCompile
+:GeneroNextError
+:GeneroPrevError
 ```
 
 ## Configuration Options
+
+### Using the Example Configuration
+
+The `.vimrc.example` file provides a complete, production-ready configuration. To use it:
+
+```bash
+cp .vimrc.example ~/.vimrc
+```
+
+This includes:
+- Genero-tools plugin with sensible defaults
+- Compiler integration with autocompile enabled
+- Keybindings for common operations
+- Neovim enhancements (lualine, which-key, tokyonight theme)
+- Helpful commands like `:GeneroHelp`
+
+### Customizing the Configuration
+
+Edit `~/.vimrc` to customize. Common customizations:
+
+**Change leader key:**
+```vim
+let mapleader = ','  " Use comma instead of space
+```
+
+**Disable autocompile:**
+```vim
+let g:genero_tools_config.compiler_autocompile = v:false
+```
+
+**Use different compiler:**
+```vim
+let g:genero_tools_config.compiler_command = '/path/to/fglcomp -M -W all'
+```
+
+**Disable Neovim enhancements:**
+```vim
+" Remove or comment out the "if has('nvim')" section
+```
 
 ### Basic Configuration
 
