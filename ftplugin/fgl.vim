@@ -3,8 +3,8 @@
 " Set omnifunc for fgl files
 setlocal omnifunc=genero_tools#complete#omnifunc
 
-" Set other useful options for fgl files
-setlocal commentstring=--\ %s
+" Set comment string for fgl files (# for comments)
+setlocal commentstring=#\ %s
 
 " Enable autocompile for fgl files if configured
 if genero_tools#config#get('compiler_autocompile')
@@ -15,7 +15,8 @@ endif
 " Tab behavior:
 " - If completion menu is visible: navigate down
 " - If line is empty or only whitespace: insert tab character
-" - Otherwise: trigger completion
+" - If cursor is at end of an identifier: trigger completion
+" - Otherwise: insert tab character
 function! s:handle_tab() abort
   if pumvisible()
     return "\<C-n>"
@@ -28,8 +29,16 @@ function! s:handle_tab() abort
     return "\<Tab>"
   endif
   
-  " Otherwise trigger completion
-  return "\<C-x>\<C-o>"
+  " Check if cursor is at end of an identifier (word characters, dots, underscores)
+  " Only trigger completion if there's an identifier to complete
+  let char_before = getline('.')[col('.')-2]
+  if char_before =~# '[a-zA-Z0-9_.]'
+    " Cursor is at end of identifier, trigger completion
+    return "\<C-x>\<C-o>"
+  endif
+  
+  " Otherwise insert tab
+  return "\<Tab>"
 endfunction
 
 inoremap <buffer> <expr> <Tab> <SID>handle_tab()
