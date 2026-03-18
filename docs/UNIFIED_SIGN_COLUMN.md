@@ -42,8 +42,11 @@ This approach:
 
 - `genero_tools#signs#init()` - Initialize both compiler and SVN sign systems
 - `genero_tools#signs#get_combined_sign(compiler_sign, svn_sign)` - Get combined sign name
+- `genero_tools#signs#get_sign_text(sign_name)` - Get text representation of a sign
+- `genero_tools#signs#get_sign_highlight(sign_name)` - Get highlight group for a sign
 - `genero_tools#signs#place_combined(bufnr, compiler_signs, svn_signs)` - Place combined signs
 - `genero_tools#signs#clear_combined(bufnr)` - Clear combined signs for a buffer
+- `genero_tools#signs#clear_combined_all()` - Clear all combined signs globally
 
 ### Sign Caching
 

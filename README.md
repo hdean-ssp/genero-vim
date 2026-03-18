@@ -43,6 +43,7 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - **Intelligent Autocomplete** - Function and module name completion with signatures
 - **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
   - Sign column indicators for errors and warnings
+  - Unified sign column for compiler and SVN markers (space-efficient)
   - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
   - Unused variable detection and highlighting
   - Automatic highlighting applied on compilation

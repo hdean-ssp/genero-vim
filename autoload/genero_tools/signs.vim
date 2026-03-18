@@ -5,6 +5,9 @@
 " Sign combination cache: maps (line, compiler_sign, svn_sign) -> combined_sign_name
 let s:sign_cache = {}
 
+" Global state for unified signs
+let g:genero_tools_unified_signs_enabled = get(g:, 'genero_tools_unified_signs_enabled', 0)
+
 " Initialize unified sign system
 function! genero_tools#signs#init() abort
   " Initialize both subsystems
@@ -155,4 +158,31 @@ function! genero_tools#signs#clear_combined_all() abort
     execute 'sign unplace * group=genero_combined'
   catch
   endtry
+endfunction
+
+" Enable unified signs globally
+function! genero_tools#signs#enable_unified() abort
+  let g:genero_tools_unified_signs_enabled = 1
+  echo "Unified signs enabled"
+endfunction
+
+" Disable unified signs globally
+function! genero_tools#signs#disable_unified() abort
+  let g:genero_tools_unified_signs_enabled = 0
+  call genero_tools#signs#clear_combined_all()
+  echo "Unified signs disabled"
+endfunction
+
+" Toggle unified signs
+function! genero_tools#signs#toggle_unified() abort
+  if g:genero_tools_unified_signs_enabled
+    call genero_tools#signs#disable_unified()
+  else
+    call genero_tools#signs#enable_unified()
+  endif
+endfunction
+
+" Get unified signs status
+function! genero_tools#signs#get_unified_status() abort
+  return g:genero_tools_unified_signs_enabled
 endfunction

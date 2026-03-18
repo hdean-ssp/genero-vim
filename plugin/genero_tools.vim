@@ -53,6 +53,9 @@ command! GeneroSVNStatus call genero_tools#svn#commands#status()
 command! GeneroSVNCacheStats call genero_tools#svn#commands#cache_stats()
 command! GeneroSVNCacheClear call genero_tools#svn#commands#cache_clear()
 
+" Register sign commands
+call genero_tools#signs#commands#register()
+
 " Register keybindings if enabled
 if genero_tools#config#get('keybindings_enabled')
   call genero_tools#keybindings#register()
