@@ -46,6 +46,14 @@ function! genero_tools#config#init() abort
   for [key, value] in items(defaults)
     if !has_key(g:genero_tools_config, key)
       let g:genero_tools_config[key] = value
+    else
+      " Type checking and conversion for codebase_markers
+      if key == 'codebase_markers' && type(g:genero_tools_config[key]) != type([])
+        " Convert string to list if needed
+        if type(g:genero_tools_config[key]) == type('')
+          let g:genero_tools_config[key] = [g:genero_tools_config[key]]
+        endif
+      endif
     endif
   endfor
 endfunction
@@ -111,7 +119,11 @@ function! genero_tools#config#show() abort
   for [key, value] in items(config)
     " Check if value is a boolean (type 0 = number, and value is 0 or 1)
     if type(value) == 0 && (value == 0 || value == 1)
-      let value_str = value ? 'true' : 'false'
+      if value
+        let value_str = 'true'
+      else
+        let value_str = 'false'
+      endif
     else
       let value_str = string(value)
     endif
@@ -124,7 +136,8 @@ function! genero_tools#config#show() abort
   let cache_stats = genero_tools#cache#stats()
   call add(output, '=== Cache Statistics ===')
   call add(output, '  Cache size: ' . cache_stats.size . ' / ' . cache_stats.max_size)
-  call add(output, '  Cache enabled: ' . (cache_stats.enabled ? 'true' : 'false'))
+  let cache_enabled_str = cache_stats.enabled ? 'true' : 'false'
+  call add(output, '  Cache enabled: ' . cache_enabled_str)
   call add(output, '  Cache TTL: ' . cache_stats.ttl . 's')
   
   let memory_usage = genero_tools#cache#estimate_memory()
