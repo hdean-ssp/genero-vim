@@ -95,6 +95,15 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `:GeneroSVNToggle` | Toggle SVN diff markers on/off for current buffer |
 | `:GeneroSVNStatus` | Show SVN status and change summary for current file |
 
+### Sign Column Commands
+
+| Command | Action |
+|---------|--------|
+| `:GeneroUnifiedSignsEnable` | Enable unified sign column (compiler + SVN markers) |
+| `:GeneroUnifiedSignsDisable` | Disable unified sign column |
+| `:GeneroUnifiedSignsToggle` | Toggle unified sign column on/off |
+| `:GeneroUnifiedSignsStatus` | Show unified signs status and configuration |
+
 ### Customizing Keybindings
 
 The `.vimrc.example` uses space as the leader key. To customize:
@@ -142,6 +151,17 @@ let g:genero_tools_config.keybindings_enabled = 0
 ```
 
 **Note:** Error navigation commands (`:GeneroNextError`, `:GeneroPrevError`) gracefully handle empty error lists and won't display spurious error messages.
+
+### Sign Column Commands
+
+```vim
+:GeneroUnifiedSignsEnable               " Enable unified sign column (compiler + SVN)
+:GeneroUnifiedSignsDisable              " Disable unified sign column
+:GeneroUnifiedSignsToggle               " Toggle unified sign column on/off
+:GeneroUnifiedSignsStatus               " Show unified signs status
+```
+
+**Note:** The unified sign column combines compiler error/warning signs with SVN diff markers in a single column for space efficiency.
 
 ### Snippet Commands (Neovim only)
 
@@ -418,6 +438,9 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 - **[Neovim Setup](docs/NEOVIM.md)** - Neovim installation and configuration
 - **[API Integration](docs/API_INTEGRATION.md)** - Complete API reference
 - **[Compatibility](docs/COMPATIBILITY.md)** - Vim/Neovim compatibility
+- **[Unified Sign Column](docs/UNIFIED_SIGN_COLUMN.md)** - Sign column system for compiler and SVN markers
+- **[SVN Diff Markers](docs/SVN_DIFF_MARKERS.md)** - SVN integration and diff markers
+- **[Snippets](docs/SNIPPETS.md)** - Code snippets documentation
 
 ## Requirements
 

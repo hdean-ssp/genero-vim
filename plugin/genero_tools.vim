@@ -35,6 +35,8 @@ command! -nargs=? -complete=file GeneroCompile call genero_tools#compiler#comman
 command! GeneroClearErrors call genero_tools#compiler#commands#clear_errors()
 command! GeneroNextError call genero_tools#compiler#commands#next_error()
 command! GeneroPrevError call genero_tools#compiler#commands#prev_error()
+command! GeneroFirstError call genero_tools#compiler#commands#first_error()
+command! GeneroLastError call genero_tools#compiler#commands#last_error()
 command! GeneroAutocompileEnable call genero_tools#compiler#commands#autocompile_enable()
 command! GeneroAutocompileDisable call genero_tools#compiler#commands#autocompile_disable()
 command! GeneroAutocompileStatus call genero_tools#compiler#commands#autocompile_status()

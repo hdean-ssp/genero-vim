@@ -99,6 +99,24 @@ function! genero_tools#compiler#commands#prev_error() abort
   endif
 endfunction
 
+" GeneroFirstError command - jump to first error
+function! genero_tools#compiler#commands#first_error() abort
+  let result = genero_tools#compiler#quickfix#first()
+  
+  if !result.success
+    echom result.error
+  endif
+endfunction
+
+" GeneroLastError command - jump to last error
+function! genero_tools#compiler#commands#last_error() abort
+  let result = genero_tools#compiler#quickfix#last()
+  
+  if !result.success
+    echom result.error
+  endif
+endfunction
+
 " GeneroAutocompileEnable command - enable autocompile on save
 function! genero_tools#compiler#commands#autocompile_enable() abort
   call genero_tools#compiler#autocompile#enable()

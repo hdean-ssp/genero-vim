@@ -93,20 +93,31 @@ function! genero_tools#compiler#quickfix#next() abort
   if empty(qf_list)
     return {
       \ 'success': 0,
-      \ 'error': 'No errors to navigate'
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
       \ }
   endif
   
   try
     cnext
+    " Get current position for feedback
+    let current = getqflist({'idx': 0})
+    let idx = get(current, 'idx', 0)
+    let total = len(qf_list)
+    echom 'Error ' . idx . ' of ' . total
     return {
       \ 'success': 1,
       \ 'error': ''
       \ }
+  catch /E553/
+    " E553: No more items
+    return {
+      \ 'success': 0,
+      \ 'error': 'No next error (at end of list)'
+      \ }
   catch
     return {
       \ 'success': 0,
-      \ 'error': 'No next error'
+      \ 'error': 'Navigation failed: ' . v:exception
       \ }
   endtry
 endfunction
@@ -118,20 +129,31 @@ function! genero_tools#compiler#quickfix#prev() abort
   if empty(qf_list)
     return {
       \ 'success': 0,
-      \ 'error': 'No errors to navigate'
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
       \ }
   endif
   
   try
     cprevious
+    " Get current position for feedback
+    let current = getqflist({'idx': 0})
+    let idx = get(current, 'idx', 0)
+    let total = len(qf_list)
+    echom 'Error ' . idx . ' of ' . total
     return {
       \ 'success': 1,
       \ 'error': ''
       \ }
+  catch /E553/
+    " E553: No more items
+    return {
+      \ 'success': 0,
+      \ 'error': 'No previous error (at start of list)'
+      \ }
   catch
     return {
       \ 'success': 0,
-      \ 'error': 'No previous error'
+      \ 'error': 'Navigation failed: ' . v:exception
       \ }
   endtry
 endfunction
@@ -148,6 +170,56 @@ function! genero_tools#compiler#quickfix#clear() abort
     return {
       \ 'success': 0,
       \ 'error': 'Failed to clear quickfix list: ' . v:exception
+      \ }
+  endtry
+endfunction
+
+" Jump to first error
+function! genero_tools#compiler#quickfix#first() abort
+  let qf_list = getqflist()
+  if empty(qf_list)
+    return {
+      \ 'success': 0,
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
+      \ }
+  endif
+  
+  try
+    cfirst
+    echom 'Error 1 of ' . len(qf_list)
+    return {
+      \ 'success': 1,
+      \ 'error': ''
+      \ }
+  catch
+    return {
+      \ 'success': 0,
+      \ 'error': 'Failed to jump to first error: ' . v:exception
+      \ }
+  endtry
+endfunction
+
+" Jump to last error
+function! genero_tools#compiler#quickfix#last() abort
+  let qf_list = getqflist()
+  if empty(qf_list)
+    return {
+      \ 'success': 0,
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
+      \ }
+  endif
+  
+  try
+    clast
+    echom 'Error ' . len(qf_list) . ' of ' . len(qf_list)
+    return {
+      \ 'success': 1,
+      \ 'error': ''
+      \ }
+  catch
+    return {
+      \ 'success': 0,
+      \ 'error': 'Failed to jump to last error: ' . v:exception
       \ }
   endtry
 endfunction
