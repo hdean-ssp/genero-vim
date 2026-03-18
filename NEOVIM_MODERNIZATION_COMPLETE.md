@@ -97,6 +97,8 @@ Quick reference card with:
 
 ```
 Ctrl+h/j/k/l    - Navigate between windows
+Ctrl+,          - Previous error
+Ctrl+.          - Next error
 <leader>bn      - Next buffer
 <leader>bp      - Previous buffer
 <leader>bd      - Delete buffer

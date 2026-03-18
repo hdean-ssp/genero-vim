@@ -46,10 +46,13 @@ Ensure BRODIR is set in your shell:
 export BRODIR=/path/to/your/brodir
 ```
 
-Or update the query_sh_path in `genero_config.lua`:
+Or update the `genero_tools_path` in `init.lua`:
 
 ```lua
-M.query_sh_path = "/path/to/your/brodir/etc/genero-tools/query.sh"
+vim.g.genero_tools_config = {
+  genero_tools_path = "/path/to/your/brodir/etc/genero-tools/query.sh",
+  -- ... other config
+}
 ```
 
 ### 4. Start Neovim
@@ -65,8 +68,8 @@ Lazy.nvim will automatically download and install plugins on first launch.
 | Key | Action |
 |-----|--------|
 | `F5` | Compile current file |
-| `Ctrl+[` | Jump to previous error/warning |
-| `Ctrl+]` | Jump to next error/warning |
+| `Ctrl+,` | Jump to previous error/warning |
+| `Ctrl+.` | Jump to next error/warning |
 | `<leader>ca` | Enable autocompile on save |
 | `<leader>cd` | Disable autocompile on save |
 | `<leader>cc` | Clear error markers |

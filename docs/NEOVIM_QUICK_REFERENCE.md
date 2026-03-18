@@ -12,8 +12,8 @@ nvim
 | Key | Action |
 |-----|--------|
 | `F5` | Compile current file |
-| `Ctrl+[` | Previous error |
-| `Ctrl+]` | Next error |
+| `Ctrl+,` | Previous error |
+| `Ctrl+.` | Next error |
 | `<leader>ca` | Enable autocompile |
 | `<leader>cd` | Disable autocompile |
 | `<leader>cc` | Clear errors |

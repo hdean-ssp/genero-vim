@@ -55,7 +55,11 @@ vim.g.genero_tools_config = {
   compiler_args = { "-M", "-W", "all" },
   
   -- Query tool path (adjust if needed)
-  query_sh_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+  -- Default: uses BRODIR environment variable
+  genero_tools_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+  
+  -- Uncomment and adjust the line below if your query.sh is in a custom location
+  -- genero_tools_path = vim.fn.expand("~/personal/genero-tools/query.sh"),
   
   -- Display and features
   display_mode = "quickfix",
@@ -388,9 +392,9 @@ local opts = { noremap = true, silent = true }
 -- Compile current file (F5)
 map("n", "<F5>", ":GeneroCompile<CR>", opts)
 
--- Navigate errors/warnings (Ctrl+[ and Ctrl+])
-map("n", "<C-[>", ":GeneroPrevError<CR>", opts)
-map("n", "<C-]>", ":GeneroNextError<CR>", opts)
+-- Navigate errors/warnings
+map("n", "<C-,>", ":GeneroPrevError<CR>", opts)
+map("n", "<C-.>", ":GeneroNextError<CR>", opts)
 
 -- Toggle autocompile
 map("n", "<leader>ca", ":GeneroAutocompileEnable<CR>", opts)
@@ -441,8 +445,8 @@ COMPILATION:
   <leader>cc      - Clear error markers
 
 NAVIGATION:
-  Ctrl+[          - Jump to previous error/warning
-  Ctrl+]          - Jump to next error/warning
+  Ctrl+,          - Jump to previous error/warning
+  Ctrl+.          - Jump to next error/warning
   Ctrl+h/j/k/l    - Navigate between windows
   <leader>bn      - Next buffer
   <leader>bp      - Previous buffer
