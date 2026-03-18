@@ -12,6 +12,7 @@ A vim plugin that brings modern IDE capabilities to the classic vim editor for G
 <leader>gf  " List functions in current file
 <leader>gs  " Get function signature
 <leader>gm  " Get file metadata
+F5          " Compile current file
 ```
 
 ## Installation
@@ -26,7 +27,13 @@ Plug 'hdean-ssp/genero-vim'
 cp .vimrc.example ~/.vimrc
 ```
 
-This includes vim-plug setup (Vim 8+ and Neovim), genero-tools configuration, keybindings, and Neovim enhancements. Works with Vi, Vim 7+, Vim 8+, and Neovim.
+This includes:
+- Minimal, essential settings (no conflicts or unnecessary options)
+- vim-plug setup (Vim 8+ and Neovim)
+- genero-tools configuration with sensible defaults
+- Keybindings for common operations
+- Neovim enhancements (lualine, which-key, tokyonight theme)
+- Compatibility checks for Vi, Vim 7+, Vim 8+, and Neovim
 
 See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instructions.
 
