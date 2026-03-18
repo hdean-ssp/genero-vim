@@ -42,22 +42,21 @@ function! genero_tools#svn#signs#place(bufnr, changes) abort
   call genero_tools#svn#signs#clear(a:bufnr)
   
   let sign_id = 1
-  let file_path = fnamemodify(bufname(a:bufnr), ':p')
   
   " Get the lists from changes dict
   let added = get(a:changes, 'added', [])
   let modified = get(a:changes, 'modified', [])
   let deleted = get(a:changes, 'deleted', [])
   
-  " Create a set of modified lines for quick lookup
+  " Create sets for quick lookup
   let modified_set = {}
   for line_num in modified
     let modified_set[line_num] = 1
   endfor
   
-  " Place signs for added lines
+  " Place signs for added lines (excluding those that are part of modifications)
   for line_num in added
-    " Skip if this line is also in modified (treat as modified)
+    " Skip if this line is also in modified (treat as modified instead)
     if has_key(modified_set, line_num)
       continue
     endif
@@ -72,7 +71,7 @@ function! genero_tools#svn#signs#place(bufnr, changes) abort
     endtry
   endfor
   
-  " Place signs for modified lines
+  " Place signs for modified lines (single yellow sign on the modified line)
   for line_num in modified
     try
       execute 'sign place ' . sign_id . ' group=genero_svn line=' . line_num . 
@@ -85,7 +84,14 @@ function! genero_tools#svn#signs#place(bufnr, changes) abort
   endfor
   
   " Place signs for deleted lines (on line before deletion)
+  " Skip deleted lines that are part of a modification (already marked as modified)
   for line_num in deleted
+    " Skip if this deleted line is part of a modification
+    " (i.e., if the next line is marked as modified)
+    if has_key(modified_set, line_num)
+      continue
+    endif
+    
     " Show deleted marker on the line before the deletion
     let marker_line = line_num > 1 ? line_num - 1 : 1
     

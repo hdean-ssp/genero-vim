@@ -117,11 +117,14 @@ set breakindent
 " Add mouse support (if it doesn't interfere with your terminal)
 set mouse=c
 
-" Add resize keybindings (test thoroughly in your environment)
+" Add resize keybindings (test thoroughly - may interfere with arrow keys)
 nnoremap <C-Up> :resize +2<CR>
 nnoremap <C-Down> :resize -2<CR>
 nnoremap <C-Left> :vertical resize -2<CR>
 nnoremap <C-Right> :vertical resize +2<CR>
+
+" NOTE: Do NOT remap <Esc> - it breaks arrow key detection
+" Arrow keys send escape sequences like ESC[A, and remapping Esc interferes with parsing
 ```
 
 ## Documentation Updates

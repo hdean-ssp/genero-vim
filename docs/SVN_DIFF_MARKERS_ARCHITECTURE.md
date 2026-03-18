@@ -54,7 +54,7 @@ let status = genero_tools#svn#diff#get_status(file_path)
 
 ### 3. Parser Module
 
-Extracts change information from unified diff format.
+Extracts change information from unified diff format with intelligent modification detection.
 
 ```vim
 " Parse diff output
@@ -65,6 +65,21 @@ let changes = genero_tools#svn#parser#parse_diff(diff_output)
 let summary = genero_tools#svn#parser#get_summary(diff_output)
 " Returns: {added_count, modified_count, deleted_count, total_changes}
 ```
+
+**Modification Detection:**
+
+The parser automatically detects modified lines by identifying consecutive deleted/added pairs in the unified diff. When a deleted line is immediately followed by an added line, the parser marks the **added line number** (new version) as modified. This ensures visual markers appear on the current line in the editor.
+
+**Example:**
+```
+-old_value = 5      (deleted line - not marked)
++old_value = 10     (added line - marked as modified)
+```
+
+The added line number is marked as modified because:
+1. It represents the current state of the code
+2. Visual markers should appear on lines that exist in the working copy
+3. Users can see the change at the line they're editing
 
 ### 4. Signs Module
 

@@ -122,14 +122,35 @@ Index: filename
 
 **Line Prefixes:**
 - ` ` (space) - Context line (unchanged)
-- `-` - Deleted line
-- `+` - Added line
+- `-` - Deleted line (old version)
+- `+` - Added line (new version)
 - `\` - "No newline at end of file" marker
 
 **Hunk Header Format:**
 ```
 @@ -OLD_START,OLD_COUNT +NEW_START,NEW_COUNT @@
 ```
+
+**Modified Line Detection:**
+
+In SVN unified diff format, a modified line appears as:
+- A deleted line (prefixed with `-`) showing the old version
+- An added line (prefixed with `+`) showing the new version
+
+The parser detects modifications by identifying consecutive deleted/added pairs and marks the **new version line number** (the added line) as modified. This ensures that visual markers appear on the current line in the editor, not on a deleted line that no longer exists.
+
+**Example:**
+```
+@@ -10,3 +10,3 @@
+ context
+-old_value = 5
++old_value = 10
+ context
+```
+
+In this example:
+- Line 11 (the `+old_value = 10` line) is marked as modified
+- The deleted line is not marked (it no longer exists in the working copy)
 
 ## Caching System
 

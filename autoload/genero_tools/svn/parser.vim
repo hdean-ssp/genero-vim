@@ -15,6 +15,7 @@ function! genero_tools#svn#parser#parse_diff(diff_output) abort
   let current_line_num = 0
   let i = 0
   let in_hunk = 0
+  let last_deleted_line = -1
   
   while i < len(lines)
     let line = lines[i]
@@ -27,6 +28,7 @@ function! genero_tools#svn#parser#parse_diff(diff_output) abort
       if len(match) > 1
         let current_line_num = str2nr(match[1])
       endif
+      let last_deleted_line = -1
       let i += 1
       continue
     endif
@@ -44,27 +46,38 @@ function! genero_tools#svn#parser#parse_diff(diff_output) abort
       if first_char == '+'
         " Added line (but not the +++ header)
         if line !~? '^+++' && current_line_num > 0
-          call add(result.added, current_line_num)
+          " Check if the previous line was a deletion
+          " If so, this is a modification
+          if last_deleted_line >= 0
+            call add(result.modified, current_line_num)
+            let last_deleted_line = -1
+          else
+            call add(result.added, current_line_num)
+          endif
           let current_line_num += 1
         endif
       elseif first_char == '-'
         " Deleted line (but not the --- header)
         if line !~? '^---' && current_line_num > 0
           call add(result.deleted, current_line_num)
+          let last_deleted_line = current_line_num
         endif
       elseif first_char == ' '
         " Context line (unchanged)
         let current_line_num += 1
+        let last_deleted_line = -1
       elseif first_char == '\'
         " "\ No newline at end of file" marker - skip
         " Don't increment line number
       else
         " Unknown line type - treat as context
         let current_line_num += 1
+        let last_deleted_line = -1
       endif
     elseif in_hunk && len(line) == 0
       " Empty line in diff - treat as context
       let current_line_num += 1
+      let last_deleted_line = -1
     endif
     
     let i += 1
@@ -75,24 +88,12 @@ endfunction
 
 " Detect modified lines (lines that appear as both added and deleted)
 " Returns: list of line numbers that were modified
+" Note: This function is now mostly for backward compatibility
+" Modified lines are detected directly in parse_diff()
 function! genero_tools#svn#parser#detect_modified_lines(added, deleted) abort
-  let modified = []
-  
-  " Look for consecutive added/deleted pairs
-  let i = 0
-  while i < len(a:deleted)
-    let deleted_line = a:deleted[i]
-    
-    " Check if there's an added line right after the deleted line
-    if i < len(a:added) && a:added[i] == deleted_line + 1
-      call add(modified, deleted_line)
-      let i += 1
-    endif
-    
-    let i += 1
-  endwhile
-  
-  return modified
+  " This function is kept for backward compatibility
+  " Modified detection now happens in parse_diff()
+  return []
 endfunction
 
 " Extract line numbers for added lines
