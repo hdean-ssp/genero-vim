@@ -116,6 +116,10 @@ function! genero_tools#which_key#register_with_api() abort
         \ 'cmd': 'GeneroSvnStatus'
       \ },
     \ },
+    \ 'd': {
+      \ 'name': 'Toggle debug stream',
+      \ 'cmd': 'GeneroDebugStreamToggle'
+    \ },
     \ 'h': {
       \ 'name': 'Show help',
       \ 'cmd': 'GeneroHelp'

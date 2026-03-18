@@ -13,4 +13,9 @@ function! genero_tools#keybindings#register() abort
   
   " Get file metadata (expand % to current filename)
   nnoremap <silent> <leader>gm :call genero_tools#get_file_metadata(expand('%'))<CR>
+  
+  " Debug streaming (Neovim only)
+  if has('nvim')
+    nnoremap <silent> <leader>gd :GeneroDebugStreamToggle<CR>
+  endif
 endfunction
