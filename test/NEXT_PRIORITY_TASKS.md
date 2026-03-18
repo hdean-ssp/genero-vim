@@ -66,18 +66,23 @@ Verify all compiler features work correctly:
 
 ## Secondary Priority (Enhancement Tasks)
 
-### Task 20: Modernize Default Configuration
-**Priority:** MEDIUM | **Effort:** 3-4 hours | **Blocking:** No
+### Task 20: Modernize Default Configuration ✅ COMPLETE
+**Priority:** MEDIUM | **Effort:** 3-4 hours | **Status:** DONE
 
-Add floating window support:
-- `display_mode`: 'floating' or 'quickfix'
-- `floating_window_border`: 'rounded', 'solid', 'shadow'
-- `floating_window_width`: percentage or fixed
-- `floating_window_height`: percentage or fixed
-- Implement floating window UI with rounded borders
-- Leverage existing lua/genero_tools/ui.lua
+Floating window support implemented:
+- ✅ `display_mode`: 'floating' or 'quickfix'
+- ✅ `floating_window_border`: 'rounded', 'solid', 'shadow', 'none'
+- ✅ `floating_window_width`: configurable columns
+- ✅ `floating_window_height`: configurable lines
+- ✅ `floating_window_position`: 'center', 'top', 'bottom', 'cursor'
+- ✅ `floating_window_title`: customizable title
+- ✅ `popup_auto_close_delay`: auto-close timeout
+- ✅ Floating window UI with rounded borders implemented in lua/genero_tools/ui.lua
+- ✅ Full documentation in docs/FLOATING_WINDOW_CONFIGURATION.md
+- ✅ Integration with nvim-notify for notifications
+- ✅ Keybindings for floating window navigation (q, Esc to close)
 
-**Deliverable:** Floating window display mode
+**Deliverable:** ✅ Floating window display mode fully implemented and documented
 
 ---
 
@@ -119,9 +124,8 @@ Stream debug output in split window:
 - Fix any issues discovered during testing
 - **Outcome:** Production-ready core plugin
 
-### Phase 2: Quick Wins (Tasks 20-26)
-**Timeline:** 2-3 weeks (can be parallel)
-- Task 20: Floating windows (medium effort, high impact)
+### Phase 2: Quick Wins (Tasks 25-26)
+**Timeline:** 1-2 weeks (can be parallel)
 - Task 25: which-key integration (low effort, good UX)
 - Task 26: Keybinding documentation (low effort)
 - **Outcome:** Improved user experience
@@ -142,7 +146,7 @@ Stream debug output in split window:
 | 17: Integration Tests | HIGH | 4-6h | ⏳ **START** | Blocking | No compiler needed |
 | 18: Final Checkpoint | HIGH | 2-3h | ⏳ | Blocking | No compiler needed |
 | 16: Compiler Checkpoint | HIGH | 2-3h | ⏸️ | Blocking | Deferred - needs compiler |
-| 20: Floating Windows | MEDIUM | 3-4h | ⏳ | UX | Can start anytime |
+| 20: Floating Windows | MEDIUM | 3-4h | ✅ **DONE** | UX | Already implemented |
 | 25: which-key | LOW | 2-3h | ⏳ | UX | Can start anytime |
 | 27: Debug Streaming | HIGH | 6-8h | ⏳ | Feature | Can start anytime |
 
@@ -153,17 +157,17 @@ Stream debug output in split window:
 **Start with Task 17 (Integration Testing)** to validate all core functionality without requiring compiler access. This creates comprehensive tests for:
 - SVN diff markers feature
 - Snippets functionality
-- Display modes
+- Display modes (including floating windows)
 - Caching system
 - Command execution
 - Error handling
 
 **Estimated Timeline to Production:** 1 week (Tasks 17-18)  
-**Estimated Timeline to Full Feature Set:** 3-5 weeks (Tasks 17-27, excluding Task 16)  
+**Estimated Timeline to Full Feature Set:** 2-3 weeks (Tasks 17-18, 25-27, excluding Task 16)  
 **Task 16 Timeline:** When compiler access becomes available
 
 ---
 
-**Date:** March 17, 2026  
-**Last Updated:** After Task 19 completion  
-**Status:** Ready for next phase
+**Date:** March 18, 2026  
+**Last Updated:** After Task 20 verification (floating windows already complete)  
+**Status:** Ready for integration testing phase
