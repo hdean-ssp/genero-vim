@@ -8,19 +8,20 @@
 | 1-15 | Core Plugin & Compiler | - | ✓ Complete | - |
 | 21 | E1.2: Reduce Startup Noise | HIGH | ✓ Complete | Mar 17 |
 | 24 | E2.3: Fix Statusline Bug | HIGH | ✓ Complete | Mar 17 |
+| 22 | E2.1: Add Error Highlighting | MEDIUM | ✓ Complete | Mar 18 |
+| 23 | E2.2: Fix Sign Column | MEDIUM | ✓ Complete | Mar 18 |
+| 20 | E1.1: Modernize Config | MEDIUM | ✓ Complete | Mar 18 |
+| 25 | E3.1: which-key Integration | LOW | ✓ Complete (tweaking) | Mar 18 |
+| 19 | SVN Diff Markers | - | ✓ Complete | Mar 18 |
 
 ### In Progress / Next
 | Task | Name | Priority | Status | Est. Effort |
 |------|------|----------|--------|-------------|
-| 22 | E2.1: Add Error Highlighting | MEDIUM | → NEXT | 3-4 hrs |
+| 26 | E3.2: which-key Docs | LOW | → NEXT | 1-2 hrs |
 
 ### Pending Enhancement Tasks
 | Task | Name | Priority | Status | Est. Effort |
 |------|------|----------|--------|-------------|
-| 23 | E2.2: Fix Sign Column | MEDIUM | Pending | 2-3 hrs |
-| 20 | E1.1: Modernize Config | MEDIUM | Pending | 3-4 hrs |
-| 25 | E3.1: which-key Integration | LOW | Pending | 2-3 hrs |
-| 26 | E3.2: which-key Docs | LOW | Pending | 1-2 hrs |
 | 27 | Debug File Streaming | HIGH | Pending | 4-6 hrs |
 | 28 | Keybinding Help Popup | MEDIUM | Pending | 3-4 hrs |
 
@@ -41,22 +42,25 @@
 ### Phase 1: Quick Wins (Enhancement Tasks - High/Medium Priority)
 1. ✓ Task 21 - Reduce startup noise (COMPLETE)
 2. ✓ Task 24 - Fix statusline bug (COMPLETE)
-3. → **Task 22** - Add error highlighting (NEXT)
-4. Task 23 - Fix sign column
-5. Task 20 - Modernize config
+3. ✓ Task 22 - Add error highlighting (COMPLETE)
+4. ✓ Task 23 - Fix sign column (COMPLETE)
+5. ✓ Task 20 - Modernize config (COMPLETE)
 
 ### Phase 2: New Features (High Priority)
 6. Task 27 - Debug file streaming
 7. Task 28 - Keybinding help popup
 
 ### Phase 3: Integration & Documentation
-8. Task 25 - which-key integration
-9. Task 26 - which-key documentation
+8. ✓ Task 25 - which-key integration (COMPLETE - tweaking)
+9. → **Task 26** - which-key documentation (NEXT)
 
 ### Phase 4: Core Validation
 10. Task 16 - Checkpoint: Compiler integration
 11. Task 17 - Integration testing
 12. Task 18 - Final checkpoint
+
+### Phase 5: SVN Features
+13. ✓ Task 19 - SVN diff markers (COMPLETE)
 
 ## Task Dependencies
 
@@ -132,17 +136,17 @@
 ## Key Metrics
 
 ### Completed Work
-- Tasks completed: 2 (21, 24)
-- Lines of code modified: ~150
-- Files modified: 5
-- Tests created: 2
-- Documentation created: 4
+- Tasks completed: 8 (21, 24, 22, 23, 20, 25, 19, + 1-15 core)
+- Lines of code modified: ~500+
+- Files modified: 20+
+- Tests created: 15+
+- Documentation created: 10+
 
 ### Remaining Work
-- Tasks remaining: 8 (22, 23, 20, 25, 26, 27, 28, 16-18)
-- Estimated lines of code: ~2000+
-- Estimated files to create: 15+
-- Estimated tests to create: 20+
+- Tasks remaining: 5 (26, 27, 28, 16-18)
+- Estimated lines of code: ~1000+
+- Estimated files to create: 5+
+- Estimated tests to create: 10+
 
 ## Quality Metrics
 
@@ -198,9 +202,11 @@ When starting Task 22, a new agent should:
 | Mar 17 | Tasks 27, 28 added | ✓ |
 | Mar 17 | Documentation organized | ✓ |
 | Mar 17 | Task 22 context created | ✓ |
+| Mar 18 | Tasks 22, 23, 20, 25, 19 completed | ✓ |
+| Mar 18 | Neovim modernization complete | ✓ |
 
 ---
 
-**Last Updated:** March 17, 2026
-**Status:** Ready for Task 22 implementation
-**Next Agent:** Start with `NEXT_TASK_CONTEXT.md`
+**Last Updated:** March 18, 2026
+**Status:** 8/13 tasks complete (62%). Ready for Task 26 implementation
+**Next Agent:** Start with Task 26 (which-key documentation)

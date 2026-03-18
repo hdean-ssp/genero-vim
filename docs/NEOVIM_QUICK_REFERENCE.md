@@ -38,6 +38,18 @@ nvim
 | `Ctrl+Left` | Decrease width |
 | `Ctrl+Right` | Increase width |
 
+## Commenting
+
+| Key | Action |
+|-----|--------|
+| `gcc` | Toggle comment on line |
+| `gbc` | Toggle block comment |
+| `gc` | Toggle comment (visual) |
+| `gb` | Toggle block comment (visual) |
+| `gcO` | Add comment above |
+| `gco` | Add comment below |
+| `gcA` | Add comment at end of line |
+
 ## Buffer Management
 
 | Key | Action |

@@ -377,6 +377,37 @@ local plugins = {
       })
     end,
   },
+
+  -- Comment plugin for gcc/gbc keybindings
+  {
+    "numToStr/comment.nvim",
+    config = function()
+      require("Comment").setup({
+        padding = true,
+        sticky = true,
+        ignore = nil,
+        toggler = {
+          line = "gcc",
+          block = "gbc",
+        },
+        opleader = {
+          line = "gc",
+          block = "gb",
+        },
+        extra = {
+          above = "gcO",
+          below = "gco",
+          eol = "gcA",
+        },
+        mappings = {
+          basic = true,
+          extra = true,
+        },
+        pre_hook = nil,
+        post_hook = nil,
+      })
+    end,
+  },
 }
 
 require("lazy").setup(plugins, {
@@ -431,6 +462,32 @@ map("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 map("n", "<Esc>", ":nohlsearch<CR>", opts)
 
 -- ============================================================================
+-- WHICH-KEY DESCRIPTIONS
+-- ============================================================================
+
+local wk = require("which-key")
+
+wk.register({
+  c = {
+    name = "+Compiler",
+    a = { ":GeneroAutocompileEnable<CR>", "Enable autocompile" },
+    d = { ":GeneroAutocompileDisable<CR>", "Disable autocompile" },
+    c = { ":GeneroClearErrors<CR>", "Clear errors" },
+  },
+  s = {
+    name = "+Snippets",
+    l = { ":GeneroSnippetList<CR>", "List snippets" },
+    h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
+  },
+  b = {
+    name = "+Buffers",
+    n = { ":bnext<CR>", "Next buffer" },
+    p = { ":bprev<CR>", "Previous buffer" },
+    d = { ":bdelete<CR>", "Delete buffer" },
+  },
+}, { prefix = "<leader>" })
+
+-- ============================================================================
 -- HELPFUL COMMANDS & AUTOCMDS
 -- ============================================================================
 
@@ -462,6 +519,15 @@ SNIPPETS:
 WINDOW MANAGEMENT:
   Ctrl+Up/Down    - Resize window vertically
   Ctrl+Left/Right - Resize window horizontally
+
+COMMENTING:
+  gcc             - Toggle comment on current line
+  gbc             - Toggle block comment
+  gc              - Toggle comment (visual mode)
+  gb              - Toggle block comment (visual mode)
+  gcO             - Add comment above
+  gco             - Add comment below
+  gcA             - Add comment at end of line
 
 COMMANDS:
   :GeneroCompile              - Compile current file

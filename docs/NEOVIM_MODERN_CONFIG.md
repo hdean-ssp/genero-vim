@@ -243,3 +243,100 @@ vim.g.genero_tools_config = {
   display_mode = "popup",  -- Change to your preferred mode
 }
 ```
+
+
+## Comment Plugin (comment.nvim)
+
+The configuration includes **comment.nvim** for easy code commenting with familiar keybindings:
+
+### Comment Keybindings
+
+```
+gcc    - Toggle comment on current line
+gbc    - Toggle block comment
+gc     - Toggle comment (visual mode)
+gb     - Toggle block comment (visual mode)
+gcO    - Add comment above current line
+gco    - Add comment below current line
+gcA    - Add comment at end of line
+```
+
+### How It Works
+
+- **Line comments**: `gcc` toggles a comment on the current line
+- **Visual comments**: Select lines and press `gc` to toggle comments
+- **Block comments**: Use `gbc` for block-style comments
+- **Extra commands**: `gcO`, `gco`, `gcA` for adding comments in specific positions
+
+### Examples
+
+```
+gcc              - Comment/uncomment current line
+5gcc             - Comment/uncomment 5 lines
+gcap             - Comment/uncomment paragraph
+gc2j             - Comment/uncomment current line and next 2 lines
+v3jgc            - Select 3 lines and toggle comments
+```
+
+The plugin automatically detects the file type and uses the appropriate comment syntax (e.g., `--` for Genero, `#` for shell, `//` for C-style languages).
+
+
+## Which-Key Integration (Enhanced)
+
+The configuration includes **which-key.nvim** with organized keybinding descriptions for better discoverability:
+
+### Keybinding Groups
+
+When you press `Space`, you'll see organized groups with descriptions:
+
+#### Compiler Group (`Space+c`)
+```
+ca  - Enable autocompile
+cd  - Disable autocompile
+cc  - Clear errors
+```
+
+#### Snippets Group (`Space+s`)
+```
+sl  - List snippets
+sh  - Snippet help
+```
+
+#### Buffers Group (`Space+b`)
+```
+bn  - Next buffer
+bp  - Previous buffer
+bd  - Delete buffer
+```
+
+### How It Works
+
+- Press `Space` to see all available keybindings
+- Keybindings are organized into logical groups with descriptive names
+- Each group shows a `+` prefix (e.g., `+Compiler`, `+Snippets`, `+Buffers`)
+- Descriptions appear next to each keybinding for clarity
+- Groups are collapsible and navigable
+
+### Customizing Which-Key Descriptions
+
+To add more keybindings with descriptions, add them to the which-key register:
+
+```lua
+local wk = require("which-key")
+
+wk.register({
+  x = {
+    name = "+My Group",
+    a = { ":MyCommand<CR>", "Description of command" },
+    b = { ":AnotherCommand<CR>", "Another description" },
+  },
+}, { prefix = "<leader>" })
+```
+
+### Benefits
+
+- **Discoverability**: Press `Space` to see all available commands
+- **Organization**: Related commands are grouped together
+- **Documentation**: Each command has a clear description
+- **Learning**: New users can explore keybindings without memorizing them
+- **Consistency**: All keybindings follow the same pattern

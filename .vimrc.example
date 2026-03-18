@@ -1,0 +1,316 @@
+" Vim Configuration for Genero Development
+" Copy this to ~/.vimrc and adjust paths as needed
+" This config works with both Vim 8+ and Neovim
+
+" ============================================================================
+" VIM-PLUG INITIALIZATION
+" ============================================================================
+
+" Install vim-plug if not already installed
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+call plug#begin('~/.vim/plugged')
+
+" Genero Tools Plugin
+Plug 'hdean-ssp/genero-vim'
+
+" LuaSnip - Code snippets (Vim 8.2+ and Neovim)
+if has('nvim') || v:version >= 802
+  Plug 'L3MON4D3/LuaSnip', {'tag': 'v2.*', 'do': 'make install_jsregexp || true'}
+endif
+
+" Statusline (Vim 8+ and Neovim)
+if has('nvim') || v:version >= 800
+  Plug 'nvim-lualine/lualine.nvim'
+  Plug 'nvim-tree/nvim-web-devicons'
+endif
+
+" Which-key for keybinding hints (Neovim only)
+if has('nvim')
+  Plug 'folke/which-key.nvim'
+endif
+
+" Modern UI enhancements (Neovim only)
+if has('nvim')
+  Plug 'folke/tokyonight.nvim'
+  Plug 'folke/noice.nvim'
+  Plug 'MunifTanjim/nui.nvim'
+  Plug 'rcarriga/nvim-notify'
+  Plug 'stevearc/dressing.nvim'
+  Plug 'lukas-reineke/indent-blankline.nvim'
+  Plug 'numToStr/comment.nvim'
+endif
+
+call plug#end()
+
+" ============================================================================
+" BASIC SETTINGS
+" ============================================================================
+
+" UI & Display
+set number
+set relativenumber
+set cursorline
+set signcolumn=yes:2
+set colorcolumn=100
+set cmdheight=1
+
+" Indentation & Formatting
+set expandtab
+set shiftwidth=2
+set tabstop=2
+set smartindent
+set wrap
+set linebreak
+set breakindent
+
+" Search & Navigation
+set ignorecase
+set smartcase
+set hlsearch
+set incsearch
+
+" Performance & Behavior
+set updatetime=250
+set timeoutlen=300
+set splitbelow
+set splitright
+set mouse=a
+
+" Terminal colors (Vim 8+ and Neovim)
+if has('termguicolors')
+  set termguicolors
+endif
+
+set background=dark
+
+" ============================================================================
+" GENERO TOOLS CONFIGURATION
+" ============================================================================
+
+let g:genero_tools_config = {
+  \ 'compiler_enabled': 1,
+  \ 'compiler_autocompile': 1,
+  \ 'compiler_autocompile_delay': 500,
+  \ 'compiler_sign_column': 1,
+  \ 'compiler_highlight_unused': 1,
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_args': ['-M', '-W', 'all'],
+  \ 'genero_tools_path': $BRODIR . '/etc/genero-tools/query.sh',
+  \ 'display_mode': 'inline',
+  \ 'snippets_enabled': 1,
+  \ }
+
+" Uncomment and adjust if your query.sh is in a custom location
+" let g:genero_tools_config.genero_tools_path = expand('~/personal/genero-tools/query.sh')
+
+" ============================================================================
+" NEOVIM-SPECIFIC CONFIGURATION
+" ============================================================================
+
+if has('nvim')
+  " Set leader key
+  let mapleader = ' '
+  let maplocalleader = ' '
+
+  " Tokyonight theme
+  colorscheme tokyonight
+
+  " Lualine configuration
+  lua << EOF
+require('lualine').setup({
+  options = {
+    theme = 'tokyonight',
+    component_separators = { left = '│', right = '│' },
+    section_separators = { left = '', right = '' },
+    globalstatus = true,
+  },
+  sections = {
+    lualine_a = { 'mode' },
+    lualine_b = { 'filename', 'modified' },
+    lualine_c = { 'diagnostics' },
+    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_y = { 'progress' },
+    lualine_z = { 'location' },
+  },
+  tabline = {
+    lualine_a = { 'buffers' },
+    lualine_z = { 'tabs' },
+  },
+})
+
+require('Comment').setup({
+  padding = true,
+  sticky = true,
+  toggler = {
+    line = 'gcc',
+    block = 'gbc',
+  },
+  opleader = {
+    line = 'gc',
+    block = 'gb',
+  },
+  extra = {
+    above = 'gcO',
+    below = 'gco',
+    eol = 'gcA',
+  },
+})
+
+require('ibl').setup({
+  indent = { char = '│' },
+  scope = { enabled = true },
+})
+
+require('which-key').setup({
+  window = {
+    border = 'rounded',
+    position = 'bottom',
+  },
+})
+EOF
+
+  " Which-key descriptions
+  lua << EOF
+local wk = require('which-key')
+wk.register({
+  c = {
+    name = '+Compiler',
+    a = { ':GeneroAutocompileEnable<CR>', 'Enable autocompile' },
+    d = { ':GeneroAutocompileDisable<CR>', 'Disable autocompile' },
+    c = { ':GeneroClearErrors<CR>', 'Clear errors' },
+  },
+  s = {
+    name = '+Snippets',
+    l = { ':GeneroSnippetList<CR>', 'List snippets' },
+    h = { ':GeneroSnippetHelp<CR>', 'Snippet help' },
+  },
+  b = {
+    name = '+Buffers',
+    n = { ':bnext<CR>', 'Next buffer' },
+    p = { ':bprev<CR>', 'Previous buffer' },
+    d = { ':bdelete<CR>', 'Delete buffer' },
+  },
+}, { prefix = '<leader>' })
+EOF
+endif
+
+" ============================================================================
+" KEYBINDINGS (Works in both Vim and Neovim)
+" ============================================================================
+
+" Compile current file (F5)
+nnoremap <F5> :GeneroCompile<CR>
+
+" Navigate errors/warnings
+nnoremap <C-,> :GeneroPrevError<CR>
+nnoremap <C-.> :GeneroNextError<CR>
+
+" Toggle autocompile
+nnoremap <leader>ca :GeneroAutocompileEnable<CR>
+nnoremap <leader>cd :GeneroAutocompileDisable<CR>
+
+" Clear errors
+nnoremap <leader>cc :GeneroClearErrors<CR>
+
+" Snippet commands
+nnoremap <leader>sl :GeneroSnippetList<CR>
+nnoremap <leader>sh :GeneroSnippetHelp<CR>
+
+" Window navigation
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" Buffer navigation
+nnoremap <leader>bn :bnext<CR>
+nnoremap <leader>bp :bprev<CR>
+nnoremap <leader>bd :bdelete<CR>
+
+" Resize windows
+nnoremap <C-Up> :resize +2<CR>
+nnoremap <C-Down> :resize -2<CR>
+nnoremap <C-Left> :vertical resize -2<CR>
+nnoremap <C-Right> :vertical resize +2<CR>
+
+" Clear search highlight
+nnoremap <Esc> :nohlsearch<CR>
+
+" ============================================================================
+" HELPFUL COMMANDS
+" ============================================================================
+
+command! GeneroHelp call s:show_genero_help()
+
+function! s:show_genero_help()
+  echo ''
+  echo '╔════════════════════════════════════════════════════════════════╗'
+  echo '║           Genero Tools Keybindings & Commands                  ║'
+  echo '╚════════════════════════════════════════════════════════════════╝'
+  echo ''
+  echo 'COMPILATION:'
+  echo '  F5              - Compile current file'
+  echo '  Space+ca        - Enable autocompile on save'
+  echo '  Space+cd        - Disable autocompile on save'
+  echo '  Space+cc        - Clear error markers'
+  echo ''
+  echo 'NAVIGATION:'
+  echo '  Ctrl+,          - Jump to previous error/warning'
+  echo '  Ctrl+.          - Jump to next error/warning'
+  echo '  Ctrl+h/j/k/l    - Navigate between windows'
+  echo '  Space+bn        - Next buffer'
+  echo '  Space+bp        - Previous buffer'
+  echo '  Space+bd        - Delete current buffer'
+  echo ''
+  echo 'SNIPPETS:'
+  echo '  Space+sl        - List available snippets'
+  echo '  Space+sh        - Show snippet help'
+  echo ''
+  echo 'WINDOW MANAGEMENT:'
+  echo '  Ctrl+Up/Down    - Resize window vertically'
+  echo '  Ctrl+Left/Right - Resize window horizontally'
+  echo ''
+  echo 'COMMENTING:'
+  echo '  gcc             - Toggle comment on line'
+  echo '  gbc             - Toggle block comment'
+  echo '  gc              - Toggle comment (visual mode)'
+  echo '  gb              - Toggle block comment (visual mode)'
+  echo ''
+  echo 'COMMANDS:'
+  echo '  :GeneroCompile              - Compile current file'
+  echo '  :GeneroAutocompileEnable    - Enable autocompile on save'
+  echo '  :GeneroAutocompileDisable   - Disable autocompile on save'
+  echo '  :GeneroClearErrors          - Clear error markers'
+  echo '  :GeneroNextError            - Jump to next error'
+  echo '  :GeneroPrevError            - Jump to previous error'
+  echo '  :GeneroSnippetList          - List all available snippets'
+  echo '  :GeneroSnippetHelp          - Show snippet documentation'
+  echo '  :GeneroHelp                 - Show this help'
+  echo ''
+  echo 'TIPS:'
+  echo '  • Press Space to see available keybindings (Neovim only)'
+  echo '  • Use Ctrl+h/j/k/l to navigate between split windows'
+  echo '  • Autocompile is enabled by default (500ms delay)'
+  echo '  • Errors appear in the sign column and quickfix list'
+  echo ''
+endfunction
+
+" Show help on startup if no files are opened
+autocmd VimEnter * if argc() == 0 | call s:show_genero_help() | endif
+
+" ============================================================================
+" AUTOCMDS
+" ============================================================================
+
+" Highlight on yank (Neovim only)
+if has('nvim')
+  autocmd TextYankPost * silent! lua vim.highlight.on_yank({higroup='IncSearch', timeout=200})
+endif
+
+" Auto-resize splits when window is resized
+autocmd VimResized * wincmd =

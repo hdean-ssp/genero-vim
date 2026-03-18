@@ -11,21 +11,35 @@ This guide walks you through setting up the genero-tools plugin on a completely 
 
 ## Step 1: Create Fresh `.vimrc`
 
-Copy the provided `vimrc.example` to your home directory:
+Copy the provided `.vimrc.example` to your home directory:
 
 ```bash
-cp vimrc.example ~/.vimrc
+cp .vimrc.example ~/.vimrc
 ```
 
-Or manually create `~/.vimrc` with the contents from `vimrc.example`.
+Or manually create `~/.vimrc` with the contents from `.vimrc.example`. The example includes:
+- vim-plug plugin manager setup
+- Genero-tools plugin configuration
+- Neovim-specific enhancements (lualine, which-key, tokyonight theme)
+- Sensible defaults for both Vim and Neovim
+- Helpful keybindings and commands
 
 ## Step 2: Install Vim-Plug
 
 The `.vimrc` includes automatic vim-plug installation. When you start Vim for the first time, it will:
 
 1. Download vim-plug to `~/.vim/autoload/plug.vim`
-2. Automatically run `:PlugInstall` to install plugins
+2. Automatically run `:PlugInstall` to install all plugins
 3. Reload your configuration
+
+The `.vimrc.example` includes these plugins:
+- **genero-vim** - Genero-tools plugin
+- **LuaSnip** - Code snippets (Vim 8.2+ and Neovim)
+- **lualine.nvim** - Modern statusline (Vim 8+ and Neovim)
+- **which-key.nvim** - Keybinding hints (Neovim only)
+- **tokyonight.nvim** - Modern color theme (Neovim only)
+- **Comment.nvim** - Easy commenting (Neovim only)
+- **indent-blankline.nvim** - Visual indentation guides (Neovim only)
 
 Alternatively, install vim-plug manually:
 
