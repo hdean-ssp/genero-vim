@@ -14,7 +14,7 @@ set number
 set cursorline
 
 " Indentation & Formatting
-set expandtab
+set noexpandtab
 set shiftwidth=4
 set tabstop=4
 
