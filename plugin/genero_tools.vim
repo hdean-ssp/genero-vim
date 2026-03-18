@@ -63,4 +63,7 @@ if genero_tools#config#get('keybindings_enabled')
   call genero_tools#keybindings#register()
 endif
 
+" Initialize which-key integration if available
+call genero_tools#which_key#init()
+
 
