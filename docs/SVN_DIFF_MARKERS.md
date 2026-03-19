@@ -378,6 +378,51 @@ Provides user-facing commands for SVN diff markers management.
 :GeneroSVNStatus
 ```
 
+## Automatic Sign Loading on Buffer Entry
+
+SVN diff markers now automatically load when you open a Genero file (`.fgl` or `.4gl`). This happens through the `BufEnter` autocommand which calls `genero_tools#svn#load_signs_for_buffer()`.
+
+**Behavior:**
+
+- When you open a `.fgl` or `.4gl` file, SVN signs are automatically loaded
+- If the file is in an SVN working copy, diff markers appear immediately
+- If the file is not in a working copy, no markers are shown (silently)
+- Cached diffs are used if available (respects cache TTL)
+- Fresh diffs are retrieved and cached if not in cache
+- Per-buffer toggle state is respected (if you toggled markers off, they stay off)
+
+**Configuration:**
+
+The `svn_auto_update` setting now only controls the `BufWritePost` behavior:
+
+```vim
+let g:genero_tools_config = {
+  \ 'svn_auto_update': v:true,  " Update markers on file save (default: true)
+  \ }
+```
+
+- When `svn_auto_update` is `true`: Markers update automatically when you save the file
+- When `svn_auto_update` is `false`: Markers only load on buffer entry, not on save
+- Use `:GeneroSVNRefresh` to manually update markers at any time
+
+**Example Workflow:**
+
+```vim
+" Open a file in SVN working copy
+:e src/main.fgl
+
+" SVN markers automatically appear in sign column
+" (BufEnter autocommand triggers load_signs_for_buffer)
+
+" Edit and save the file
+" Markers automatically update (if svn_auto_update is true)
+
+" Switch to another buffer
+:e src/other.fgl
+
+" SVN markers for the new file automatically load
+```
+
 ## Future Enhancements (Phase 4+)
 
 - Integration with compiler signs (already compatible via separate sign groups)

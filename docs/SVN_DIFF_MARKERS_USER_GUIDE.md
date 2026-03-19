@@ -4,10 +4,15 @@
 
 SVN diff markers automatically display visual indicators in the sign column showing which lines have been added, modified, or deleted compared to the SVN repository.
 
+**Automatic Loading:** When you open a `.fgl` or `.4gl` file in an SVN working copy, diff markers load automatically. No commands needed for basic usage.
+
 ### Basic Usage
 
 ```vim
-" Manually refresh diff markers
+" Open a file - markers load automatically
+:e src/main.fgl
+
+" Manually refresh diff markers (if needed)
 :GeneroSVNRefresh
 
 " Toggle diff markers on/off for current buffer
@@ -36,6 +41,17 @@ SVN diff markers automatically display visual indicators in the sign column show
 - `-` (red) = Deleted lines
 
 ## Configuration
+
+### Automatic Loading on Buffer Entry
+
+SVN diff markers automatically load when you open a `.fgl` or `.4gl` file in an SVN working copy. This behavior is always active and cannot be disabled.
+
+**What happens:**
+1. You open a file (`:e src/main.fgl`)
+2. Plugin detects it's a Genero file in SVN
+3. Diff markers appear automatically in the sign column
+4. Cached diffs are used if available (faster)
+5. Fresh diffs are retrieved if not cached
 
 ### Enable/Disable SVN Markers
 
@@ -70,6 +86,8 @@ let g:genero_tools_config.svn_cache_ttl = 300
 let g:genero_tools_config.svn_cache_ttl = 0
 
 " Auto-update markers on file save (default: true)
+" When true: markers refresh when you save the file
+" When false: markers only load on buffer entry, not on save
 let g:genero_tools_config.svn_auto_update = v:true
 ```
 
@@ -105,8 +123,10 @@ call genero_tools#svn#cache_invalidate(expand('%'))
 " Open file in SVN working copy
 :e path/to/file.fgl
 
-" View diff markers in sign column
-" Markers show all changes at a glance
+" Markers load automatically - see all changes at a glance
+" + lines = new code
+" ~ lines = modified code
+" - lines = deleted code
 
 " Get detailed status
 :GeneroSVNStatus
@@ -120,6 +140,9 @@ call genero_tools#svn#cache_invalidate(expand('%'))
 ### Temporarily Hide Markers
 
 ```vim
+" Open file - markers load automatically
+:e path/to/file.fgl
+
 " Toggle markers off for current buffer
 :GeneroSVNToggle
 
@@ -132,10 +155,23 @@ call genero_tools#svn#cache_invalidate(expand('%'))
 ### Refresh After External Changes
 
 ```vim
-" If SVN status changed externally
+" If SVN status changed externally (e.g., another tool updated the file)
 :GeneroSVNRefresh
 
 " Markers update to reflect current state
+```
+
+### Switch Between Files
+
+```vim
+" Open first file - markers load automatically
+:e src/main.fgl
+
+" Switch to another file - markers load automatically for new file
+:e src/other.fgl
+
+" Each file maintains its own toggle state
+" If you toggled markers off in main.fgl, they stay off when you return
 ```
 
 ## Troubleshooting

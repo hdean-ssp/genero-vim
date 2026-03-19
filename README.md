@@ -93,6 +93,8 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 
 ### SVN Commands
 
+SVN diff markers automatically load when you open a `.fgl` or `.4gl` file in an SVN working copy. Use these commands to manage markers:
+
 | Command | Action |
 |---------|--------|
 | `:GeneroSVNRefresh` | Manually refresh SVN diff markers for current file |

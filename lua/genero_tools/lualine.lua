@@ -49,17 +49,17 @@ end
 
 -- Setup highlight groups for lualine
 function M.setup_highlights()
-  -- Error highlight: red background, white text
+  -- Error highlight: dark red background, light text
   vim.api.nvim_set_hl(0, 'GeneroLualineError', {
-    bg = '#ff0000',
+    bg = '#8b0000',  -- Dark red
     fg = '#ffffff',
     bold = true,
   })
   
-  -- Warning highlight: yellow background, black text
+  -- Warning highlight: dark orange background, light text
   vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
-    bg = '#ffff00',
-    fg = '#000000',
+    bg = '#cc6600',  -- Dark orange
+    fg = '#ffffff',
     bold = true,
   })
 end
