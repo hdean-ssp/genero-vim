@@ -59,8 +59,14 @@ function! genero_tools#debug_stream#start(file_path) abort
   call nvim_win_set_option(s:debug_stream_state.window_id, 'wrap', v:true)
   call nvim_win_set_option(s:debug_stream_state.window_id, 'number', v:true)
   
-  " Set buffer name
-  call nvim_buf_set_name(buf, 'debug-stream: ' . fnamemodify(a:file_path, ':t'))
+  " Set buffer name with timestamp to ensure uniqueness
+  let buf_name = 'debug-stream: ' . fnamemodify(a:file_path, ':t')
+  try
+    call nvim_buf_set_name(buf, buf_name)
+  catch /E95/
+    " Buffer name already exists, use a unique name
+    call nvim_buf_set_name(buf, buf_name . ' [' . localtime() . ']')
+  endtry
   
   " Start file watcher timer
   let s:debug_stream_state.timer_id = timer_start(500, function('s:update_debug_stream'), {'repeat': -1})
