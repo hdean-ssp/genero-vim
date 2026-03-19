@@ -634,8 +634,10 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 -- Auto-resize splits when window is resized
-vim.api.nvim_create_autocmd("VimResized", {
-  callback = function()
-    vim.cmd("tabdo wincmd =")
-  end,
-})
+-- Note: Disabled to preserve debug stream window width
+-- Uncomment if you want equal-sized splits
+-- vim.api.nvim_create_autocmd("VimResized", {
+--   callback = function()
+--     vim.cmd("tabdo wincmd =")
+--   end,
+-- })
