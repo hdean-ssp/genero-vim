@@ -10,6 +10,7 @@ function! genero_tools#hints#config#init() abort
   " System-level options
   call genero_tools#hints#config#init_key('hints_enabled', 1)
   call genero_tools#hints#config#init_key('hints_display', 'signs')
+  call genero_tools#hints#config#init_key('hints_highlight_columns', 1)
   call genero_tools#hints#config#init_key('hints_severity', 'warning')
   call genero_tools#hints#config#init_key('hints_realtime', 0)
   call genero_tools#hints#config#init_key('hints_cache_enabled', 1)
@@ -66,6 +67,7 @@ function! genero_tools#hints#config#get_default(key) abort
   let defaults = {
     \ 'hints_enabled': 1,
     \ 'hints_display': 'signs',
+    \ 'hints_highlight_columns': 1,
     \ 'hints_severity': 'warning',
     \ 'hints_realtime': 0,
     \ 'hints_cache_enabled': 1,

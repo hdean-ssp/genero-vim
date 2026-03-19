@@ -71,6 +71,38 @@ function! genero_tools#hints#display#show_signs(bufnr, hints) abort
       " Silently ignore sign placement errors
     endtry
   endfor
+  
+  " Highlight columns if enabled
+  if genero_tools#hints#config#get('hints_highlight_columns')
+    call genero_tools#hints#display#highlight_columns(a:bufnr, a:hints)
+  endif
+endfunction
+
+" Highlight columns where hints are located
+function! genero_tools#hints#display#highlight_columns(bufnr, hints) abort
+  if !has('nvim')
+    return
+  endif
+  
+  let ns_id = nvim_create_namespace('genero_hints_columns')
+  
+  for hint in a:hints
+    let hl_group = 'GeneroHint' . toupper(hint.severity[0]) . hint.severity[1:]
+    
+    try
+      " Highlight from hint column to end of line (or a reasonable length)
+      let col_start = hint.column - 1
+      let col_end = min([col_start + 20, 200])  " Highlight up to 20 chars or end of line
+      
+      call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, col_start, {
+        \ 'end_col': col_end,
+        \ 'hl_group': hl_group,
+        \ 'priority': 100
+        \ })
+    catch
+      " Silently ignore extmark errors
+    endtry
+  endfor
 endfunction
 
 " Display hints as virtual text (Neovim only)
@@ -106,6 +138,16 @@ function! genero_tools#hints#display#clear(bufnr) abort
   catch
     " Silently ignore errors
   endtry
+  
+  " Clear column highlights (Neovim)
+  if has('nvim')
+    try
+      let ns_id = nvim_create_namespace('genero_hints_columns')
+      call nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
+    catch
+      " Silently ignore errors
+    endtry
+  endif
   
   " Clear virtual text (Neovim)
   if has('nvim')
