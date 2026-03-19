@@ -162,6 +162,9 @@ vim.g.genero_tools_config = {
   -- Lua layer (Neovim only)
   lua_enabled = true,                   -- Enable Lua layer features (auto-detected: true on Neovim, false on Vim)
   
+  -- Debug mode for troubleshooting
+  debug_mode = false,                   -- Set to true to enable debug logging
+  
   -- Per-file configuration
   -- Create .genero-hints in project root for per-file hint configuration
   -- Example: { "rules": [ { "pattern": "src/**/*.4gl", "config": { "max_line_length": 120 } } ] }
