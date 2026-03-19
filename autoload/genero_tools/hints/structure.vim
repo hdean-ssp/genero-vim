@@ -27,19 +27,23 @@ function! genero_tools#hints#structure#detect(bufnr, config) abort
       " Convert to uppercase for case-insensitive matching
       let line_upper = toupper(line)
       
-      " Count opening blocks (case-insensitive)
+      " Count opening blocks using matchstr with global flag
       let opens = 0
-      for keyword in ['IF', 'WHILE', 'FOR', 'FUNCTION', 'CLASS', 'TRY', 'RECORD', 'TYPE', 'DEFINE']
-        " Count occurrences of keyword at word boundaries
-        let opens += len(split(line_upper, '\<' . keyword . '\>', 1)) - 1
-      endfor
+      let temp_line = line_upper
+      while match(temp_line, '\<\(IF\|WHILE\|FOR\|FUNCTION\|CLASS\|TRY\|RECORD\|TYPE\|DEFINE\)\>') >= 0
+        let opens += 1
+        let match_pos = match(temp_line, '\<\(IF\|WHILE\|FOR\|FUNCTION\|CLASS\|TRY\|RECORD\|TYPE\|DEFINE\)\>')
+        let temp_line = temp_line[match_pos + 1:]
+      endwhile
       
-      " Count closing blocks (case-insensitive)
+      " Count closing blocks using matchstr with global flag
       let closes = 0
-      for keyword in ['ENDIF', 'ENDWHILE', 'ENDFOR', 'ENDFUNCTION', 'ENDCLASS', 'ENDTRY', 'ENDRECORD', 'ENDTYPE', 'ENDDEFINE']
-        " Count occurrences of keyword at word boundaries
-        let closes += len(split(line_upper, '\<' . keyword . '\>', 1)) - 1
-      endfor
+      let temp_line = line_upper
+      while match(temp_line, '\<\(ENDIF\|ENDWHILE\|ENDFOR\|ENDFUNCTION\|ENDCLASS\|ENDTRY\|ENDRECORD\|ENDTYPE\|ENDDEFINE\)\>') >= 0
+        let closes += 1
+        let match_pos = match(temp_line, '\<\(ENDIF\|ENDWHILE\|ENDFOR\|ENDFUNCTION\|ENDCLASS\|ENDTRY\|ENDRECORD\|ENDTYPE\|ENDDEFINE\)\>')
+        let temp_line = temp_line[match_pos + 1:]
+      endwhile
       
       " Update depth (closes first to handle same-line open/close)
       let current_depth -= closes
