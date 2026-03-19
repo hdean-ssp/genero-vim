@@ -75,6 +75,10 @@ if has('nvim')
   command! GeneroDebugStreamSelect call genero_tools#commands#debug_stream_select()
   command! GeneroDebugStreamClear call genero_tools#debug_stream#clear()
   command! GeneroDebugStreamStatus call genero_tools#debug_stream#status()
+  
+  " Lua API commands (Neovim only)
+  command! -nargs=? GeneroLuaUI call luaeval("require('genero_tools').ui()." . <q-args>)
+  command! -nargs=? GeneroLuaAsync call luaeval("require('genero_tools').async()." . <q-args>)
 endif
 
 " Register sign commands

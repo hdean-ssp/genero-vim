@@ -87,4 +87,16 @@ function M.health_check()
   return health
 end
 
+-- Get UI module (for interactive use)
+-- Usage: :lua genero_tools.ui.notify('Hello')
+function M.ui()
+  return require('genero_tools.ui')
+end
+
+-- Get async module (for interactive use)
+-- Usage: :lua genero_tools.async.run(function() ... end)
+function M.async()
+  return require('genero_tools.async')
+end
+
 return M
