@@ -1,0 +1,15 @@
+========================================
+KEYBINDINGS CONFIGURATION TEST
+========================================
+Total Tests: 4
+Passed: 3
+Failed: 1
+
+PASS: Step 1: Config function exists
+  keybindings_enabled = v:true
+PASS: Step 2: Keybindings register function exists
+  Function found
+PASS: Step 3: Plugin loaded
+  g:loaded_genero_tools = 1
+FAIL: Step 4: Ctrl+. mapping exists
+  No mapping found

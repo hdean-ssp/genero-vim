@@ -1,43 +1,37 @@
 # Vim Genero-Tools Plugin
 
-A vim plugin that brings modern IDE capabilities to the classic vim editor for Genero development. Provides code navigation, intelligent autocomplete, and compiler integration for large-scale Genero codebases (thousands of files, 6M+ LOC).
+A Vim plugin for Genero development with code navigation, intelligent autocomplete, and compiler integration. Optimized for large-scale codebases (thousands of files, 6M+ LOC).
 
-**Compatibility:** Vi, Vim 7+, Vim 8+, and Neovim 0.4+. Advanced features (plugins, floating windows, snippets) require Vim 8+ or Neovim.
+**Compatibility:** Vi, Vim 7+, Vim 8+, and Neovim 0.4+
 
 ## Quick Start
 
-**New to the plugin?** See the [Developer Quick Reference](docs/DEVELOPER_QUICK_REFERENCE.md) for a concise command and keybinding cheat sheet.
+**New user?** See [SETUP.md](SETUP.md) for installation and first steps.
 
 ```vim
-:GeneroLookup myFunction
-<leader>gl  " Lookup function under cursor
-<leader>gf  " List functions in current file
-<leader>gs  " Get function signature
-<leader>gm  " Get file metadata
-F5          " Compile current file
+F5              " Compile current file
+Ctrl+,          " Previous error
+Ctrl+.          " Next error
+Ctrl+N          " Autocomplete (insert mode)
+<space>gl       " Lookup function
+<space>gf       " List functions in file
+<space>gs       " Get function signature
 ```
 
 ## Installation
 
-Using vim-plug (Vim 8+ and Neovim only):
+Using vim-plug:
 ```vim
 Plug 'hdean-ssp/genero-vim'
 ```
 
-**Quick Setup:** Copy the provided `.vimrc.example` to get started immediately:
+**Quick setup:** Copy example config:
 ```bash
-cp .vimrc.example ~/.vimrc
+cp .vimrc.example ~/.vimrc  # Vim
+cp init.lua.example ~/.config/nvim/init.lua  # Neovim
 ```
 
-This includes:
-- Minimal, essential settings (no conflicts or unnecessary options)
-- vim-plug setup (Vim 8+ and Neovim)
-- genero-tools configuration with sensible defaults
-- Keybindings for common operations
-- Neovim enhancements (lualine, which-key, tokyonight theme)
-- Compatibility checks for Vi, Vim 7+, Vim 8+, and Neovim
-
-See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instructions.
+See [SETUP.md](SETUP.md) for detailed instructions.
 
 ## Features
 

@@ -1,0 +1,13 @@
+========================================
+CTRL+. AND CTRL+, MAPPING TEST
+========================================
+Total Tests: 3
+Passed: 3
+Failed: 0
+
+PASS: Step 1: Ctrl+. mapping created
+  Mapping: :echo 'Ctrl+. pressed'<CR>
+PASS: Step 2: Ctrl+, mapping created
+  Mapping: :echo 'Ctrl+, pressed'<CR>
+PASS: Step 3: Mappings persist
+  Both mappings found

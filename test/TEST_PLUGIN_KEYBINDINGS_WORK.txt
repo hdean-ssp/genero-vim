@@ -1,0 +1,17 @@
+========================================
+PLUGIN KEYBINDINGS FUNCTIONALITY TEST
+========================================
+Total Tests: 5
+Passed: 2
+Failed: 3
+
+PASS: Step 1: Plugin keybindings registered
+  Function called successfully
+FAIL: Step 2: Ctrl+. mapping registered
+  Mapping not found or incorrect: 
+FAIL: Step 3: Ctrl+, mapping registered
+  Mapping not found or incorrect: 
+FAIL: Step 4: Ctrl+N mapping registered
+  Mapping not found or incorrect: 
+PASS: Step 5: Leader mappings registered
+  All leader mappings found

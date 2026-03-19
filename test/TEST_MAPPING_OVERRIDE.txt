@@ -1,0 +1,13 @@
+========================================
+MAPPING OVERRIDE BEHAVIOR TEST
+========================================
+Total Tests: 3
+Passed: 3
+Failed: 0
+
+PASS: Step 1: User mapping created
+  Mapping: :MyCustomCommand<CR>
+PASS: Step 2: Plugin mapping registered
+  Mapping: :call genero_tools#compiler#commands#next_error()<CR>
+PASS: Step 3: Mapping comparison
+  Plugin mapping OVERRODE user mapping
