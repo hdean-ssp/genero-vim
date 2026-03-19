@@ -615,7 +615,7 @@ For Neovim users, enable the optional Lua layer for enhanced features:
 ```vim
 let g:genero_tools_config.lua_enabled = 1                        " Enable Lua layer (Neovim only)
 let g:genero_tools_config.async_enabled = 1                      " Use async operations
-let g:genero_tools_config.display_mode = 'floating'              " Use floating windows
+let g:genero_tools_config.display_mode = 'popup'                 " Use popup windows for results
 ```
 
 **Lua Layer Features** (Neovim 0.5+ only):
