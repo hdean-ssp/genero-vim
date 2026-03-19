@@ -20,7 +20,7 @@ mkdir -p ~/.config/nvim
 cp init.lua.example ~/.config/nvim/init.lua
 ```
 
-The genero-tools configuration is embedded in `init.lua` and will work out of the box. If you want to customize settings in a separate file, you can create `~/.config/nvim/genero_config.lua` (see genero_config.lua.example for reference).
+The genero-tools configuration is embedded in `init.lua` and will work out of the box.
 
 ### 2. Update paths in init.lua (optional)
 
@@ -215,7 +215,12 @@ svn_auto_update = true                     -- Auto-update on save
 
 **Lua Layer (Neovim only):**
 ```lua
-lua_enabled = true                         -- Enable Lua layer features
+lua_enabled = true                         -- Enable Lua layer features (auto-detected: true on Neovim, false on Vim)
+```
+
+**Debug Mode (for troubleshooting):**
+```lua
+debug_mode = false                         -- Set to true to enable debug logging
 ```
 
 **Per-File Configuration:**
