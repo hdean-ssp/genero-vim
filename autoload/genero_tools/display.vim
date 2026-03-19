@@ -55,7 +55,7 @@ function! genero_tools#display#quickfix(formatted, result) abort
   endif
   
   call setqflist(qf_list)
-  copen
+  silent! copen
 endfunction
 
 " Display in popup window (neovim only - large floating window)
@@ -312,9 +312,6 @@ function! genero_tools#display#inline_vim(lines) abort
     
     " Display using echo (non-intrusive)
     call genero_tools#display#echo(join(formatted, "\n"))
-    
-    " Show a message that it will auto-clear
-    echomsg 'Press any key to dismiss'
     
   catch
     " Fallback to simple echo
