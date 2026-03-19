@@ -38,7 +38,9 @@ function! genero_tools#debug_stream#start(file_path) abort
   " Create split window with configured width (1/3 of screen if not set)
   let width = genero_tools#config#get('debug_stream_width')
   if width <= 0
-    let width = max([&columns / 3, 30])
+    " Calculate 1/3 of available width, minimum 50 columns
+    let available_width = &columns
+    let width = max([available_width / 3, 50])
   endif
   execute 'rightbelow ' . width . 'vsplit'
   
