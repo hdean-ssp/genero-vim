@@ -215,7 +215,7 @@ Testing revealed **10 issues** across the plugin:
 
 ### 6. Floating Window Positioning Inconsistent
 
-**Severity:** 🟠 HIGH  
+**Severity:** 🟠 HIGH → ✅ FIXED  
 **Test:** Test 2, 4 - Code Navigation, Code Hints  
 **Issue:** Popup/inline windows not consistently positioned at cursor or just above it
 
@@ -224,22 +224,31 @@ Testing revealed **10 issues** across the plugin:
 - Issue: Windows appear far from cursor, not near it
 - Example: Hint details popup appears way above cursor line
 - Impact: Poor user experience, hard to read
+- Status: FIXED - Standardized positioning
 
 **Root Cause:**
 - Floating window positioning logic not standardized
-- Possible: Different positioning for different window types
+- Hints popup used `row: 1` (below cursor) instead of above
+- ui.lua cursor positioning used absolute coordinates instead of cursor-relative
 
-**Files to Check:**
-- `lua/genero_tools/ui.lua` - Floating window positioning
-- `autoload/genero_tools/display.vim` - Display positioning
+**Fix Applied:**
+- ✅ Updated hints popup to position just above cursor using `'relative': 'cursor'` with `'anchor': 'SW'`
+- ✅ Standardized cursor positioning in ui.lua for all floating windows
+- ✅ Cursor position now consistently places windows just above cursor line
+- ✅ All floating windows use consistent positioning logic
+
+**Files Modified:**
+- `autoload/genero_tools/hints/display.vim` - Updated show_details positioning
+- `lua/genero_tools/ui.lua` - Standardized cursor positioning in show_floating_window and show_popup_menu
 
 **Action Items:**
-- [ ] Review floating window positioning logic
-- [ ] Standardize positioning to cursor-relative
-- [ ] Test positioning in different scenarios
-- [ ] Document positioning behavior
+- [x] Review floating window positioning logic
+- [x] Standardize positioning to cursor-relative
+- [x] Update hints popup positioning
+- [x] Update ui.lua positioning
+- [ ] User testing (DEFERRED - requires user verification)
 
-**Priority:** 🟠 HIGH - User experience issue
+**Priority:** ✅ FIXED - Floating window positioning standardized
 
 ---
 
@@ -385,7 +394,7 @@ Testing revealed **10 issues** across the plugin:
 | 3 | Lua UI module scoping | ✅ FIXED | 9 | ✅ Fixed | Helper functions and Vim commands added |
 | 4 | File metadata empty | 🟠 HIGH | 2 | ❌ Empty | Debug query |
 | 5 | Interactive prompts | ✅ FIXED | 3,7,8 | ✅ Fixed | Suppressed prompts in display functions |
-| 6 | Window positioning | 🟠 HIGH | 2,4 | ⚠️ Works | Standardize positioning |
+| 6 | Window positioning | ✅ FIXED | 2,4 | ✅ Fixed | Standardized cursor-relative positioning |
 | 7 | Hint options aggressive | 🟡 MEDIUM | 4 | ⚠️ Works | Review defaults |
 | 8 | Clear errors keybinding | 🟡 MEDIUM | 8 | ❌ Broken | Verify if needed |
 | 9 | No error messages | 🟢 LOW | 10 | ⚠️ Works | Add messages |
@@ -403,7 +412,7 @@ Testing revealed **10 issues** across the plugin:
 ### Phase 2: High Priority (Should Fix)
 4. Investigate file metadata query
 5. ✅ Remove interactive prompts - **COMPLETE**
-6. Standardize window positioning
+6. ✅ Standardize window positioning - **COMPLETE**
 
 ### Phase 3: Medium Priority (Fix When Possible)
 7. Review and refine hint options
