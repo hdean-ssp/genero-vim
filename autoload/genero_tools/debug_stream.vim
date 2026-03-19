@@ -41,6 +41,7 @@ function! genero_tools#debug_stream#start(file_path) abort
     " Calculate 1/3 of available width, minimum 50 columns
     let available_width = &columns
     let width = max([available_width / 3, 50])
+    call genero_tools#display#echo('Debug: &columns=' . available_width . ', calculated width=' . width)
   endif
   
   " Create the split
@@ -48,6 +49,10 @@ function! genero_tools#debug_stream#start(file_path) abort
   
   " Explicitly set the window width
   execute 'vertical resize ' . width
+  
+  " Verify the resize worked
+  let actual_width = winwidth(0)
+  call genero_tools#display#echo('Debug: requested=' . width . ', actual=' . actual_width)
   
   " Create buffer
   let buf = nvim_create_buf(0, 1)
@@ -314,8 +319,11 @@ function! s:select_file_from_list() abort
   if line_num > 0 && line_num <= len(file_paths)
     let selected_file = file_paths[line_num - 1]
     
-    " Close selector window
+    " Close selector window first
     call s:close_file_selector()
+    
+    " Give the editor a moment to update dimensions
+    sleep 50m
     
     " Start debug stream with selected file
     call genero_tools#debug_stream#start(selected_file)
