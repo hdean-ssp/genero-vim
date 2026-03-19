@@ -17,7 +17,7 @@ let s:debug_stream_state = {
 function! genero_tools#debug_stream#init() abort
   " Initialize configuration
   call genero_tools#config#init_key('debug_stream_enabled', 0)
-  call genero_tools#config#init_key('debug_stream_width', 33)
+  call genero_tools#config#init_key('debug_stream_width', 0)
   call genero_tools#config#init_key('debug_stream_max_lines', 1000)
   call genero_tools#config#init_key('debug_stream_auto_scroll', 1)
   call genero_tools#config#init_key('debug_stream_directory', './debug')
@@ -35,8 +35,11 @@ function! genero_tools#debug_stream#start(file_path) abort
     return
   endif
   
-  " Create split window with configured width
+  " Create split window with configured width (1/3 of screen if not set)
   let width = genero_tools#config#get('debug_stream_width')
+  if width <= 0
+    let width = max([&columns / 3, 30])
+  endif
   execute 'rightbelow ' . width . 'vsplit'
   
   " Create buffer
