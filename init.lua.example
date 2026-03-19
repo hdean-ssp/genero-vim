@@ -88,9 +88,13 @@ vim.g.genero_tools_config = {
   debug_stream_auto_scroll = true,
   debug_stream_directory = (os.getenv("BRODIR") or "/opt/brodir") .. "/debug",
   
+  -- Debug mode for troubleshooting
+  debug_mode = false,  -- Set to true to enable debug logging
+  
   -- Autocomplete configuration
   autocomplete_on_pause = true,  -- Show suggestions after pause while typing
   autocomplete_delay = 500,      -- Delay in milliseconds before showing suggestions
+  
   -- SVN integration
   svn_enabled = true,
   svn_show_added = true,

@@ -53,6 +53,10 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('debug_stream_directory', './debug')
   call genero_tools#config#init_key('autocomplete_on_pause', 1)
   call genero_tools#config#init_key('autocomplete_delay', 500)
+  call genero_tools#config#init_key('debug_mode', 0)
+  
+  " Validate configuration after initialization
+  call genero_tools#config#validate()
 endfunction
 
 " Initialize a single config key with type safety
@@ -261,4 +265,115 @@ function! genero_tools#config#get_all() abort
     call genero_tools#config#init()
   endif
   return g:genero_tools_config
+endfunction
+
+" Validate configuration values and correct invalid settings
+function! genero_tools#config#validate() abort
+  " Validate timeout is positive
+  let l:timeout = genero_tools#config#get('timeout')
+  if l:timeout <= 0
+    call genero_tools#error#warn('config', 'timeout must be positive, using default 10000')
+    let g:genero_tools_config.timeout = 10000
+  endif
+  
+  " Validate display_mode is supported
+  let l:display_mode = genero_tools#config#get('display_mode')
+  let l:valid_modes = ['quickfix', 'popup', 'split', 'echo', 'inline']
+  if index(l:valid_modes, l:display_mode) == -1
+    call genero_tools#error#warn('config', 'invalid display_mode "' . l:display_mode . '", using quickfix')
+    let g:genero_tools_config.display_mode = 'quickfix'
+  endif
+  
+  " Validate cache settings
+  let l:cache_ttl = genero_tools#config#get('cache_ttl')
+  if l:cache_ttl <= 0
+    call genero_tools#error#warn('config', 'cache_ttl must be positive, using default 3600')
+    let g:genero_tools_config.cache_ttl = 3600
+  endif
+  
+  let l:cache_max_size = genero_tools#config#get('cache_max_size')
+  if l:cache_max_size <= 0
+    call genero_tools#error#warn('config', 'cache_max_size must be positive, using default 100')
+    let g:genero_tools_config.cache_max_size = 100
+  endif
+  
+  " Validate result_limit
+  let l:result_limit = genero_tools#config#get('result_limit')
+  if l:result_limit <= 0
+    call genero_tools#error#warn('config', 'result_limit must be positive, using default 1000')
+    let g:genero_tools_config.result_limit = 1000
+  endif
+  
+  " Validate pagination_size
+  let l:pagination_size = genero_tools#config#get('pagination_size')
+  if l:pagination_size <= 0
+    call genero_tools#error#warn('config', 'pagination_size must be positive, using default 50')
+    let g:genero_tools_config.pagination_size = 50
+  endif
+  
+  " Validate compiler_autocompile_delay
+  let l:autocompile_delay = genero_tools#config#get('compiler_autocompile_delay')
+  if l:autocompile_delay < 0
+    call genero_tools#error#warn('config', 'compiler_autocompile_delay must be non-negative, using default 1000')
+    let g:genero_tools_config.compiler_autocompile_delay = 1000
+  endif
+  
+  " Validate svn_cache_ttl
+  let l:svn_cache_ttl = genero_tools#config#get('svn_cache_ttl')
+  if l:svn_cache_ttl <= 0
+    call genero_tools#error#warn('config', 'svn_cache_ttl must be positive, using default 300')
+    let g:genero_tools_config.svn_cache_ttl = 300
+  endif
+  
+  " Validate floating window dimensions
+  let l:fw_width = genero_tools#config#get('floating_window_width')
+  if l:fw_width <= 0
+    call genero_tools#error#warn('config', 'floating_window_width must be positive, using default 80')
+    let g:genero_tools_config.floating_window_width = 80
+  endif
+  
+  let l:fw_height = genero_tools#config#get('floating_window_height')
+  if l:fw_height <= 0
+    call genero_tools#error#warn('config', 'floating_window_height must be positive, using default 20')
+    let g:genero_tools_config.floating_window_height = 20
+  endif
+  
+  " Validate floating window position
+  let l:fw_position = genero_tools#config#get('floating_window_position')
+  let l:valid_positions = ['center', 'top', 'bottom', 'left', 'right', 'cursor']
+  if index(l:valid_positions, l:fw_position) == -1
+    call genero_tools#error#warn('config', 'invalid floating_window_position "' . l:fw_position . '", using center')
+    let g:genero_tools_config.floating_window_position = 'center'
+  endif
+  
+  " Validate floating window border
+  let l:fw_border = genero_tools#config#get('floating_window_border')
+  let l:valid_borders = ['rounded', 'solid', 'shadow', 'none']
+  if index(l:valid_borders, l:fw_border) == -1
+    call genero_tools#error#warn('config', 'invalid floating_window_border "' . l:fw_border . '", using rounded')
+    let g:genero_tools_config.floating_window_border = 'rounded'
+  endif
+  
+  " Validate startup_messages
+  let l:startup_msgs = genero_tools#config#get('startup_messages')
+  let l:valid_startup = ['silent', 'normal', 'verbose']
+  if index(l:valid_startup, l:startup_msgs) == -1
+    call genero_tools#error#warn('config', 'invalid startup_messages "' . l:startup_msgs . '", using silent')
+    let g:genero_tools_config.startup_messages = 'silent'
+  endif
+  
+  " Validate snippet_engine
+  let l:snippet_engine = genero_tools#config#get('snippet_engine')
+  let l:valid_engines = ['luasnip', 'vim-snipmate', 'vim-vsnip']
+  if index(l:valid_engines, l:snippet_engine) == -1
+    call genero_tools#error#warn('config', 'invalid snippet_engine "' . l:snippet_engine . '", using luasnip')
+    let g:genero_tools_config.snippet_engine = 'luasnip'
+  endif
+  
+  " Validate autocomplete_delay
+  let l:autocomplete_delay = genero_tools#config#get('autocomplete_delay')
+  if l:autocomplete_delay < 0
+    call genero_tools#error#warn('config', 'autocomplete_delay must be non-negative, using default 500')
+    let g:genero_tools_config.autocomplete_delay = 500
+  endif
 endfunction

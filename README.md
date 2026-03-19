@@ -393,7 +393,20 @@ Control plugin startup behavior:
 
 ```vim
 let g:genero_tools_config.startup_messages = 'silent'            " Startup messages: 'silent', 'normal', 'verbose' (default: 'silent')
+let g:genero_tools_config.debug_mode = 0                         " Debug mode: 0 = off, 1 = on (default: 0)
 ```
+
+**Startup Message Modes:**
+- `'silent'` - No startup messages (default, clean startup)
+- `'normal'` - Standard startup messages
+- `'verbose'` - Detailed startup messages for debugging
+
+**Debug Mode:**
+- `0` (default) - Debug logging disabled
+- `1` - Enable debug logging for troubleshooting
+  - Logs are written to debug stream (Neovim only)
+  - Use `:GeneroDebugStreamToggle` to view logs
+  - Useful for diagnosing configuration and command execution issues
 
 ### Configuration Type Handling
 
@@ -404,10 +417,16 @@ The plugin automatically handles type conversions for flexibility:
   - String format (auto-converted): `'castle.sch'` → `['castle.sch']`
   - Useful for single-marker projects or simple configurations
 
-**Startup Message Modes:**
-- `'silent'` - No startup messages (default, clean startup)
-- `'normal'` - Standard startup messages
-- `'verbose'` - Detailed startup messages for debugging
+**Configuration Validation:**
+- The plugin automatically validates all configuration values on startup
+- Invalid values are corrected to sensible defaults with warning messages
+- Examples of validated settings:
+  - `timeout` must be positive (default: 10000ms)
+  - `display_mode` must be one of: quickfix, popup, split, echo, inline
+  - `cache_ttl` must be positive (default: 3600s)
+  - `floating_window_position` must be one of: center, top, bottom, left, right, cursor
+  - `startup_messages` must be one of: silent, normal, verbose
+- See `:GeneroConfigShow` to view current configuration and validation status
 
 ### SVN Diff Markers Configuration
 
@@ -454,7 +473,29 @@ let g:genero_tools_config.display_mode = 'floating'              " Use floating 
 
 The Lua layer is optional and gracefully falls back to VimScript implementations if unavailable. All core functionality works in both Vim and Neovim without the Lua layer.
 
-### Error Handling and Large Codebase Guidance
+### Error Handling
+
+All error messages follow a consistent format: `[MODULE] Error description`
+
+**Error Message Examples:**
+- `[config] timeout must be positive, using default 10000`
+- `[command] Function not found: myFunc`
+- `[cache] Cache is full, evicting oldest entry`
+
+**Error Display:**
+- Errors are displayed with red highlighting
+- Warnings are displayed with yellow highlighting
+- Debug messages are logged to debug stream (Neovim only)
+
+**Error Functions:**
+- `genero_tools#error#format(module, message)` - Format error message
+- `genero_tools#error#echo(module, message)` - Echo error message
+- `genero_tools#error#warn(module, message)` - Display warning
+- `genero_tools#error#error(module, message)` - Display error
+- `genero_tools#error#debug(module, message)` - Log debug message
+- `genero_tools#error#result(module, message)` - Create error result dictionary
+
+### Large Codebase Guidance
 
 When commands timeout or return too many results, the plugin provides actionable guidance:
 

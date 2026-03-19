@@ -956,6 +956,133 @@ These tasks improve UI/UX, fix bugs, and add integrations discovered after core 
     - Uses lualine's component API for registration
     - Falls back gracefully if lualine not installed
 
+- [ ] 31. E4.2: Table Definition Lookup on Hover
+  - **Priority:** MEDIUM
+  - **Objective:** Fetch and display table definitions when hovering over `LIKE table.*` or `LIKE table.column` patterns with a keybinding
+  - **Current State:** No built-in way to quickly view table structure and column types
+  - **Target State:** Users can press a keybinding while cursor is on a LIKE clause to see table columns and their types in a readable format
+  - **Files to Create:**
+    - new: `autoload/genero_tools/table_lookup.vim` - Table lookup module
+    - new: `autoload/genero_tools/table_lookup/` - Table lookup submodule directory
+    - new: `autoload/genero_tools/table_lookup/parser.vim` - LIKE clause parser
+    - new: `autoload/genero_tools/table_lookup/display.vim` - Table definition display
+  - **Implementation Steps:**
+    1. Create configuration options:
+       - `table_lookup_enabled`: true/false (default: true)
+       - `table_lookup_keybinding`: keybinding (default: '<leader>gt')
+       - `table_lookup_display_mode`: 'popup', 'split', 'quickfix', 'echo' (default: 'popup')
+       - `table_lookup_show_constraints`: true/false (default: true)
+       - `table_lookup_show_indexes`: true/false (default: true)
+       - `table_lookup_cache_enabled`: true/false (default: true)
+       - `table_lookup_cache_ttl`: seconds (default: 3600)
+    
+    2. Implement LIKE clause detection:
+       - Create `genero_tools#table_lookup#detect_like_clause()` to find LIKE clause at cursor
+       - Parse patterns: `LIKE table.*`, `LIKE table.column`, `LIKE schema.table.*`, `LIKE schema.table.column`
+       - Extract table name and optional column name
+       - Handle quoted identifiers (e.g., `LIKE "MyTable".*`)
+       - Return table name, column name (if specified), and schema (if specified)
+    
+    3. Implement table definition fetching:
+       - Create `genero_tools#table_lookup#fetch_table_definition()` to retrieve table structure
+       - Use genero-tools CLI to fetch table metadata (columns, types, constraints, indexes)
+       - Check cache first if enabled
+       - Cache results with configurable TTL
+       - Handle errors gracefully (table not found, permission denied, etc.)
+       - Return structured data: {table_name, columns: [{name, type, nullable, default, constraints}], indexes, primary_key}
+    
+    4. Implement column filtering:
+       - Create `genero_tools#table_lookup#filter_column()` to filter to specific column if requested
+       - If user was on `LIKE table.column`, show only that column's details
+       - If user was on `LIKE table.*`, show all columns
+       - Highlight the requested column if filtering
+    
+    5. Implement readable display formatting:
+       - Create `genero_tools#table_lookup#display#format_table()` to format table definition
+       - Display table name and schema prominently
+       - Show columns in a table format: Name | Type | Nullable | Default | Constraints
+       - Use consistent spacing and alignment
+       - Support syntax highlighting for readability
+       - Include indexes and primary key information if enabled
+       - Show constraints (UNIQUE, CHECK, FOREIGN KEY, etc.)
+    
+    6. Implement display modes:
+       - Create `genero_tools#table_lookup#display#popup()` for floating window display (Neovim)
+       - Create `genero_tools#table_lookup#display#split()` for split window display
+       - Create `genero_tools#table_lookup#display#quickfix()` for quickfix list display
+       - Create `genero_tools#table_lookup#display#echo()` for command line display
+       - Route to appropriate display based on config
+       - Fall back to echo if unsupported mode
+    
+    7. Implement keybinding:
+       - Create `genero_tools#table_lookup#lookup()` main function
+       - Detect LIKE clause at cursor position
+       - Fetch table definition
+       - Display in configured mode
+       - Handle errors with user-friendly messages
+       - Create `:GeneroTableLookup` command
+       - Register keybinding from config (default: `<leader>gt`)
+    
+    8. Implement error handling:
+       - Handle table not found (suggest similar table names)
+       - Handle permission denied (suggest checking database access)
+       - Handle invalid table name (show error message)
+       - Handle cursor not on LIKE clause (show helpful message)
+       - Handle genero-tools CLI errors gracefully
+       - Provide recovery suggestions
+    
+    9. Implement caching:
+       - Create `genero_tools#table_lookup#cache#get()` to retrieve cached table definition
+       - Create `genero_tools#table_lookup#cache#set()` to store table definition
+       - Implement TTL-based expiration
+       - Create `:GeneroTableLookupClearCache` command to clear cache
+       - Show cache statistics in status messages
+    
+    10. Implement integration with genero-tools:
+        - Use existing genero-tools CLI commands to fetch table metadata
+        - Leverage existing caching infrastructure if available
+        - Integrate with existing error handling patterns
+        - Use existing display functions where applicable
+  
+  - **Testing:**
+    - Verify LIKE clause detection works for various patterns
+    - Verify table definition fetching works correctly
+    - Verify column filtering works when specified
+    - Verify display formatting is readable and well-organized
+    - Verify all display modes work correctly
+    - Verify keybinding triggers lookup correctly
+    - Verify caching works and respects TTL
+    - Verify error handling for missing tables
+    - Verify error handling for cursor not on LIKE clause
+    - Test with various table structures (many columns, constraints, indexes)
+    - Test with schema-qualified table names
+    - Test with quoted identifiers
+  
+  - **Related Code:**
+    - `autoload/genero_tools/display.vim` - Display patterns
+    - `autoload/genero_tools/cache.vim` - Caching infrastructure
+    - `autoload/genero_tools/command.vim` - Command execution
+    - `autoload/genero_tools/keybindings.vim` - Keybinding setup
+    - `lua/genero_tools/ui.lua` - Lua UI layer (for popup display)
+  
+  - **User Workflow:**
+    1. User is editing a .4gl file with a LIKE clause: `DEFINE rec LIKE customers.*`
+    2. User positions cursor on the LIKE clause
+    3. User presses `<leader>gt` (or configured keybinding)
+    4. Plugin detects `customers` table and fetches its definition
+    5. Popup/split/quickfix displays table structure:
+       ```
+       Table: customers
+       
+       Column Name    | Type      | Nullable | Default | Constraints
+       ─────────────────────────────────────────────────────────────
+       id             | INTEGER   | NO       | -       | PRIMARY KEY
+       name           | VARCHAR   | NO       | -       | -
+       email          | VARCHAR   | YES      | NULL    | UNIQUE
+       created_at     | DATETIME  | NO       | NOW()   | -
+       ```
+    6. User can close popup and continue editing with full knowledge of table structure
+
 ## Notes
 
 - Tasks 1-15 represent core plugin functionality and compiler integration (COMPLETE)
@@ -1040,3 +1167,4 @@ These tasks improve UI/UX, fix bugs, and add integrations discovered after core 
 **NOT STARTED (MEDIUM/LOW PRIORITY):**
 - Task 29: Keybinding help popup (MEDIUM priority, Neovim-only)
 - Task 30: Lualine integration (MEDIUM priority, Neovim-only)
+- Task 31: Table Definition Lookup on Hover (MEDIUM priority)

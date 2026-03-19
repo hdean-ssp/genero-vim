@@ -137,6 +137,9 @@ let g:genero_tools_config.result_limit = 1000
 let g:genero_tools_config.svn_enabled = 1
 let g:genero_tools_config.svn_auto_update = 1
 
+" Debugging
+let g:genero_tools_config.debug_mode = 0  " Enable for debug logging
+
 " Neovim Lua layer
 let g:genero_tools_config.lua_enabled = 1
 let g:genero_tools_config.async_enabled = 1
@@ -189,6 +192,26 @@ let g:genero_tools_config.timeout = 15000
 :GeneroLookup mymodule.m3:myFunction
 ```
 
+## Error Handling
+
+All error messages follow a consistent format: `[MODULE] Error description`
+
+**Error Display Functions:**
+- `genero_tools#error#format(module, message)` - Format error message
+- `genero_tools#error#echo(module, message)` - Echo error message
+- `genero_tools#error#warn(module, message)` - Display warning (yellow)
+- `genero_tools#error#error(module, message)` - Display error (red)
+- `genero_tools#error#debug(module, message)` - Log debug message
+- `genero_tools#error#result(module, message)` - Create error result dictionary
+
+**Example:**
+```vim
+call genero_tools#error#warn('config', 'timeout must be positive, using default 10000')
+" Displays: [config] timeout must be positive, using default 10000 (yellow)
+```
+
+See [Error Handling Documentation](ERROR_HANDLING.md) for complete details.
+
 ## Troubleshooting
 
 **Compiler not found:**
@@ -214,6 +237,12 @@ let g:genero_tools_config.genero_tools_path = '/full/path/to/query.sh'
 **SVN markers not showing:**
 ```vim
 :GeneroSVNRefresh
+```
+
+**Enable debug logging:**
+```vim
+let g:genero_tools_config.debug_mode = 1
+:GeneroDebugStreamToggle
 ```
 
 ## Customizing Keybindings
