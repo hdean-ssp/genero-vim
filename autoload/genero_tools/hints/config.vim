@@ -31,7 +31,7 @@ function! genero_tools#hints#config#init() abort
   call genero_tools#hints#config#init_key('line_length', 1)
   call genero_tools#hints#config#init_key('missing_comments', 0)
   call genero_tools#hints#config#init_key('missing_error_handling', 0)
-  call genero_tools#hints#config#init_key('deprecated_functions', 1)
+  call genero_tools#hints#config#init_key('deprecated_functions', 0)
   
   " Threshold options
   call genero_tools#hints#config#init_key('max_line_length', 100)
@@ -85,7 +85,7 @@ function! genero_tools#hints#config#get_default(key) abort
     \ 'line_length': 1,
     \ 'missing_comments': 0,
     \ 'missing_error_handling': 0,
-    \ 'deprecated_functions': 1,
+    \ 'deprecated_functions': 0,
     \ 'max_line_length': 100,
     \ 'max_nesting_depth': 5,
     \ 'max_blank_lines': 2,

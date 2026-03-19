@@ -12,15 +12,10 @@ function! genero_tools#hints#genero#detect(bufnr, config) abort
   let lines = getbufline(a:bufnr, 1, '$')
   
   " List of deprecated Genero functions
-  let deprecated_functions = [
-    \ 'fgl_getenv', 'fgl_setenv',
-    \ 'fgl_system',
-    \ 'fgl_getpid',
-    \ 'fgl_getuid'
-    \ ]
+  let deprecated_functions = []
   
   " Check for deprecated functions
-  if a:config.deprecated_functions
+  if a:config.deprecated_functions && !empty(deprecated_functions)
     for line_num in range(1, len(lines))
       let line = lines[line_num - 1]
       
