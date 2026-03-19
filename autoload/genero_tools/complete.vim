@@ -40,23 +40,43 @@ function! genero_tools#complete#get_completions(base) abort
     
     let completions = []
     
-    " Get functions from current file
+    " Get functions from current file without displaying
     let current_file = expand('%:p')
-    let file_functions = genero_tools#list_functions_in_file(current_file)
+    let file_path = genero_tools#normalize_file_path(current_file)
+    
+    let cache_key = 'list-file-functions:' . file_path
+    let cached = genero_tools#cache#get(cache_key)
+    
+    if empty(cached)
+      " Query without displaying
+      let result = genero_tools#command#execute_shell('list-file-functions', [file_path])
+      if result.success
+        call genero_tools#cache#set(cache_key, result)
+        let file_functions = result.data
+      else
+        return []
+      endif
+    else
+      let file_functions = cached.data
+    endif
     
     " Filter functions matching the base
-    for func in file_functions
-      if func.name =~? '^' . a:base
-        call add(completions, {
-          \ 'word': func.name,
-          \ 'abbr': func.name,
-          \ 'menu': 'Function',
-          \ 'info': 'Line ' . func.line,
-          \ 'kind': 'f',
-          \ 'icase': 1
-          \ })
-      endif
-    endfor
+    if type(file_functions) == type([])
+      for func in file_functions
+        if type(func) == type({}) && has_key(func, 'name')
+          if func.name =~? '^' . a:base
+            call add(completions, {
+              \ 'word': func.name,
+              \ 'abbr': func.name,
+              \ 'menu': 'Function',
+              \ 'info': 'Line ' . get(func, 'line', '?'),
+              \ 'kind': 'f',
+              \ 'icase': 1
+              \ })
+          endif
+        endif
+      endfor
+    endif
     
     return completions
   catch

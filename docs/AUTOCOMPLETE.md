@@ -107,7 +107,7 @@ The completion menu displays:
 
 - Completion searches your entire codebase
 - Results are cached for performance
-- Auto-completion only triggers when typing identifier characters
+- Auto-completion only triggers when typing 2+ identifier characters
 - Cursor position must not change for auto-completion to trigger
 - Manual completion (Ctrl+Space) works anywhere in insert mode
 - The omnifunc is automatically ensured to be set before triggering completion
