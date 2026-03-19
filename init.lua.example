@@ -56,6 +56,8 @@ vim.g.genero_tools_config = {
   compiler_highlight_unused = true,
   compiler_command = "fglcomp",
   compiler_args = { "-M", "-W", "all" },
+  compiler_form_command = "fglform",
+  compiler_form_args = { "-M", "-W", "all" },
   
   -- Query tool path (adjust if needed)
   -- Default: uses BRODIR environment variable

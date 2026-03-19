@@ -44,6 +44,8 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 - **Code Navigation** - Function lookup, module exploration, and file metadata retrieval
 - **Intelligent Autocomplete** - Function and module name completion with signatures
 - **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
+  - Support for `.4gl`, `.m3`, `.m4` files with `fglcomp` compiler
+  - Support for `.per` (form) files with `fglform` compiler
   - Sign column indicators for errors and warnings
   - Unified sign column for compiler and SVN markers (space-efficient)
   - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
@@ -284,7 +286,10 @@ let g:genero_tools_config = {
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
   \ 'compiler_enabled': 0,
-  \ 'compiler_command': 'fglcomp -M -W all',
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_args': ['-M', '-W', 'all'],
+  \ 'compiler_form_command': 'fglform',
+  \ 'compiler_form_args': ['-M', '-W', 'all'],
   \ 'compiler_version': 'auto',
   \ 'compiler_source_dir': '.',
   \ 'compiler_show_warnings': 1,
@@ -336,7 +341,10 @@ let g:genero_tools_config.codebase_markers = ['castle.sch', 'genero.conf', '.gen
 
 ```vim
 let g:genero_tools_config.compiler_enabled = 1                   " Enable compiler integration
-let g:genero_tools_config.compiler_command = 'fglcomp -M -W all' " Compiler command with flags
+let g:genero_tools_config.compiler_command = 'fglcomp'            " Compiler command for .4gl/.m3/.m4 files
+let g:genero_tools_config.compiler_args = ['-M', '-W', 'all']    " Arguments for fglcomp
+let g:genero_tools_config.compiler_form_command = 'fglform'       " Compiler command for .per files
+let g:genero_tools_config.compiler_form_args = ['-M', '-W', 'all'] " Arguments for fglform
 let g:genero_tools_config.compiler_version = 'auto'              " Version: 'auto', '3.10', '3.20', etc.
 let g:genero_tools_config.compiler_source_dir = '.'              " Source directory for compilation
 let g:genero_tools_config.compiler_show_warnings = 1             " Display warnings in quickfix
@@ -346,6 +354,10 @@ let g:genero_tools_config.compiler_sign_column = 1               " Show signs in
 let g:genero_tools_config.compiler_autocompile = 1               " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 ```
+
+**Supported File Types:**
+- `.4gl`, `.m3`, `.m4` - Compiled with `fglcomp` (default compiler)
+- `.per` - Form files compiled with `fglform` (auto-detected)
 
 **Compiler Command Flags:**
 - `-M` - Generate machine code (required for compilation)
@@ -360,6 +372,7 @@ let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before 
 - Quickfix navigation with `:GeneroNextError` and `:GeneroPrevError`
 - **Autocompile on save** - Automatically compile and update markers when file is saved (enabled by default)
 - **Automatic highlighting** - Error/warning highlighting applied automatically on compilation
+- **Mixed project support** - Handles projects with both .4gl and .per files
 
 ### Snippet Configuration (Neovim only)
 

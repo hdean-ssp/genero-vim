@@ -1,5 +1,34 @@
 " Genero-Tools Plugin - Compiler Integration
 
+" Detect file type based on extension
+function! genero_tools#compiler#detect_file_type(file_path) abort
+  if a:file_path =~? '\.per$'
+    return 'per'
+  elseif a:file_path =~? '\.\(4gl\|m3\|m4\)$'
+    return 'fgl'
+  else
+    return 'unknown'
+  endif
+endfunction
+
+" Get compiler command for file type
+function! genero_tools#compiler#get_compiler_command(file_type) abort
+  if a:file_type == 'per'
+    return genero_tools#config#get('compiler_form_command')
+  else
+    return genero_tools#config#get('compiler_command')
+  endif
+endfunction
+
+" Get compiler arguments for file type
+function! genero_tools#compiler#get_compiler_args(file_type) abort
+  if a:file_type == 'per'
+    return genero_tools#config#get('compiler_form_args')
+  else
+    return genero_tools#config#get('compiler_args')
+  endif
+endfunction
+
 " Initialize compiler configuration
 function! genero_tools#compiler#init() abort
   " Ensure main config is initialized
@@ -93,11 +122,13 @@ endfunction
 
 " Execute compiler command on file or directory
 function! genero_tools#compiler#execute(source_path) abort
-  let compiler_cmd = genero_tools#config#get('compiler_command')
-  let source_dir = genero_tools#config#get('compiler_source_dir')
+  let file_type = genero_tools#compiler#detect_file_type(a:source_path)
+  let compiler_cmd = genero_tools#compiler#get_compiler_command(file_type)
+  let compiler_args = genero_tools#compiler#get_compiler_args(file_type)
   
-  " Build command: fglcomp -M -W all <source_path>
-  let cmd = compiler_cmd . ' -M -W all ' . genero_tools#command#escape_arg(a:source_path)
+  " Build command: compiler [args] <source_path>
+  let args_str = join(compiler_args, ' ')
+  let cmd = compiler_cmd . ' ' . args_str . ' ' . genero_tools#command#escape_arg(a:source_path)
   
   let result = {
     \ 'success': 0,
@@ -105,7 +136,8 @@ function! genero_tools#compiler#execute(source_path) abort
     \ 'errors': [],
     \ 'warnings': [],
     \ 'info': [],
-    \ 'error': ''
+    \ 'error': '',
+    \ 'file_type': file_type
     \ }
   
   try
@@ -115,9 +147,9 @@ function! genero_tools#compiler#execute(source_path) abort
     " Store raw output
     let result.output = output
     
-    " Parse output based on compiler version
+    " Parse output based on file type and compiler version
     let compiler_ver = genero_tools#compiler#get_version()
-    let parsed = genero_tools#compiler#parse_output(output, compiler_ver)
+    let parsed = genero_tools#compiler#parse_output(output, compiler_ver, file_type)
     
     if parsed.success
       let result.success = 1
@@ -135,22 +167,22 @@ function! genero_tools#compiler#execute(source_path) abort
   return result
 endfunction
 
-" Parse compiler output based on version
-function! genero_tools#compiler#parse_output(output, version) abort
+" Parse compiler output based on version and file type
+function! genero_tools#compiler#parse_output(output, version, file_type) abort
   " Route to version-specific parser
   if a:version =~? '^3\.1'
-    return genero_tools#compiler#parse_v310(a:output)
+    return genero_tools#compiler#parse_v310(a:output, a:file_type)
   elseif a:version =~? '^3\.2'
-    return genero_tools#compiler#parse_v320(a:output)
+    return genero_tools#compiler#parse_v320(a:output, a:file_type)
   else
     " Default to 3.10 format for unknown versions
-    return genero_tools#compiler#parse_v310(a:output)
+    return genero_tools#compiler#parse_v310(a:output, a:file_type)
   endif
 endfunction
 
-" Parse fglcomp 3.10+ output format
+" Parse fglcomp/fglform 3.10+ output format
 " Format: filename:start_line:start_col:end_line:end_col:severity:(-code) message
-function! genero_tools#compiler#parse_v310(output) abort
+function! genero_tools#compiler#parse_v310(output, file_type) abort
   let result = {
     \ 'success': 1,
     \ 'errors': [],
@@ -197,9 +229,9 @@ function! genero_tools#compiler#parse_v310(output) abort
   return result
 endfunction
 
-" Parse fglcomp 3.20+ output format (stub for future use)
-function! genero_tools#compiler#parse_v320(output) abort
+" Parse fglcomp/fglform 3.20+ output format (stub for future use)
+function! genero_tools#compiler#parse_v320(output, file_type) abort
   " For now, use same format as 3.10
   " This can be updated when 3.20 format is known
-  return genero_tools#compiler#parse_v310(a:output)
+  return genero_tools#compiler#parse_v310(a:output, a:file_type)
 endfunction

@@ -20,6 +20,9 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('codebase_markers', ['castle.sch', 'genero.conf', '.genero', '.git'])
   call genero_tools#config#init_key('compiler_enabled', 0)
   call genero_tools#config#init_key('compiler_command', 'fglcomp')
+  call genero_tools#config#init_key('compiler_form_command', 'fglform')
+  call genero_tools#config#init_key('compiler_args', ['-M', '-W', 'all'])
+  call genero_tools#config#init_key('compiler_form_args', ['-M', '-W', 'all'])
   call genero_tools#config#init_key('compiler_source_dir', '.')
   call genero_tools#config#init_key('compiler_version', 'auto')
   call genero_tools#config#init_key('compiler_show_warnings', 1)
@@ -116,6 +119,12 @@ function! genero_tools#config#get(key) abort
     return 0
   elseif a:key == 'compiler_command'
     return 'fglcomp'
+  elseif a:key == 'compiler_form_command'
+    return 'fglform'
+  elseif a:key == 'compiler_args'
+    return ['-M', '-W', 'all']
+  elseif a:key == 'compiler_form_args'
+    return ['-M', '-W', 'all']
   elseif a:key == 'compiler_source_dir'
     return '.'
   elseif a:key == 'compiler_version'
