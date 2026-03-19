@@ -110,6 +110,7 @@ Close the debug window:
 - **Read-only Buffer**: Debug output is read-only to prevent accidental edits
 - **Line Numbers**: Line numbers are displayed for reference
 - **Word Wrap**: Long lines are wrapped for better readability
+- **File Selection**: Interactive floating window to browse and select debug files sorted by modification time
 
 ## Behavior
 
@@ -120,6 +121,8 @@ Close the debug window:
 - The window remains open until explicitly closed or toggled off
 - Closing Neovim automatically stops the debug stream
 - Buffer names are automatically made unique if a conflict occurs (timestamp appended)
+- File selector displays files sorted by modification time (most recent first)
+- File selector uses a floating window with keyboard navigation (arrow keys, `j`/`k`, `Enter` to select, `Esc`/`q` to cancel)
 
 ## Troubleshooting
 
@@ -130,3 +133,5 @@ Close the debug window:
 **Too many lines in buffer**: Reduce `debug_stream_max_lines` to limit memory usage for very active debug files.
 
 **Auto-scroll not working**: Set `debug_stream_auto_scroll` to `true` in your configuration.
+
+**File selector not showing files**: Verify that the `debug_stream_directory` path exists and contains files. The directory defaults to `./debug` relative to your working directory.

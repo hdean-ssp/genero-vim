@@ -35,9 +35,9 @@ function! genero_tools#debug_stream#start(file_path) abort
     return
   endif
   
-  " Create split window
+  " Create split window with configured width
   let width = genero_tools#config#get('debug_stream_width')
-  execute 'rightbelow vsplit'
+  execute 'rightbelow ' . width . 'vsplit'
   
   " Create buffer
   let buf = nvim_create_buf(0, 1)
