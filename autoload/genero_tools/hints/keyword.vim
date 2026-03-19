@@ -48,11 +48,11 @@ function! genero_tools#hints#keyword#detect(bufnr, config) abort
       continue
     endif
     
-    " Check for lowercase keywords
+    " Check for lowercase keywords (case-sensitive match)
     if a:config.lowercase_keywords
       for keyword in keywords
-        " Match whole word only
-        let pattern = '\<' . keyword . '\>'
+        " Match whole word only, case-sensitive (lowercase only)
+        let pattern = '\C\<' . keyword . '\>'
         if line =~ pattern
           let col = match(line, pattern) + 1
           call add(hints, genero_tools#hints#create_hint(
@@ -67,11 +67,11 @@ function! genero_tools#hints#keyword#detect(bufnr, config) abort
       endfor
     endif
     
-    " Check for lowercase built-in functions
+    " Check for lowercase built-in functions (case-sensitive match)
     if a:config.lowercase_functions
       for func in functions
-        " Match function call pattern: func(
-        let pattern = '\<' . func . '\s*('
+        " Match function call pattern: func( (lowercase only)
+        let pattern = '\C\<' . func . '\s*('
         if line =~ pattern
           let col = match(line, pattern) + 1
           call add(hints, genero_tools#hints#create_hint(
