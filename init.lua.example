@@ -49,15 +49,68 @@ vim.opt.clipboard = "unnamedplus"
 
 vim.g.genero_tools_config = {
   -- Compiler settings
+  -- Supports .4gl, .m3, .m4 files (fglcomp) and .per files (fglform)
   compiler_enabled = true,
   compiler_autocompile = true,
   compiler_autocompile_delay = 500,
   compiler_sign_column = true,
+  compiler_sign_column_always_visible = true,  -- Keep sign column visible
   compiler_highlight_unused = true,
-  compiler_command = "fglcomp",
+  compiler_show_warnings = true,
+  compiler_show_errors = true,
+  compiler_command = "fglcomp",                 -- For .4gl, .m3, .m4 files
   compiler_args = { "-M", "-W", "all" },
-  compiler_form_command = "fglform",
+  compiler_form_command = "fglform",            -- For .per files (form compiler)
   compiler_form_args = { "-M", "-W", "all" },
+  compiler_source_dir = ".",
+  compiler_version = "auto",                    -- Auto-detect or specify: "3.10", "3.20", etc.
+  
+  -- Code hints configuration
+  hints_enabled = true,
+  hints_display = "signs",              -- Display mode: "signs", "virtual_text", "both"
+  hints_severity = "warning",           -- Severity level: "info", "warning", "style"
+  hints_realtime = true,                -- Enable real-time detection
+  hints_cache_enabled = true,           -- Enable hint caching
+  hints_cache_ttl = 300,                -- Cache TTL in seconds
+  hints_delay = 500,                    -- Debounce delay in milliseconds
+  auto_fix_enabled = true,              -- Enable auto-fix suggestions
+  
+  -- Individual hint checks (true = enabled, false = disabled)
+  trailing_whitespace = true,           -- Detect trailing whitespace
+  mixed_indentation = true,             -- Detect mixed tabs/spaces
+  indentation_consistency = true,       -- Detect inconsistent indentation
+  multiple_blank_lines = true,          -- Detect excessive blank lines
+  lowercase_keywords = true,            -- Detect lowercase keywords
+  lowercase_functions = true,           -- Detect lowercase functions
+  keyword_consistency = true,           -- Detect inconsistent casing
+  naming_convention = false,            -- Detect naming violations
+  unclosed_blocks = true,               -- Detect unclosed blocks
+  nesting_depth = true,                 -- Detect excessive nesting
+  line_length = true,                   -- Detect long lines
+  missing_comments = false,             -- Detect missing comments
+  missing_error_handling = false,       -- Detect missing error handling
+  deprecated_functions = true,          -- Detect deprecated functions
+  
+  -- Hint thresholds
+  max_line_length = 100,                -- Maximum line length
+  max_nesting_depth = 5,                -- Maximum nesting depth
+  max_blank_lines = 2,                  -- Maximum consecutive blank lines
+  naming_convention_style = "camelCase", -- Naming style: "camelCase", "snake_case"
+  
+  -- Cache settings
+  cache_enabled = true,                 -- Enable result caching
+  cache_ttl = 3600,                     -- Cache time-to-live in seconds
+  cache_max_size = 100,                 -- Maximum cache entries
+  
+  -- Result settings
+  result_limit = 1000,                  -- Maximum results returned
+  pagination_size = 50,                 -- Results per page
+  
+  -- Codebase detection
+  codebase_markers = { "castle.sch", "genero.conf", ".genero", ".git" },
+  
+  -- Startup behavior
+  startup_messages = "silent",          -- Message level: "silent", "normal", "verbose"
   
   -- Query tool path (adjust if needed)
   -- Default: uses BRODIR environment variable
@@ -92,10 +145,6 @@ vim.g.genero_tools_config = {
   
   -- Debug mode for troubleshooting
   debug_mode = false,  -- Set to true to enable debug logging
-  
-  -- Autocomplete configuration
-  autocomplete_on_pause = true,  -- Show suggestions after pause while typing
-  autocomplete_delay = 500,      -- Delay in milliseconds before showing suggestions
   
   -- SVN integration
   svn_enabled = true,
@@ -478,6 +527,13 @@ map("n", "<leader>cd", ":GeneroAutocompileDisable<CR>", opts)
 -- Clear errors
 map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
 
+-- Hint navigation
+map("n", "<leader>hn", ":GeneroNextHint<CR>", opts)
+map("n", "<leader>hp", ":GeneroPrevHint<CR>", opts)
+map("n", "<leader>hl", ":GeneroListHints<CR>", opts)
+map("n", "<leader>hd", ":GeneroHintDetails<CR>", opts)
+map("n", "<leader>hf", ":GeneroHintAutofix<CR>", opts)
+
 -- Debug streaming (toggle on/off)
 map("n", "<leader>gd", ":GeneroDebugStreamToggle<CR>", opts)
 
@@ -526,6 +582,14 @@ wk.register({
     m = { ":GeneroFileMetadata<CR>", "Get file metadata" },
     d = { ":GeneroDebugStreamToggle<CR>", "Toggle debug stream" },
   },
+  h = {
+    name = "+Hints",
+    n = { ":GeneroNextHint<CR>", "Next hint" },
+    p = { ":GeneroPrevHint<CR>", "Previous hint" },
+    l = { ":GeneroListHints<CR>", "List all hints" },
+    d = { ":GeneroHintDetails<CR>", "Hint details" },
+    f = { ":GeneroHintAutofix<CR>", "Apply auto-fix" },
+  },
   s = {
     name = "+Snippets",
     l = { ":GeneroSnippetList<CR>", "List snippets" },
@@ -570,6 +634,13 @@ GENERO TOOLS:
   Space+gs        - Get function signature
   Space+gm        - Get file metadata
   Space+gd        - Toggle debug stream (real-time file monitoring)
+
+CODE HINTS:
+  Space+hn        - Jump to next hint
+  Space+hp        - Jump to previous hint
+  Space+hl        - List all hints in file
+  Space+hd        - Show hint details
+  Space+hf        - Apply auto-fix for hint
 
 SNIPPETS:
   Space+sl        - List available snippets

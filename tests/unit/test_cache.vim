@@ -1,7 +1,7 @@
 " Genero-Tools Plugin - Cache Tests
 " Tests for autoload/genero_tools/cache.vim
 
-function! test_cache_get_returns_empty_when_not_set() abort
+function! Test_Cache_Get_Returns_Empty_When_Not_Set() abort
   " Given: Empty cache
   call genero_tools#cache#clear()
   
@@ -9,10 +9,10 @@ function! test_cache_get_returns_empty_when_not_set() abort
   let l:result = genero_tools#cache#get('nonexistent')
   
   " Then: Empty dict is returned
-  assert_empty(l:result, 'cache should return empty dict for non-existent key')
+  call assert_empty(l:result, 'cache should return empty dict for non-existent key')
 endfunction
 
-function! test_cache_set_stores_value() abort
+function! Test_Cache_Set_Stores_Value() abort
   " Given: Empty cache
   call genero_tools#cache#clear()
   
@@ -22,10 +22,10 @@ function! test_cache_set_stores_value() abort
   
   " Then: Value can be retrieved
   let l:retrieved = genero_tools#cache#get('test_key')
-  assert_not_empty(l:retrieved, 'cache should return stored value')
+  call assert_not_empty(l:retrieved, 'cache should return stored value')
 endfunction
 
-function! test_cache_clear_removes_all_entries() abort
+function! Test_Cache_Clear_Removes_All_Entries() abort
   " Given: Cache with entries
   call genero_tools#cache#clear()
   call genero_tools#cache#set('key1', {'data': 'value1'})
@@ -37,11 +37,11 @@ function! test_cache_clear_removes_all_entries() abort
   " Then: All entries are removed
   let l:result1 = genero_tools#cache#get('key1')
   let l:result2 = genero_tools#cache#get('key2')
-  assert_empty(l:result1, 'cache should be empty after clear')
-  assert_empty(l:result2, 'cache should be empty after clear')
+  call assert_empty(l:result1, 'cache should be empty after clear')
+  call assert_empty(l:result2, 'cache should be empty after clear')
 endfunction
 
-function! test_cache_get_size_returns_correct_count() abort
+function! Test_Cache_Get_Size_Returns_Correct_Count() abort
   " Given: Empty cache
   call genero_tools#cache#clear()
   
@@ -52,10 +52,10 @@ function! test_cache_get_size_returns_correct_count() abort
   
   " Then: Size is correct
   let l:size = genero_tools#cache#get_size()
-  assert_equal(l:size, 3, 'cache size should be 3')
+  call assert_equal(l:size, 3, 'cache size should be 3')
 endfunction
 
-function! test_cache_respects_ttl_expiration() abort
+function! Test_Cache_Respects_Ttl_Expiration() abort
   " Given: Cache with TTL
   call genero_tools#cache#clear()
   let g:genero_tools_config.cache_ttl = 1
@@ -66,10 +66,10 @@ function! test_cache_respects_ttl_expiration() abort
   
   " Then: Expired entry is not returned
   let l:result = genero_tools#cache#get('test_key')
-  assert_empty(l:result, 'cache should return empty for expired entry')
+  call assert_empty(l:result, 'cache should return empty for expired entry')
 endfunction
 
-function! test_cache_lru_eviction_removes_oldest() abort
+function! Test_Cache_Lru_Eviction_Removes_Oldest() abort
   " Given: Cache with max size of 2
   call genero_tools#cache#clear()
   let g:genero_tools_config.cache_max_size = 2
@@ -86,12 +86,12 @@ function! test_cache_lru_eviction_removes_oldest() abort
   let l:result2 = genero_tools#cache#get('key2')
   let l:result3 = genero_tools#cache#get('key3')
   
-  assert_empty(l:result1, 'oldest entry should be evicted')
-  assert_not_empty(l:result2, 'second entry should still exist')
-  assert_not_empty(l:result3, 'newest entry should still exist')
+  call assert_empty(l:result1, 'oldest entry should be evicted')
+  call assert_not_empty(l:result2, 'second entry should still exist')
+  call assert_not_empty(l:result3, 'newest entry should still exist')
 endfunction
 
-function! test_cache_stats_returns_statistics() abort
+function! Test_Cache_Stats_Returns_Statistics() abort
   " Given: Cache with entries
   call genero_tools#cache#clear()
   call genero_tools#cache#set('key1', {'data': 'value1'})
@@ -101,6 +101,6 @@ function! test_cache_stats_returns_statistics() abort
   let l:stats = genero_tools#cache#stats()
   
   " Then: Statistics are returned
-  assert_not_empty(l:stats, 'cache stats should not be empty')
-  assert_equal(l:stats.size, 2, 'cache size should be 2')
+  call assert_not_empty(l:stats, 'cache stats should not be empty')
+  call assert_equal(l:stats.size, 2, 'cache size should be 2')
 endfunction

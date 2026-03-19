@@ -13,6 +13,9 @@ call genero_tools#config#init()
 " Initialize compiler autocompile if enabled
 call genero_tools#compiler#autocompile#init()
 
+" Initialize hint system
+call genero_tools#hints#init()
+
 " Initialize SVN module
 call genero_tools#svn#init()
 
@@ -54,6 +57,15 @@ command! GeneroSVNToggle call genero_tools#svn#commands#toggle()
 command! GeneroSVNStatus call genero_tools#svn#commands#status()
 command! GeneroSVNCacheStats call genero_tools#svn#commands#cache_stats()
 command! GeneroSVNCacheClear call genero_tools#svn#commands#cache_clear()
+
+" Register hint commands
+command! GeneroNextHint call genero_tools#hints#nav#next()
+command! GeneroPrevHint call genero_tools#hints#nav#prev()
+command! GeneroListHints call genero_tools#hints#nav#list()
+command! GeneroHintDetails call genero_tools#hints#nav#details()
+command! GeneroHintAutofix call genero_tools#hints#autofix#apply()
+command! GeneroClearHintCache call genero_tools#hints#cache#clear()
+command! -nargs=? GeneroHintHelp call genero_tools#hints#help(<q-args>)
 
 " Register debug streaming commands (Neovim only)
 if has('nvim')

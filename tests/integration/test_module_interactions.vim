@@ -1,7 +1,7 @@
 " Integration tests for module interactions
 " Tests end-to-end workflows and cross-module communication
 
-function! test_config_cache_integration() abort
+function! Test_Config_Cache_Integration() abort
   " Given: Fresh configuration and cache
   if exists('g:genero_tools_config')
     unlet g:genero_tools_config
@@ -16,13 +16,13 @@ function! test_config_cache_integration() abort
   
   " Then: Cache respects config settings
   let l:cache_enabled = genero_tools#config#get('cache_enabled')
-  assert_equal(l:cache_enabled, v:true)
+  call assert_equal(l:cache_enabled, v:true)
   
   let l:cache_ttl = genero_tools#config#get('cache_ttl')
-  assert_equal(l:cache_ttl, 3600)
+  call assert_equal(l:cache_ttl, 3600)
 endfunction
 
-function! test_cache_command_integration() abort
+function! Test_Cache_Command_Integration() abort
   " Given: Cache and command modules initialized
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -40,11 +40,11 @@ function! test_cache_command_integration() abort
   
   " Then: The result can be retrieved from cache
   let l:cached = genero_tools#cache#get(l:test_key)
-  assert_equal(l:cached.data.name, 'myFunc')
-  assert_equal(l:cached.data.line, 42)
+  call assert_equal(l:cached.data.name, 'myFunc')
+  call assert_equal(l:cached.data.line, 42)
 endfunction
 
-function! test_config_display_integration() abort
+function! Test_Config_Display_Integration() abort
   " Given: Config and display modules initialized
   call genero_tools#config#init()
   
@@ -53,10 +53,10 @@ function! test_config_display_integration() abort
   
   " Then: Display mode is valid
   let l:valid_modes = ['quickfix', 'popup', 'split', 'echo', 'inline']
-  assert_true(index(l:valid_modes, l:display_mode) >= 0)
+  call assert_true(index(l:valid_modes, l:display_mode) >= 0)
 endfunction
 
-function! test_cache_expiration_respects_config() abort
+function! Test_Cache_Expiration_Respects_Config() abort
   " Given: Cache with TTL of 1 second
   call genero_tools#config#init()
   let g:genero_tools_config.cache_ttl = 1
@@ -75,10 +75,10 @@ function! test_cache_expiration_respects_config() abort
   
   " Then: Value is immediately retrievable
   let l:cached = genero_tools#cache#get(l:test_key)
-  assert_equal(l:cached.data.test, 'value')
+  call assert_equal(l:cached.data.test, 'value')
 endfunction
 
-function! test_multiple_cache_entries() abort
+function! Test_Multiple_Cache_Entries() abort
   " Given: Cache initialized
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -93,12 +93,12 @@ function! test_multiple_cache_entries() abort
   call genero_tools#cache#set('key3', l:result3)
   
   " Then: All values can be retrieved
-  assert_equal(genero_tools#cache#get('key1').data.id, 1)
-  assert_equal(genero_tools#cache#get('key2').data.id, 2)
-  assert_equal(genero_tools#cache#get('key3').data.id, 3)
+  call assert_equal(genero_tools#cache#get('key1').data.id, 1)
+  call assert_equal(genero_tools#cache#get('key2').data.id, 2)
+  call assert_equal(genero_tools#cache#get('key3').data.id, 3)
 endfunction
 
-function! test_cache_clear_integration() abort
+function! Test_Cache_Clear_Integration() abort
   " Given: Cache with multiple entries
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -113,6 +113,6 @@ function! test_cache_clear_integration() abort
   " Then: All entries are removed
   let l:cached1 = genero_tools#cache#get('key1')
   let l:cached2 = genero_tools#cache#get('key2')
-  assert_equal(empty(l:cached1), v:true)
-  assert_equal(empty(l:cached2), v:true)
+  call assert_equal(empty(l:cached1), v:true)
+  call assert_equal(empty(l:cached2), v:true)
 endfunction

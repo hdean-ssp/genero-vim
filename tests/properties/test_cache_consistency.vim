@@ -1,7 +1,7 @@
 " Property-based tests for cache consistency
 " Validates cache behavior under various conditions
 
-function! test_cache_returns_identical_results_within_ttl() abort
+function! Test_Cache_Returns_Identical_Results_Within_Ttl() abort
   " Property: Cache returns identical results within TTL
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -17,11 +17,11 @@ function! test_cache_returns_identical_results_within_ttl() abort
   call genero_tools#cache#set(l:test_key, l:original_result)
   let l:cached_result = genero_tools#cache#get(l:test_key)
   
-  assert_equal(l:cached_result.data.name, l:original_result.data.name)
-  assert_equal(l:cached_result.data.line, l:original_result.data.line)
+  call assert_equal(l:cached_result.data.name, l:original_result.data.name)
+  call assert_equal(l:cached_result.data.line, l:original_result.data.line)
 endfunction
 
-function! test_cache_stores_different_values() abort
+function! Test_Cache_Stores_Different_Values() abort
   " Property: Cache can store and retrieve different values
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -35,22 +35,22 @@ function! test_cache_stores_different_values() abort
   let l:cached1 = genero_tools#cache#get('key1')
   let l:cached2 = genero_tools#cache#get('key2')
   
-  assert_equal(l:cached1.data.id, 1)
-  assert_equal(l:cached2.data.id, 2)
-  assert_not_equal(l:cached1.data.id, l:cached2.data.id)
+  call assert_equal(l:cached1.data.id, 1)
+  call assert_equal(l:cached2.data.id, 2)
+  call assert_not_equal(l:cached1.data.id, l:cached2.data.id)
 endfunction
 
-function! test_cache_returns_empty_for_missing_key() abort
+function! Test_Cache_Returns_Empty_For_Missing_Key() abort
   " Property: Cache returns empty dict for missing keys
   call genero_tools#config#init()
   call genero_tools#cache#init()
   
   let l:result = genero_tools#cache#get('nonexistent_key')
   
-  assert_equal(empty(l:result), v:true)
+  call assert_equal(empty(l:result), v:true)
 endfunction
 
-function! test_cache_respects_enabled_setting() abort
+function! Test_Cache_Respects_Enabled_Setting() abort
   " Property: Cache respects cache_enabled configuration
   call genero_tools#config#init()
   let g:genero_tools_config.cache_enabled = v:false
@@ -61,10 +61,10 @@ function! test_cache_respects_enabled_setting() abort
   
   " When cache is disabled, get should return empty
   let l:cached = genero_tools#cache#get('test_key')
-  assert_equal(empty(l:cached), v:true)
+  call assert_equal(empty(l:cached), v:true)
 endfunction
 
-function! test_cache_set_returns_success() abort
+function! Test_Cache_Set_Returns_Success() abort
   " Property: Cache set operation returns success indicator
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -72,10 +72,10 @@ function! test_cache_set_returns_success() abort
   let l:test_result = {'success': v:true, 'data': {'test': 'value'}, 'error': '', 'timestamp': localtime()}
   let l:result = genero_tools#cache#set('test_key', l:test_result)
   
-  assert_equal(l:result, 0)
+  call assert_equal(l:result, 0)
 endfunction
 
-function! test_cache_maintains_data_integrity() abort
+function! Test_Cache_Maintains_Data_Integrity() abort
   " Property: Cache maintains data integrity through store/retrieve cycle
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -95,13 +95,13 @@ function! test_cache_maintains_data_integrity() abort
   call genero_tools#cache#set('integrity_test', l:original)
   let l:retrieved = genero_tools#cache#get('integrity_test')
   
-  assert_equal(l:retrieved.data.name, l:original.data.name)
-  assert_equal(l:retrieved.data.line, l:original.data.line)
-  assert_equal(l:retrieved.data.file, l:original.data.file)
-  assert_equal(l:retrieved.data.signature, l:original.data.signature)
+  call assert_equal(l:retrieved.data.name, l:original.data.name)
+  call assert_equal(l:retrieved.data.line, l:original.data.line)
+  call assert_equal(l:retrieved.data.file, l:original.data.file)
+  call assert_equal(l:retrieved.data.signature, l:original.data.signature)
 endfunction
 
-function! test_cache_handles_empty_data() abort
+function! Test_Cache_Handles_Empty_Data() abort
   " Property: Cache can store results with empty data
   call genero_tools#config#init()
   call genero_tools#cache#init()
@@ -110,6 +110,6 @@ function! test_cache_handles_empty_data() abort
   call genero_tools#cache#set('empty_test', l:empty_result)
   
   let l:cached = genero_tools#cache#get('empty_test')
-  assert_equal(empty(l:cached.data), v:true)
-  assert_equal(l:cached.error, 'Not found')
+  call assert_equal(empty(l:cached.data), v:true)
+  call assert_equal(l:cached.error, 'Not found')
 endfunction

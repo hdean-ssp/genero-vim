@@ -1,7 +1,7 @@
 " Tests for Lua UI module
 " Tests lua/genero_tools/ui.lua functionality
 
-function! test_lua_ui_module_loads() abort
+function! Test_Lua_Ui_Module_Loads() abort
   " Given: Neovim environment
   if !has('nvim')
     return
@@ -10,13 +10,13 @@ function! test_lua_ui_module_loads() abort
   " When: Loading UI module
   try
     call luaeval('require("genero_tools.ui")')
-    assert_true(1, 'UI module should load')
+    call assert_true(1, 'UI module should load')
   catch
-    assert_false(1, 'UI module should load without error: ' . v:exception)
+    call assert_false(1, 'UI module should load without error: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_show_floating_window() abort
+function! Test_Lua_Ui_Has_Show_Floating_Window() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -25,13 +25,13 @@ function! test_lua_ui_has_show_floating_window() abort
   " When: Checking for show_floating_window function
   try
     let l:has_func = luaeval('require("genero_tools.ui").show_floating_window ~= nil')
-    assert_true(l:has_func, 'UI module should have show_floating_window function')
+    call assert_true(l:has_func, 'UI module should have show_floating_window function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_show_popup_menu() abort
+function! Test_Lua_Ui_Has_Show_Popup_Menu() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -40,13 +40,13 @@ function! test_lua_ui_has_show_popup_menu() abort
   " When: Checking for show_popup_menu function
   try
     let l:has_func = luaeval('require("genero_tools.ui").show_popup_menu ~= nil')
-    assert_true(l:has_func, 'UI module should have show_popup_menu function')
+    call assert_true(l:has_func, 'UI module should have show_popup_menu function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_notify() abort
+function! Test_Lua_Ui_Has_Notify() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -55,13 +55,13 @@ function! test_lua_ui_has_notify() abort
   " When: Checking for notify function
   try
     let l:has_func = luaeval('require("genero_tools.ui").notify ~= nil')
-    assert_true(l:has_func, 'UI module should have notify function')
+    call assert_true(l:has_func, 'UI module should have notify function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_show_progress() abort
+function! Test_Lua_Ui_Has_Show_Progress() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -70,13 +70,13 @@ function! test_lua_ui_has_show_progress() abort
   " When: Checking for show_progress function
   try
     let l:has_func = luaeval('require("genero_tools.ui").show_progress ~= nil')
-    assert_true(l:has_func, 'UI module should have show_progress function')
+    call assert_true(l:has_func, 'UI module should have show_progress function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_show_split() abort
+function! Test_Lua_Ui_Has_Show_Split() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -85,13 +85,13 @@ function! test_lua_ui_has_show_split() abort
   " When: Checking for show_split function
   try
     let l:has_func = luaeval('require("genero_tools.ui").show_split ~= nil')
-    assert_true(l:has_func, 'UI module should have show_split function')
+    call assert_true(l:has_func, 'UI module should have show_split function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_highlight_pattern() abort
+function! Test_Lua_Ui_Has_Highlight_Pattern() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -100,13 +100,13 @@ function! test_lua_ui_has_highlight_pattern() abort
   " When: Checking for highlight_pattern function
   try
     let l:has_func = luaeval('require("genero_tools.ui").highlight_pattern ~= nil')
-    assert_true(l:has_func, 'UI module should have highlight_pattern function')
+    call assert_true(l:has_func, 'UI module should have highlight_pattern function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_ui_has_setup_floating_window_keys() abort
+function! Test_Lua_Ui_Has_Setup_Floating_Window_Keys() abort
   " Given: UI module loaded
   if !has('nvim')
     return
@@ -115,8 +115,8 @@ function! test_lua_ui_has_setup_floating_window_keys() abort
   " When: Checking for setup_floating_window_keys function
   try
     let l:has_func = luaeval('require("genero_tools.ui").setup_floating_window_keys ~= nil')
-    assert_true(l:has_func, 'UI module should have setup_floating_window_keys function')
+    call assert_true(l:has_func, 'UI module should have setup_floating_window_keys function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction

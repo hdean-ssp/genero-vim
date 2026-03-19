@@ -43,11 +43,23 @@ See [Setup Guide](docs/SETUP_FRESH_VIM.md) for complete installation instruction
 
 - **Code Navigation** - Function lookup, module exploration, and file metadata retrieval
 - **Intelligent Autocomplete** - Function and module name completion with signatures
+- **Code Hints** - Non-fatal code quality warnings (fully configurable)
+  - Whitespace & formatting issues (trailing whitespace, mixed indentation, excessive blank lines)
+  - Keyword & naming conventions (lowercase keywords, inconsistent casing, naming violations)
+  - Code structure issues (unclosed blocks, excessive nesting, long lines, missing comments)
+  - Genero-specific issues (missing error handling, deprecated functions)
+  - Real-time detection with configurable debounce delay
+  - Display in sign column and/or virtual text (Neovim)
+  - Auto-fix suggestions for common issues
+  - Per-file and project-wide configuration support
+  - Severity levels (info, warning, style) with visual distinction
+  - Navigation commands to jump between hints
+  - Hint details display with explanations
 - **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
   - Support for `.4gl`, `.m3`, `.m4` files with `fglcomp` compiler
   - Support for `.per` (form) files with `fglform` compiler
   - Sign column indicators for errors and warnings
-  - Unified sign column for compiler and SVN markers (space-efficient)
+  - Unified sign column for compiler, hints, and SVN markers (space-efficient)
   - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
   - Unused variable detection and highlighting
   - Automatic highlighting applied on compilation
@@ -81,9 +93,18 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `<space>ca` | Enable autocompile |
 | `<space>cd` | Disable autocompile |
 | `<space>cc` | Clear error markers |
+| `<space>gl` | Lookup function definition |
+| `<space>gf` | List functions in file |
+| `<space>gs` | Get function signature |
+| `<space>gm` | Get file metadata |
+| `<space>gd` | Toggle debug stream (Neovim only) |
+| `<space>hn` | Jump to next hint |
+| `<space>hp` | Jump to previous hint |
+| `<space>hl` | List all hints |
+| `<space>hd` | Show hint details |
+| `<space>hf` | Apply auto-fix for hint |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
-| `<space>gd` | Toggle debug stream (Neovim only) |
 | `<space>bn` | Next buffer (Vim 7+) |
 | `<space>bp` | Previous buffer (Vim 7+) |
 | `<space>bd` | Delete buffer (Vim 7+) |
@@ -207,6 +228,20 @@ let g:genero_tools_config.keybindings_enabled = 0
 
 **Note**: Debug streaming is only available in Neovim. See [Debug Streaming Documentation](docs/DEBUG_STREAMING.md) for details.
 
+### Code Hints Commands
+
+```vim
+:GeneroNextHint                         " Jump to next hint in file
+:GeneroPrevHint                         " Jump to previous hint in file
+:GeneroListHints                        " Display all hints in current file
+:GeneroHintDetails                      " Show details for hint at cursor
+:GeneroHintAutofix                      " Apply auto-fix for hint at cursor
+:GeneroClearHintCache                   " Clear all cached hints
+:GeneroHintHelp [hint_name]             " Show help for a specific hint
+```
+
+**Note**: Code hints are fully configurable and can be enabled/disabled per hint type. See [Code Hints Documentation](docs/HINTS.md) for details.
+
 ## Display Modes
 
 Change how results are displayed by setting `display_mode`:
@@ -285,6 +320,7 @@ let g:genero_tools_config = {
   \ 'result_limit': 1000,
   \ 'pagination_size': 50,
   \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'startup_messages': 'silent',
   \ 'compiler_enabled': 0,
   \ 'compiler_command': 'fglcomp',
   \ 'compiler_args': ['-M', '-W', 'all'],
@@ -298,11 +334,36 @@ let g:genero_tools_config = {
   \ 'compiler_sign_column': 1,
   \ 'compiler_autocompile': 0,
   \ 'compiler_autocompile_delay': 1000,
+  \ 'hints_enabled': 1,
+  \ 'hints_display': 'signs',
+  \ 'hints_severity': 'warning',
+  \ 'hints_realtime': 1,
+  \ 'hints_cache_enabled': 1,
+  \ 'hints_cache_ttl': 300,
+  \ 'hints_delay': 500,
+  \ 'auto_fix_enabled': 1,
+  \ 'trailing_whitespace': 1,
+  \ 'mixed_indentation': 1,
+  \ 'indentation_consistency': 1,
+  \ 'multiple_blank_lines': 1,
+  \ 'lowercase_keywords': 1,
+  \ 'lowercase_functions': 1,
+  \ 'keyword_consistency': 1,
+  \ 'naming_convention': 0,
+  \ 'unclosed_blocks': 1,
+  \ 'nesting_depth': 1,
+  \ 'line_length': 1,
+  \ 'missing_comments': 0,
+  \ 'missing_error_handling': 0,
+  \ 'deprecated_functions': 1,
+  \ 'max_line_length': 100,
+  \ 'max_nesting_depth': 5,
+  \ 'max_blank_lines': 2,
+  \ 'naming_convention_style': 'camelCase',
   \ 'snippets_enabled': 1,
   \ 'snippet_engine': 'luasnip',
   \ 'snippet_smart_expansion': 1,
   \ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
-  \ 'startup_messages': 'silent',
   \ 'svn_enabled': 1,
   \ 'svn_show_added': 1,
   \ 'svn_show_modified': 1,
@@ -336,6 +397,49 @@ let g:genero_tools_config.codebase_markers = ['castle.sch', 'genero.conf', '.gen
 - `genero.conf` - Genero configuration file
 - `.genero` - Genero project directory marker
 - `.git` - Git repository root
+
+### Performance & Timeout Configuration
+
+Control command execution and result handling:
+
+```vim
+let g:genero_tools_config.timeout = 10000                        " Command timeout in milliseconds (default: 10000)
+let g:genero_tools_config.async_enabled = 1                      " Enable async operations (default: 1)
+let g:genero_tools_config.result_limit = 1000                    " Maximum results returned (default: 1000)
+let g:genero_tools_config.pagination_size = 50                   " Results per page (default: 50)
+```
+
+**Timeout Behavior:**
+- Commands that exceed the timeout are cancelled and return an error
+- Increase timeout for very large codebases (6M+ LOC)
+- Async mode prevents blocking the editor during long operations
+
+**Result Handling:**
+- `result_limit` caps the total number of results returned
+- `pagination_size` controls how many results are shown per page
+- Useful for managing memory and performance with large result sets
+
+### Cache Configuration
+
+Configure result caching for performance optimization:
+
+```vim
+let g:genero_tools_config.cache_enabled = 1                      " Enable/disable result caching (default: 1)
+let g:genero_tools_config.cache_ttl = 3600                       " Cache time-to-live in seconds (default: 3600)
+let g:genero_tools_config.cache_max_size = 100                   " Maximum cache entries (default: 100)
+```
+
+**Cache Features:**
+- Caches function lookups, module listings, and other query results
+- Automatic expiration based on TTL (time-to-live)
+- LRU (Least Recently Used) eviction when cache is full
+- Improves performance for repeated queries
+- Use `:GeneroClearCache` to manually clear cache
+
+**Cache Tuning:**
+- Increase `cache_max_size` for large codebases with many queries
+- Increase `cache_ttl` to keep results longer (useful for stable codebases)
+- Disable caching if results change frequently during development
 
 ### Compiler Configuration
 
@@ -421,25 +525,51 @@ let g:genero_tools_config.debug_mode = 0                         " Debug mode: 0
   - Use `:GeneroDebugStreamToggle` to view logs
   - Useful for diagnosing configuration and command execution issues
 
-### Configuration Type Handling
+### Code Hints Configuration
 
-The plugin automatically handles type conversions for flexibility:
+Configure code quality hints detection and display:
 
-- **`codebase_markers`** - Accepts both list and string formats
-  - List format (recommended): `['castle.sch', 'genero.conf', '.git']`
-  - String format (auto-converted): `'castle.sch'` → `['castle.sch']`
-  - Useful for single-marker projects or simple configurations
+```vim
+let g:genero_tools_config.hints_enabled = 1                      " Enable/disable all hints
+let g:genero_tools_config.hints_display = 'signs'                " Display mode: 'signs', 'virtual_text', 'both'
+let g:genero_tools_config.hints_severity = 'warning'             " Severity level: 'info', 'warning', 'style'
+let g:genero_tools_config.hints_realtime = 1                     " Enable real-time detection
+let g:genero_tools_config.hints_cache_enabled = 1                " Enable hint caching
+let g:genero_tools_config.hints_cache_ttl = 300                  " Cache TTL in seconds
+let g:genero_tools_config.hints_delay = 500                      " Debounce delay in milliseconds
+let g:genero_tools_config.auto_fix_enabled = 1                   " Enable auto-fix suggestions
 
-**Configuration Validation:**
-- The plugin automatically validates all configuration values on startup
-- Invalid values are corrected to sensible defaults with warning messages
-- Examples of validated settings:
-  - `timeout` must be positive (default: 10000ms)
-  - `display_mode` must be one of: quickfix, popup, split, echo, inline
-  - `cache_ttl` must be positive (default: 3600s)
-  - `floating_window_position` must be one of: center, top, bottom, left, right, cursor
-  - `startup_messages` must be one of: silent, normal, verbose
-- See `:GeneroConfigShow` to view current configuration and validation status
+" Individual hint checks (1 = enabled, 0 = disabled)
+let g:genero_tools_config.trailing_whitespace = 1                " Detect trailing whitespace
+let g:genero_tools_config.mixed_indentation = 1                  " Detect mixed tabs/spaces
+let g:genero_tools_config.indentation_consistency = 1            " Detect inconsistent indentation
+let g:genero_tools_config.multiple_blank_lines = 1               " Detect excessive blank lines
+let g:genero_tools_config.lowercase_keywords = 1                 " Detect lowercase keywords
+let g:genero_tools_config.lowercase_functions = 1                " Detect lowercase functions
+let g:genero_tools_config.keyword_consistency = 1                " Detect inconsistent casing
+let g:genero_tools_config.naming_convention = 0                  " Detect naming violations
+let g:genero_tools_config.unclosed_blocks = 1                    " Detect unclosed blocks
+let g:genero_tools_config.nesting_depth = 1                      " Detect excessive nesting
+let g:genero_tools_config.line_length = 1                        " Detect long lines
+let g:genero_tools_config.missing_comments = 0                   " Detect missing comments
+let g:genero_tools_config.missing_error_handling = 0             " Detect missing error handling
+let g:genero_tools_config.deprecated_functions = 1               " Detect deprecated functions
+
+" Threshold options
+let g:genero_tools_config.max_line_length = 100                  " Maximum line length
+let g:genero_tools_config.max_nesting_depth = 5                  " Maximum nesting depth
+let g:genero_tools_config.max_blank_lines = 2                    " Maximum consecutive blank lines
+let g:genero_tools_config.naming_convention_style = 'camelCase'  " Naming style: 'camelCase', 'snake_case'
+```
+
+**Hints Features:**
+- Real-time code quality analysis with configurable debounce delay
+- Multiple display modes: sign column, virtual text (Neovim), or both
+- Severity levels for visual distinction (info, warning, style)
+- Per-file and project-wide configuration support via .genero-hints
+- Auto-fix suggestions for common issues
+- Caching for performance optimization
+- See [Code Hints Documentation](docs/HINTS.md) for complete details
 
 ### SVN Diff Markers Configuration
 

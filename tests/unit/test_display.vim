@@ -1,7 +1,7 @@
 " Genero-Tools Plugin - Display Tests
 " Tests for autoload/genero_tools/display.vim
 
-function! test_display_result_with_success() abort
+function! Test_Display_Result_With_Success() abort
   " Given: A successful result
   let l:result = {
     \ 'success': 1,
@@ -14,13 +14,13 @@ function! test_display_result_with_success() abort
   " Then: No errors occur
   try
     call genero_tools#display#result(l:result, 'echo')
-    assert_true(1, 'display should not error on success')
+    call assert_true(1, 'display should not error on success')
   catch
-    assert_false(1, 'display should not throw exception: ' . v:exception)
+    call assert_false(1, 'display should not throw exception: ' . v:exception)
   endtry
 endfunction
 
-function! test_display_result_with_error() abort
+function! Test_Display_Result_With_Error() abort
   " Given: A failed result
   let l:result = {
     \ 'success': 0,
@@ -33,13 +33,13 @@ function! test_display_result_with_error() abort
   " Then: No errors occur
   try
     call genero_tools#display#result(l:result, 'echo')
-    assert_true(1, 'display should not error on failure')
+    call assert_true(1, 'display should not error on failure')
   catch
-    assert_false(1, 'display should not throw exception: ' . v:exception)
+    call assert_false(1, 'display should not throw exception: ' . v:exception)
   endtry
 endfunction
 
-function! test_display_mode_fallback() abort
+function! Test_Display_Mode_Fallback() abort
   " Given: Unsupported display mode in vim
   let l:result = {
     \ 'success': 1,
@@ -52,13 +52,13 @@ function! test_display_mode_fallback() abort
   " Then: Should fall back to echo mode
   try
     call genero_tools#display#result(l:result, 'popup')
-    assert_true(1, 'display should handle unsupported modes')
+    call assert_true(1, 'display should handle unsupported modes')
   catch
-    assert_false(1, 'display should not throw exception: ' . v:exception)
+    call assert_false(1, 'display should not throw exception: ' . v:exception)
   endtry
 endfunction
 
-function! test_display_echo_formats_output() abort
+function! Test_Display_Echo_Formats_Output() abort
   " Given: A result to display
   let l:result = {
     \ 'success': 1,
@@ -71,13 +71,13 @@ function! test_display_echo_formats_output() abort
   " Then: Output is formatted
   try
     call genero_tools#display#echo('Test message')
-    assert_true(1, 'echo display should work')
+    call assert_true(1, 'echo display should work')
   catch
-    assert_false(1, 'echo display should not throw exception: ' . v:exception)
+    call assert_false(1, 'echo display should not throw exception: ' . v:exception)
   endtry
 endfunction
 
-function! test_display_preserves_buffer() abort
+function! Test_Display_Preserves_Buffer() abort
   " Given: Current buffer content
   let l:original_line = getline(1)
   
@@ -92,5 +92,5 @@ function! test_display_preserves_buffer() abort
   
   " Then: Buffer content is unchanged
   let l:current_line = getline(1)
-  assert_equal(l:original_line, l:current_line, 'buffer content should be preserved')
+  call assert_equal(l:original_line, l:current_line, 'buffer content should be preserved')
 endfunction

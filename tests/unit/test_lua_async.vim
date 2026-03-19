@@ -1,7 +1,7 @@
 " Tests for Lua async module
 " Tests lua/genero_tools/async.lua functionality
 
-function! test_lua_async_module_loads() abort
+function! Test_Lua_Async_Module_Loads() abort
   " Given: Neovim environment
   if !has('nvim')
     return
@@ -10,13 +10,13 @@ function! test_lua_async_module_loads() abort
   " When: Loading async module
   try
     call luaeval('require("genero_tools.async")')
-    assert_true(1, 'async module should load')
+    call assert_true(1, 'async module should load')
   catch
-    assert_false(1, 'async module should load without error: ' . v:exception)
+    call assert_false(1, 'async module should load without error: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_has_execute_async() abort
+function! Test_Lua_Async_Has_Execute_Async() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -25,13 +25,13 @@ function! test_lua_async_has_execute_async() abort
   " When: Checking for execute_async function
   try
     let l:has_func = luaeval('require("genero_tools.async").execute_async ~= nil')
-    assert_true(l:has_func, 'async module should have execute_async function')
+    call assert_true(l:has_func, 'async module should have execute_async function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_has_parse_output() abort
+function! Test_Lua_Async_Has_Parse_Output() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -40,13 +40,13 @@ function! test_lua_async_has_parse_output() abort
   " When: Checking for parse_output function
   try
     let l:has_func = luaeval('require("genero_tools.async").parse_output ~= nil')
-    assert_true(l:has_func, 'async module should have parse_output function')
+    call assert_true(l:has_func, 'async module should have parse_output function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_parse_output_success() abort
+function! Test_Lua_Async_Parse_Output_Success() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -55,13 +55,13 @@ function! test_lua_async_parse_output_success() abort
   " When: Parsing successful output
   try
     let l:result = luaeval('require("genero_tools.async").parse_output({"test"}, {}, 0)')
-    assert_equal(l:result.success, 1, 'parse_output should return success=true for exit_code=0')
+    call assert_equal(l:result.success, 1, 'parse_output should return success=true for exit_code=0')
   catch
-    assert_false(1, 'parse_output should work: ' . v:exception)
+    call assert_false(1, 'parse_output should work: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_parse_output_failure() abort
+function! Test_Lua_Async_Parse_Output_Failure() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -70,13 +70,13 @@ function! test_lua_async_parse_output_failure() abort
   " When: Parsing failed output
   try
     let l:result = luaeval('require("genero_tools.async").parse_output({}, {"error"}, 1)')
-    assert_equal(l:result.success, 0, 'parse_output should return success=false for non-zero exit_code')
+    call assert_equal(l:result.success, 0, 'parse_output should return success=false for non-zero exit_code')
   catch
-    assert_false(1, 'parse_output should work: ' . v:exception)
+    call assert_false(1, 'parse_output should work: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_has_debounce() abort
+function! Test_Lua_Async_Has_Debounce() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -85,13 +85,13 @@ function! test_lua_async_has_debounce() abort
   " When: Checking for debounce function
   try
     let l:has_func = luaeval('require("genero_tools.async").debounce ~= nil')
-    assert_true(l:has_func, 'async module should have debounce function')
+    call assert_true(l:has_func, 'async module should have debounce function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction
 
-function! test_lua_async_has_throttle() abort
+function! Test_Lua_Async_Has_Throttle() abort
   " Given: Async module loaded
   if !has('nvim')
     return
@@ -100,8 +100,8 @@ function! test_lua_async_has_throttle() abort
   " When: Checking for throttle function
   try
     let l:has_func = luaeval('require("genero_tools.async").throttle ~= nil')
-    assert_true(l:has_func, 'async module should have throttle function')
+    call assert_true(l:has_func, 'async module should have throttle function')
   catch
-    assert_false(1, 'should not error checking for function: ' . v:exception)
+    call assert_false(1, 'should not error checking for function: ' . v:exception)
   endtry
 endfunction

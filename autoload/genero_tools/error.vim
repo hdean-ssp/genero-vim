@@ -46,3 +46,56 @@ function! genero_tools#error#result(module, message) abort
     \ 'timestamp': localtime()
     \ }
 endfunction
+
+" Format error from command output
+function! genero_tools#error#format_from_output(output, command) abort
+  if empty(a:output)
+    return genero_tools#error#format('Command', 'Command "' . a:command . '" failed with no output')
+  endif
+  
+  " Try to extract error message from output
+  let lines = split(a:output, '\n')
+  let error_msg = ''
+  
+  " Look for error patterns in output
+  for line in lines
+    if line =~? 'error\|failed\|exception'
+      let error_msg = line
+      break
+    endif
+  endfor
+  
+  " If no error pattern found, use first non-empty line
+  if empty(error_msg)
+    for line in lines
+      if !empty(line)
+        let error_msg = line
+        break
+      endif
+    endfor
+  endif
+  
+  " Fallback to generic message
+  if empty(error_msg)
+    let error_msg = 'Command "' . a:command . '" failed'
+  endif
+  
+  return genero_tools#error#format('Command', error_msg)
+endfunction
+
+" Format parse error
+function! genero_tools#error#format_parse_error(exception) abort
+  return genero_tools#error#format('Parser', 'Failed to parse command output: ' . a:exception)
+endfunction
+
+" Check if result size exceeds limits
+function! genero_tools#error#check_result_size(data) abort
+  " Check if data is a list and exceeds reasonable size (e.g., 10000 items)
+  if type(a:data) == type([])
+    if len(a:data) > 10000
+      return genero_tools#error#format('Result', 'Result set too large (' . len(a:data) . ' items). Consider refining your search.')
+    endif
+  endif
+  
+  return ''
+endfunction

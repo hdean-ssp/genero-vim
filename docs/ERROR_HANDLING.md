@@ -118,6 +118,75 @@ function! genero_tools#lookup_function(name) abort
 endfunction
 ```
 
+### `genero_tools#error#format_from_output(output, command)`
+
+Extract and format an error message from command output.
+
+**Parameters:**
+- `output` (string): Command output (may contain multiple lines)
+- `command` (string): Command name for context
+
+**Returns:** Formatted error string `[Command] Error description`
+
+**Behavior:**
+- Searches for lines containing 'error', 'failed', or 'exception' (case-insensitive)
+- Uses first matching line as error message
+- Falls back to first non-empty line if no error pattern found
+- Returns generic message if output is empty
+
+**Example:**
+```vim
+let output = system('fglcomp myfile.4gl 2>&1')
+if v:shell_error
+  let error_msg = genero_tools#error#format_from_output(output, 'fglcomp')
+  call genero_tools#error#error('compiler', error_msg)
+endif
+```
+
+### `genero_tools#error#format_parse_error(exception)`
+
+Format a parse error from an exception.
+
+**Parameters:**
+- `exception` (string): Exception message from try/catch block
+
+**Returns:** Formatted error string `[Parser] Failed to parse command output: exception`
+
+**Example:**
+```vim
+try
+  let result = json_decode(output)
+catch
+  let error_msg = genero_tools#error#format_parse_error(v:exception)
+  return genero_tools#error#result('parser', error_msg)
+endtry
+```
+
+### `genero_tools#error#check_result_size(data)`
+
+Check if result data exceeds reasonable size limits.
+
+**Parameters:**
+- `data` (any): Result data to check (typically a list)
+
+**Returns:** Empty string if size is acceptable, formatted error message if too large
+
+**Behavior:**
+- Checks if data is a list exceeding 10,000 items
+- Returns helpful message suggesting search refinement
+- Returns empty string for non-list data or acceptable sizes
+
+**Example:**
+```vim
+let result = genero_tools#execute_command('list-functions', [codebase_path])
+if result.success
+  let size_error = genero_tools#error#check_result_size(result.data)
+  if !empty(size_error)
+    call genero_tools#error#warn('command', size_error)
+  endif
+endif
+```
+
 ## Error Handling Patterns
 
 ### Pattern 1: Validate Input
@@ -144,7 +213,49 @@ function! genero_tools#execute_command() abort
 endfunction
 ```
 
-### Pattern 3: Display User Messages
+### Pattern 3: Extract Error from Command Output
+
+```vim
+function! genero_tools#compiler#execute(file) abort
+  let output = system('fglcomp ' . a:file . ' 2>&1')
+  if v:shell_error
+    let error_msg = genero_tools#error#format_from_output(output, 'fglcomp')
+    return genero_tools#error#result('compiler', error_msg)
+  endif
+  " ... process output
+endfunction
+```
+
+### Pattern 4: Handle Parse Errors
+
+```vim
+function! genero_tools#parse_json_output(output) abort
+  try
+    let result = json_decode(a:output)
+  catch
+    let error_msg = genero_tools#error#format_parse_error(v:exception)
+    return genero_tools#error#result('parser', error_msg)
+  endtry
+  return result
+endfunction
+```
+
+### Pattern 5: Check Result Size
+
+```vim
+function! genero_tools#lookup_function(name) abort
+  let result = genero_tools#execute_command('lookup', [a:name])
+  if result.success
+    let size_error = genero_tools#error#check_result_size(result.data)
+    if !empty(size_error)
+      call genero_tools#error#warn('command', size_error)
+    endif
+  endif
+  return result
+endfunction
+```
+
+### Pattern 6: Display User Messages
 
 ```vim
 function! genero_tools#display_result(result) abort
@@ -156,7 +267,7 @@ function! genero_tools#display_result(result) abort
 endfunction
 ```
 
-### Pattern 4: Log Debug Information
+### Pattern 7: Log Debug Information
 
 ```vim
 function! genero_tools#debug_operation() abort
@@ -227,6 +338,50 @@ function! genero_tools#execute_command(cmd, args) abort
   endtry
   
   return {'success': v:true, 'data': result, 'error': '', 'timestamp': localtime()}
+endfunction
+```
+
+### Compiler Output Error Extraction
+
+```vim
+function! genero_tools#compiler#execute(file) abort
+  let output = system('fglcomp ' . a:file . ' 2>&1')
+  if v:shell_error
+    let error_msg = genero_tools#error#format_from_output(output, 'fglcomp')
+    call genero_tools#error#error('compiler', error_msg)
+    return genero_tools#error#result('compiler', error_msg)
+  endif
+  return {'success': v:true, 'data': output, 'error': '', 'timestamp': localtime()}
+endfunction
+```
+
+### JSON Parse Error Handling
+
+```vim
+function! genero_tools#parse_json_response(output) abort
+  try
+    let result = json_decode(a:output)
+    return result
+  catch
+    let error_msg = genero_tools#error#format_parse_error(v:exception)
+    call genero_tools#error#error('parser', error_msg)
+    return {}
+  endtry
+endfunction
+```
+
+### Result Size Validation
+
+```vim
+function! genero_tools#lookup_function(name) abort
+  let result = genero_tools#execute_command('lookup', [a:name])
+  if result.success
+    let size_error = genero_tools#error#check_result_size(result.data)
+    if !empty(size_error)
+      call genero_tools#error#warn('command', size_error)
+    endif
+  endif
+  return result
 endfunction
 ```
 

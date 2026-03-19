@@ -1,7 +1,7 @@
 " Property-based tests for result structure consistency
 " Validates that all command results have consistent structure
 
-function! test_result_has_success_field() abort
+function! Test_Result_Has_Success_Field() abort
   " Property: All results must have 'success' field
   let l:result = {
     \ 'success': v:true,
@@ -10,11 +10,11 @@ function! test_result_has_success_field() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(has_key(l:result, 'success'))
-  assert_true(type(l:result.success) == type(v:true) || type(l:result.success) == type(v:false))
+  call assert_true(has_key(l:result, 'success'))
+  call assert_true(type(l:result.success) == type(v:true) || type(l:result.success) == type(v:false))
 endfunction
 
-function! test_result_has_data_field() abort
+function! Test_Result_Has_Data_Field() abort
   " Property: All results must have 'data' field
   let l:result = {
     \ 'success': v:true,
@@ -23,11 +23,11 @@ function! test_result_has_data_field() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(has_key(l:result, 'data'))
-  assert_true(type(l:result.data) == type({}))
+  call assert_true(has_key(l:result, 'data'))
+  call assert_true(type(l:result.data) == type({}))
 endfunction
 
-function! test_result_has_error_field() abort
+function! Test_Result_Has_Error_Field() abort
   " Property: All results must have 'error' field
   let l:result = {
     \ 'success': v:false,
@@ -36,11 +36,11 @@ function! test_result_has_error_field() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(has_key(l:result, 'error'))
-  assert_true(type(l:result.error) == type(''))
+  call assert_true(has_key(l:result, 'error'))
+  call assert_true(type(l:result.error) == type(''))
 endfunction
 
-function! test_result_has_timestamp_field() abort
+function! Test_Result_Has_Timestamp_Field() abort
   " Property: All results must have 'timestamp' field
   let l:result = {
     \ 'success': v:true,
@@ -49,11 +49,11 @@ function! test_result_has_timestamp_field() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(has_key(l:result, 'timestamp'))
-  assert_true(type(l:result.timestamp) == type(0))
+  call assert_true(has_key(l:result, 'timestamp'))
+  call assert_true(type(l:result.timestamp) == type(0))
 endfunction
 
-function! test_successful_result_has_data() abort
+function! Test_Successful_Result_Has_Data() abort
   " Property: Successful results must have non-empty data
   let l:result = {
     \ 'success': v:true,
@@ -63,11 +63,11 @@ function! test_successful_result_has_data() abort
     \ }
   
   if l:result.success
-    assert_true(!empty(l:result.data))
+    call assert_true(!empty(l:result.data))
   endif
 endfunction
 
-function! test_failed_result_has_error() abort
+function! Test_Failed_Result_Has_Error() abort
   " Property: Failed results must have error message
   let l:result = {
     \ 'success': v:false,
@@ -77,11 +77,11 @@ function! test_failed_result_has_error() abort
     \ }
   
   if !l:result.success
-    assert_true(!empty(l:result.error))
+    call assert_true(!empty(l:result.error))
   endif
 endfunction
 
-function! test_result_timestamp_is_valid() abort
+function! Test_Result_Timestamp_Is_Valid() abort
   " Property: Timestamp must be a valid Unix timestamp
   let l:now = localtime()
   let l:result = {
@@ -91,11 +91,11 @@ function! test_result_timestamp_is_valid() abort
     \ 'timestamp': l:now
     \ }
   
-  assert_true(l:result.timestamp > 0)
-  assert_true(l:result.timestamp <= l:now + 1)
+  call assert_true(l:result.timestamp > 0)
+  call assert_true(l:result.timestamp <= l:now + 1)
 endfunction
 
-function! test_result_structure_consistency() abort
+function! Test_Result_Structure_Consistency() abort
   " Property: All results have exactly 4 required fields
   let l:result = {
     \ 'success': v:true,
@@ -106,6 +106,6 @@ function! test_result_structure_consistency() abort
   
   let l:required_keys = ['success', 'data', 'error', 'timestamp']
   for l:key in l:required_keys
-    assert_true(has_key(l:result, l:key), 'Missing required key: ' . l:key)
+    call assert_true(has_key(l:result, l:key), 'Missing required key: ' . l:key)
   endfor
 endfunction

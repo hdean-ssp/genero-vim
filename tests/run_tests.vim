@@ -8,7 +8,7 @@ let s:failed_count = 0
 let s:test_results = []
 
 " Assert equal
-function! assert_equal(expected, actual, message) abort
+function! s:Assert_Equal(expected, actual, message) abort
   let s:test_count += 1
   if a:expected == a:actual
     let s:passed_count += 1
@@ -22,17 +22,17 @@ function! assert_equal(expected, actual, message) abort
 endfunction
 
 " Assert true
-function! assert_true(value, message) abort
-  call assert_equal(v:true, a:value, a:message)
+function! s:Assert_True(value, message) abort
+  call s:Assert_Equal(v:true, a:value, a:message)
 endfunction
 
 " Assert false
-function! assert_false(value, message) abort
-  call assert_equal(v:false, a:value, a:message)
+function! s:Assert_False(value, message) abort
+  call s:Assert_Equal(v:false, a:value, a:message)
 endfunction
 
 " Assert not empty
-function! assert_not_empty(value, message) abort
+function! s:Assert_Not_Empty(value, message) abort
   let s:test_count += 1
   if !empty(a:value)
     let s:passed_count += 1
@@ -44,7 +44,7 @@ function! assert_not_empty(value, message) abort
 endfunction
 
 " Assert empty
-function! assert_empty(value, message) abort
+function! s:Assert_Empty(value, message) abort
   let s:test_count += 1
   if empty(a:value)
     let s:passed_count += 1
@@ -56,7 +56,7 @@ function! assert_empty(value, message) abort
 endfunction
 
 " Run a test file
-function! run_test_file(filepath) abort
+function! s:Run_Test_File(filepath) abort
   call add(s:test_results, '')
   call add(s:test_results, '=== ' . a:filepath . ' ===')
   
@@ -69,7 +69,7 @@ function! run_test_file(filepath) abort
 endfunction
 
 " Print test results
-function! print_results() abort
+function! s:Print_Results() abort
   echo ''
   echo '=== Test Results ==='
   echo ''
@@ -96,26 +96,26 @@ function! print_results() abort
 endfunction
 
 " Main test runner
-function! run_all_tests() abort
+function! s:Run_All_Tests() abort
   " Initialize plugin
   call genero_tools#config#init()
   
   " Run unit tests
-  call run_test_file('tests/unit/test_config.vim')
-  call run_test_file('tests/unit/test_cache.vim')
-  call run_test_file('tests/unit/test_command.vim')
-  call run_test_file('tests/unit/test_display.vim')
+  call s:Run_Test_File('tests/unit/test_config.vim')
+  call s:Run_Test_File('tests/unit/test_cache.vim')
+  call s:Run_Test_File('tests/unit/test_command.vim')
+  call s:Run_Test_File('tests/unit/test_display.vim')
   
   " Run integration tests
-  call run_test_file('tests/integration/test_module_interactions.vim')
+  call s:Run_Test_File('tests/integration/test_module_interactions.vim')
   
   " Run property-based tests
-  call run_test_file('tests/properties/test_result_structure.vim')
-  call run_test_file('tests/properties/test_cache_consistency.vim')
-  call run_test_file('tests/properties/test_error_handling.vim')
+  call s:Run_Test_File('tests/properties/test_result_structure.vim')
+  call s:Run_Test_File('tests/properties/test_cache_consistency.vim')
+  call s:Run_Test_File('tests/properties/test_error_handling.vim')
   
   " Print results
-  call print_results()
+  call s:Print_Results()
   
   " Return exit code
   return s:failed_count == 0 ? 0 : 1
@@ -124,6 +124,6 @@ endfunction
 " Run tests if this file is executed directly
 if !exists('g:test_runner_loaded')
   let g:test_runner_loaded = 1
-  let exit_code = run_all_tests()
+  let exit_code = s:Run_All_Tests()
   quit
 endif

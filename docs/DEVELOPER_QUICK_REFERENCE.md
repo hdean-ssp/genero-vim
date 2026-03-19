@@ -37,6 +37,19 @@ All keybindings use `<leader>` (default: `<space>`) in normal mode.
 
 **Usage:** Commands work with or without arguments. Without args, they use the current file or word under cursor.
 
+## Hints Commands
+
+```vim
+:GeneroNextHint                   " Jump to next hint
+:GeneroPrevHint                   " Jump to previous hint
+:GeneroListHints                  " Display all hints in current file
+:GeneroHintDetails                " Show details for hint at cursor
+:GeneroClearHints                 " Clear all hints for current buffer
+:GeneroClearHintCache             " Clear hint cache
+:GeneroHintAutofix                " Apply auto-fix for hint at cursor
+:GeneroHintHelp [name]            " Show help for specific hint
+```
+
 ## Compiler Commands
 
 ```vim
@@ -123,6 +136,12 @@ let g:genero_tools_config.display_mode = 'popup'     " Floating window (Neovim o
 let g:genero_tools_config.compiler_enabled = 1
 let g:genero_tools_config.compiler_autocompile = 1
 let g:genero_tools_config.compiler_command = 'fglcomp -M -W all'
+
+" Hints
+let g:genero_tools_config.hints_enabled = 1
+let g:genero_tools_config.hints_display = 'signs'
+let g:genero_tools_config.hints_realtime = 1
+let g:genero_tools_config.hints_delay = 500
 
 " Display
 let g:genero_tools_config.display_mode = 'quickfix'

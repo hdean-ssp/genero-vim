@@ -1,7 +1,7 @@
 " Property-based tests for error handling
 " Validates error handling behavior and consistency
 
-function! test_error_result_has_error_message() abort
+function! Test_Error_Result_Has_Error_Message() abort
   " Property: Error results must have non-empty error message
   let l:error_result = {
     \ 'success': v:false,
@@ -10,11 +10,11 @@ function! test_error_result_has_error_message() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_false(l:error_result.success)
-  assert_true(!empty(l:error_result.error))
+  call assert_false(l:error_result.success)
+  call assert_true(!empty(l:error_result.error))
 endfunction
 
-function! test_error_result_has_empty_data() abort
+function! Test_Error_Result_Has_Empty_Data() abort
   " Property: Error results should have empty data
   let l:error_result = {
     \ 'success': v:false,
@@ -23,11 +23,11 @@ function! test_error_result_has_empty_data() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_false(l:error_result.success)
-  assert_equal(empty(l:error_result.data), v:true)
+  call assert_false(l:error_result.success)
+  call assert_equal(empty(l:error_result.data), v:true)
 endfunction
 
-function! test_error_message_is_string() abort
+function! Test_Error_Message_Is_String() abort
   " Property: Error messages must be strings
   let l:error_result = {
     \ 'success': v:false,
@@ -36,10 +36,10 @@ function! test_error_message_is_string() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(type(l:error_result.error) == type(''))
+  call assert_true(type(l:error_result.error) == type(''))
 endfunction
 
-function! test_error_result_has_timestamp() abort
+function! Test_Error_Result_Has_Timestamp() abort
   " Property: Error results must have timestamp
   let l:now = localtime()
   let l:error_result = {
@@ -49,11 +49,11 @@ function! test_error_result_has_timestamp() abort
     \ 'timestamp': l:now
     \ }
   
-  assert_true(has_key(l:error_result, 'timestamp'))
-  assert_true(l:error_result.timestamp > 0)
+  call assert_true(has_key(l:error_result, 'timestamp'))
+  call assert_true(l:error_result.timestamp > 0)
 endfunction
 
-function! test_error_result_structure() abort
+function! Test_Error_Result_Structure() abort
   " Property: Error results have consistent structure
   let l:error_result = {
     \ 'success': v:false,
@@ -64,11 +64,11 @@ function! test_error_result_structure() abort
   
   let l:required_keys = ['success', 'data', 'error', 'timestamp']
   for l:key in l:required_keys
-    assert_true(has_key(l:error_result, l:key))
+    call assert_true(has_key(l:error_result, l:key))
   endfor
 endfunction
 
-function! test_success_false_implies_error() abort
+function! Test_Success_False_Implies_Error() abort
   " Property: If success is false, error should be non-empty
   let l:error_result = {
     \ 'success': v:false,
@@ -78,11 +78,11 @@ function! test_success_false_implies_error() abort
     \ }
   
   if !l:error_result.success
-    assert_true(!empty(l:error_result.error))
+    call assert_true(!empty(l:error_result.error))
   endif
 endfunction
 
-function! test_error_messages_are_descriptive() abort
+function! Test_Error_Messages_Are_Descriptive() abort
   " Property: Error messages should be descriptive
   let l:error_messages = [
     \ 'Function not found',
@@ -93,12 +93,12 @@ function! test_error_messages_are_descriptive() abort
     \ ]
   
   for l:msg in l:error_messages
-    assert_true(!empty(l:msg))
-    assert_true(len(l:msg) > 5)
+    call assert_true(!empty(l:msg))
+    call assert_true(len(l:msg) > 5)
   endfor
 endfunction
 
-function! test_error_result_vs_success_result() abort
+function! Test_Error_Result_Vs_Success_Result() abort
   " Property: Error and success results are mutually exclusive
   let l:success_result = {
     \ 'success': v:true,
@@ -114,7 +114,7 @@ function! test_error_result_vs_success_result() abort
     \ 'timestamp': localtime()
     \ }
   
-  assert_true(l:success_result.success)
-  assert_false(l:error_result.success)
-  assert_not_equal(l:success_result.success, l:error_result.success)
+  call assert_true(l:success_result.success)
+  call assert_false(l:error_result.success)
+  call assert_not_equal(l:success_result.success, l:error_result.success)
 endfunction
