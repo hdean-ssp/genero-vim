@@ -238,3 +238,33 @@ function! genero_tools#hints#display#refresh() abort
   let hints = genero_tools#hints#get_hints(bufnr)
   call genero_tools#hints#display#show(bufnr, hints)
 endfunction
+
+" Highlight a specific hint (used for navigation)
+function! genero_tools#hints#display#highlight_hint(hint) abort
+  if !has('nvim')
+    return
+  endif
+  
+  " Create a temporary namespace for highlighting the current hint
+  let ns_id = nvim_create_namespace('genero_hints_current')
+  
+  " Clear previous highlight
+  call nvim_buf_clear_namespace(bufnr('%'), ns_id, 0, -1)
+  
+  " Get highlight group based on severity
+  let hl_group = genero_tools#hints#display#get_highlight_group(a:hint.severity)
+  
+  try
+    " Highlight the entire line where the hint is
+    call nvim_buf_set_extmark(bufnr('%'), ns_id, a:hint.line - 1, 0, {
+      \ 'end_col': -1,
+      \ 'hl_group': hl_group,
+      \ 'priority': 200
+      \ })
+  catch
+    " Silently ignore errors
+  endtry
+  
+  " Show hint details in popup
+  call genero_tools#hints#display#show_details(a:hint)
+endfunction
