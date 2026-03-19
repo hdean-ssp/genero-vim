@@ -8,6 +8,7 @@ let s:debug_stream_state = {
   \ 'buffer_id': -1,
   \ 'file_path': '',
   \ 'last_size': 0,
+  \ 'last_mtime': 0,
   \ 'timer_id': -1,
   \ 'lines': []
   \ }
@@ -48,6 +49,7 @@ function! genero_tools#debug_stream#start(file_path) abort
   let s:debug_stream_state.window_id = nvim_get_current_win()
   let s:debug_stream_state.file_path = a:file_path
   let s:debug_stream_state.last_size = 0
+  let s:debug_stream_state.last_mtime = 0
   let s:debug_stream_state.lines = []
   
   " Set buffer options
@@ -102,6 +104,8 @@ function! genero_tools#debug_stream#stop() abort
   let s:debug_stream_state.enabled = 0
   let s:debug_stream_state.buffer_id = -1
   let s:debug_stream_state.file_path = ''
+  let s:debug_stream_state.last_size = 0
+  let s:debug_stream_state.last_mtime = 0
   let s:debug_stream_state.lines = []
   
   call genero_tools#display#echo('Debug streaming stopped')
@@ -122,27 +126,35 @@ function! s:update_debug_stream(timer_id) abort
     return
   endif
   
+  " Validate buffer still exists
+  if !nvim_buf_is_valid(s:debug_stream_state.buffer_id)
+    let s:debug_stream_state.enabled = 0
+    return
+  endif
+  
   let file_path = s:debug_stream_state.file_path
   if !filereadable(file_path)
     return
   endif
   
+  " Check file modification time
+  let file_stat = getfperm(file_path)
+  let file_mtime = getftime(file_path)
+  
+  " If file hasn't been modified, skip update
+  if file_mtime == s:debug_stream_state.last_mtime
+    return
+  endif
+  
+  let s:debug_stream_state.last_mtime = file_mtime
+  
   " Read file
   let lines = readfile(file_path)
   let current_size = len(lines)
   
-  " Check if file has new content
-  if current_size <= s:debug_stream_state.last_size
-    return
-  endif
-  
-  " Get new lines
-  let new_lines = lines[s:debug_stream_state.last_size:]
-  let s:debug_stream_state.last_size = current_size
-  
   " Add to buffer
   let max_lines = genero_tools#config#get('debug_stream_max_lines')
-  let all_lines = s:debug_stream_state.lines + new_lines
+  let all_lines = lines
   
   " Trim if exceeds max
   if len(all_lines) > max_lines
@@ -150,6 +162,7 @@ function! s:update_debug_stream(timer_id) abort
   endif
   
   let s:debug_stream_state.lines = all_lines
+  let s:debug_stream_state.last_size = current_size
   
   " Update buffer
   try
@@ -159,7 +172,10 @@ function! s:update_debug_stream(timer_id) abort
     
     " Auto-scroll if enabled
     if genero_tools#config#get('debug_stream_auto_scroll')
-      call nvim_win_set_cursor(s:debug_stream_state.window_id, [len(all_lines), 0])
+      let line_count = len(all_lines)
+      if line_count > 0
+        call nvim_win_set_cursor(s:debug_stream_state.window_id, [line_count, 0])
+      endif
     endif
   catch
     " Silently ignore if buffer is closed

@@ -103,8 +103,10 @@ Close the debug window:
 - The debug stream monitors the file continuously while active
 - New lines are appended to the buffer as they appear in the file
 - When the buffer exceeds `debug_stream_max_lines`, oldest lines are removed
+- If the debug file is truncated or rewritten (file size decreases), the stream automatically resets and displays all content from the beginning
 - The window remains open until explicitly closed or toggled off
 - Closing Neovim automatically stops the debug stream
+- Buffer names are automatically made unique if a conflict occurs (timestamp appended)
 
 ## Troubleshooting
 
