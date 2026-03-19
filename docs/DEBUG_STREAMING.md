@@ -21,13 +21,15 @@ Debug streaming opens a split window that automatically updates as new content i
 
 ## Configuration
 
-Add these settings to your Neovim config to customize debug streaming behavior:
+Add these settings to your Neovim config to customize debug streaming behavior.
+
+**Width Sizing**: By default (`debug_stream_width = 0`), the debug window automatically sizes to 1/3 of your screen width (minimum 30 columns). Set a specific value to use a fixed width instead.
 
 ```lua
 -- init.lua
 vim.g.genero_tools_config = {
   debug_stream_enabled = true,           -- Enable debug streaming (default: false)
-  debug_stream_width = 33,               -- Width of debug window in columns (default: 33)
+  debug_stream_width = 0,                -- Width of debug window in columns (0 = auto, default: 0)
   debug_stream_max_lines = 1000,         -- Maximum lines to keep in buffer (default: 1000)
   debug_stream_auto_scroll = true,       -- Auto-scroll to latest output (default: true)
   debug_stream_directory = './debug',    -- Default directory for debug files (default: './debug')
@@ -40,7 +42,7 @@ Or in Vim script:
 " init.vim or .vimrc
 let g:genero_tools_config = {
   \ 'debug_stream_enabled': 1,
-  \ 'debug_stream_width': 33,
+  \ 'debug_stream_width': 0,
   \ 'debug_stream_max_lines': 1000,
   \ 'debug_stream_auto_scroll': 1,
   \ 'debug_stream_directory': './debug',
@@ -128,7 +130,7 @@ Close the debug window:
 
 **Debug stream not updating**: Ensure the file path is correct and the file is being written to. Check that `debug_stream_enabled` is set to `true` in your configuration.
 
-**Window too narrow/wide**: Adjust `debug_stream_width` in your configuration to change the split window size.
+**Window too narrow/wide**: The debug window automatically sizes to 1/3 of your screen width by default. To use a fixed width instead, set `debug_stream_width` to a specific column value (e.g., `33`).
 
 **Too many lines in buffer**: Reduce `debug_stream_max_lines` to limit memory usage for very active debug files.
 
