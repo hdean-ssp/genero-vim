@@ -34,12 +34,11 @@ function! genero_tools#hints#init() abort
   call genero_tools#hints#register_detector('genero', function('genero_tools#hints#genero#detect'))
   
   " Set up autocommands for hint analysis
+  " Only analyze on buffer read and write to avoid performance issues during typing
   augroup GeneroToolsHints
     autocmd!
     autocmd BufRead *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_read()
     autocmd BufWrite *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_write()
-    autocmd TextChanged *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_text_changed()
-    autocmd TextChangedI *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_text_changed()
   augroup END
   
   let g:genero_tools_hints_state.initialized = 1

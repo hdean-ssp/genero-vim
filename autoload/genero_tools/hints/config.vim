@@ -11,7 +11,7 @@ function! genero_tools#hints#config#init() abort
   call genero_tools#hints#config#init_key('hints_enabled', 1)
   call genero_tools#hints#config#init_key('hints_display', 'signs')
   call genero_tools#hints#config#init_key('hints_severity', 'warning')
-  call genero_tools#hints#config#init_key('hints_realtime', 1)
+  call genero_tools#hints#config#init_key('hints_realtime', 0)
   call genero_tools#hints#config#init_key('hints_cache_enabled', 1)
   call genero_tools#hints#config#init_key('hints_cache_ttl', 300)
   call genero_tools#hints#config#init_key('auto_fix_enabled', 1)
@@ -67,7 +67,7 @@ function! genero_tools#hints#config#get_default(key) abort
     \ 'hints_enabled': 1,
     \ 'hints_display': 'signs',
     \ 'hints_severity': 'warning',
-    \ 'hints_realtime': 1,
+    \ 'hints_realtime': 0,
     \ 'hints_cache_enabled': 1,
     \ 'hints_cache_ttl': 300,
     \ 'auto_fix_enabled': 1,
