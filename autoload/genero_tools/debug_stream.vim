@@ -56,8 +56,8 @@ function! genero_tools#debug_stream#start(file_path) abort
   call nvim_buf_set_option(buf, 'swapfile', v:false)
   
   " Set window options
-  call nvim_win_set_option(s:debug_stream_state.window_id, 'wrap', 1)
-  call nvim_win_set_option(s:debug_stream_state.window_id, 'number', 1)
+  call nvim_win_set_option(s:debug_stream_state.window_id, 'wrap', v:true)
+  call nvim_win_set_option(s:debug_stream_state.window_id, 'number', v:true)
   
   " Set buffer name
   call nvim_buf_set_name(buf, 'debug-stream: ' . fnamemodify(a:file_path, ':t'))
