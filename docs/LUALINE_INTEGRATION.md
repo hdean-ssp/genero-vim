@@ -11,7 +11,7 @@ The genero-tools lualine integration provides a custom statusline component that
 - **Real-time Updates**: Displays current error/warning counts as you compile
 - **Color Coding**: 
   - Errors shown with dark red background (subtle but visible)
-  - Warnings shown with dark orange background (distinct from errors)
+  - Warnings shown with dark yellow background (distinct from errors)
 - **Compact Display**: Shows counts as `E#` and `W#` (e.g., `E2 W1`)
 - **Zero-overhead**: Only displays when counts > 0
 
@@ -81,7 +81,7 @@ function M.setup_highlights()
   })
   
   vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
-    bg = '#cc6600',  -- Dark orange (default)
+    bg = '#8b8b00',  -- Dark yellow (default)
     fg = '#ffffff',
     bold = true,
   })
@@ -90,7 +90,7 @@ end
 
 Available color options:
 - **Error colors**: `#8b0000` (dark red), `#dc143c` (crimson), `#a52a2a` (brown)
-- **Warning colors**: `#cc6600` (dark orange), `#ff8c00` (dark orange alt), `#daa520` (goldenrod)
+- **Warning colors**: `#8b8b00` (dark yellow), `#daa520` (goldenrod), `#b8860b` (dark goldenrod)
 
 ### Change Statusline Position
 
@@ -145,7 +145,7 @@ sections = {
 
 The component uses custom highlight groups:
 - `GeneroLualineError` - For error count (dark red background by default)
-- `GeneroLualineWarning` - For warning count (dark orange background by default)
+- `GeneroLualineWarning` - For warning count (dark yellow background by default)
 
 Customize in `lua/genero_tools/lualine.lua`:
 
@@ -157,7 +157,7 @@ function M.setup_highlights()
     bold = true,
   })
   vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
-    bg = '#cc6600',  -- Change this color
+    bg = '#8b8b00',  -- Change this color
     fg = '#ffffff',
     bold = true,
   })

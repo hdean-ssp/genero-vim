@@ -56,9 +56,9 @@ function M.setup_highlights()
     bold = true,
   })
   
-  -- Warning highlight: dark orange background, light text
+  -- Warning highlight: dark yellow background, light text
   vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
-    bg = '#cc6600',  -- Dark orange
+    bg = '#8b8b00',  -- Dark yellow
     fg = '#ffffff',
     bold = true,
   })
