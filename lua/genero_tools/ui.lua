@@ -47,24 +47,28 @@ function M.show_floating_window(content, options)
 
   -- Calculate window position based on config
   local position = options.position or config_position or 'center'
-  local row, col, anchor
+  local row, col, anchor, relative
 
   if position == 'center' then
+    relative = 'editor'
     row = math.floor((vim.o.lines - height) / 2)
     col = math.floor((vim.o.columns - width) / 2)
     anchor = 'NW'
   elseif position == 'top' then
+    relative = 'editor'
     row = 1
     col = math.floor((vim.o.columns - width) / 2)
     anchor = 'NW'
   elseif position == 'bottom' then
+    relative = 'editor'
     row = vim.o.lines - height - 1
     col = math.floor((vim.o.columns - width) / 2)
     anchor = 'NW'
-  else -- cursor
-    row = 1
+  else -- cursor (position just above cursor)
+    relative = 'cursor'
+    row = -height - 1
     col = 0
-    anchor = 'NW'
+    anchor = 'SW'
   end
 
   -- Create window with config values
@@ -72,7 +76,7 @@ function M.show_floating_window(content, options)
   local title = options.title or config_title or 'Genero-Tools'
 
   local win = vim.api.nvim_open_win(buf, true, {
-    relative = 'editor',
+    relative = relative,
     row = row,
     col = col,
     width = width,
@@ -144,28 +148,37 @@ function M.show_popup_menu(items, callback)
 
   -- Calculate position based on config
   local position = config_position or 'center'
-  local row, col
+  local row, col, relative, anchor
 
   if position == 'center' then
+    relative = 'editor'
     row = math.floor((vim.o.lines - height) / 2)
     col = math.floor((vim.o.columns - width) / 2)
+    anchor = 'NW'
   elseif position == 'top' then
+    relative = 'editor'
     row = 1
     col = math.floor((vim.o.columns - width) / 2)
+    anchor = 'NW'
   elseif position == 'bottom' then
+    relative = 'editor'
     row = vim.o.lines - height - 1
     col = math.floor((vim.o.columns - width) / 2)
-  else -- cursor
-    row = 1
+    anchor = 'NW'
+  else -- cursor (position just above cursor)
+    relative = 'cursor'
+    row = -height - 1
     col = 0
+    anchor = 'SW'
   end
 
   local win = vim.api.nvim_open_win(buf, true, {
-    relative = 'editor',
+    relative = relative,
     row = row,
     col = col,
     width = width,
     height = height,
+    anchor = anchor,
     border = config_border or 'rounded',
   })
 

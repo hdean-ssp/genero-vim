@@ -202,14 +202,16 @@ function! genero_tools#hints#display#show_details(hint) abort
   
   if has('nvim')
     " Use floating window in Neovim
+    " Position just above the cursor line for better visibility
     let opts = {
       \ 'relative': 'cursor',
-      \ 'row': 1,
+      \ 'row': -len(lines) - 1,
       \ 'col': 0,
       \ 'width': 60,
       \ 'height': len(lines),
       \ 'style': 'minimal',
-      \ 'border': 'rounded'
+      \ 'border': 'rounded',
+      \ 'anchor': 'SW'
       \ }
     
     let buf = nvim_create_buf(v:false, v:true)
@@ -220,7 +222,7 @@ function! genero_tools#hints#display#show_details(hint) abort
     if exists('*popup_create')
       call popup_create(lines, {
         \ 'pos': 'cursor',
-        \ 'line': 'cursor+1',
+        \ 'line': 'cursor-' . len(lines),
         \ 'col': 'cursor',
         \ 'maxwidth': 60,
         \ 'border': [1, 1, 1, 1]
