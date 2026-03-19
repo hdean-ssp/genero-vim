@@ -23,7 +23,7 @@ Debug streaming opens a split window that automatically updates as new content i
 
 Add these settings to your Neovim config to customize debug streaming behavior.
 
-**Width Sizing**: By default (`debug_stream_width = 0`), the debug window automatically sizes to 1/3 of your screen width (minimum 50 columns). Set a specific value to use a fixed width instead.
+**Width Sizing**: By default (`debug_stream_width = 0`), the debug window automatically sizes to 1/3 of your screen width (minimum 50 columns). When auto-sizing is used, a diagnostic message displays the calculated width. Set a specific value to use a fixed width instead.
 
 ```lua
 -- init.lua
@@ -130,7 +130,7 @@ Close the debug window:
 
 **Debug stream not updating**: Ensure the file path is correct and the file is being written to. Check that `debug_stream_enabled` is set to `true` in your configuration.
 
-**Window too narrow/wide**: The debug window automatically sizes to 1/3 of your screen width by default (minimum 50 columns). To use a fixed width instead, set `debug_stream_width` to a specific column value (e.g., `50`).
+**Window too narrow/wide**: The debug window automatically sizes to 1/3 of your screen width by default (minimum 50 columns). When opening a debug stream with auto-sizing, you'll see a diagnostic message showing the calculated width (e.g., `Debug stream: columns=200, width=66`). To use a fixed width instead, set `debug_stream_width` to a specific column value (e.g., `50`).
 
 **Too many lines in buffer**: Reduce `debug_stream_max_lines` to limit memory usage for very active debug files.
 
