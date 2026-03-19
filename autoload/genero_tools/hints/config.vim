@@ -22,9 +22,9 @@ function! genero_tools#hints#config#init() abort
   call genero_tools#hints#config#init_key('mixed_indentation', 1)
   call genero_tools#hints#config#init_key('indentation_consistency', 1)
   call genero_tools#hints#config#init_key('multiple_blank_lines', 1)
-  call genero_tools#hints#config#init_key('lowercase_keywords', 1)
-  call genero_tools#hints#config#init_key('lowercase_functions', 1)
-  call genero_tools#hints#config#init_key('keyword_consistency', 1)
+  call genero_tools#hints#config#init_key('lowercase_keywords', 0)
+  call genero_tools#hints#config#init_key('lowercase_functions', 0)
+  call genero_tools#hints#config#init_key('keyword_consistency', 0)
   call genero_tools#hints#config#init_key('naming_convention', 0)
   call genero_tools#hints#config#init_key('unclosed_blocks', 1)
   call genero_tools#hints#config#init_key('nesting_depth', 1)
@@ -76,9 +76,9 @@ function! genero_tools#hints#config#get_default(key) abort
     \ 'mixed_indentation': 1,
     \ 'indentation_consistency': 1,
     \ 'multiple_blank_lines': 1,
-    \ 'lowercase_keywords': 1,
-    \ 'lowercase_functions': 1,
-    \ 'keyword_consistency': 1,
+    \ 'lowercase_keywords': 0,
+    \ 'lowercase_functions': 0,
+    \ 'keyword_consistency': 0,
     \ 'naming_convention': 0,
     \ 'unclosed_blocks': 1,
     \ 'nesting_depth': 1,
