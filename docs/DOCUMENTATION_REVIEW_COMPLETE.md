@@ -39,7 +39,7 @@ startup_messages = "silent"
 
 ---
 
-### 2. `.vimrc.example` (348 lines)
+### 2. `.vimrc.example` (352 lines)
 **Status:** ✅ Complete
 
 **Updates:**
@@ -47,7 +47,9 @@ startup_messages = "silent"
 - Added result settings
 - Added codebase markers
 - Added startup messages configuration
-- Now documents all 60+ configuration options
+- Added snippet configuration options (snippet_engine, snippet_smart_expansion, snippet_custom_dir)
+- Added keybindings_enabled option
+- Now documents all 70+ configuration options
 
 **New Options Added:**
 ```vim
@@ -60,6 +62,10 @@ startup_messages = "silent"
 \ 'startup_messages': 'silent',
 \ 'timeout': 10000,
 \ 'async_enabled': 1,
+\ 'snippet_engine': 'luasnip',
+\ 'snippet_smart_expansion': 1,
+\ 'snippet_custom_dir': expand('~/.config/nvim/genero-snippets'),
+\ 'keybindings_enabled': 1,
 ```
 
 ---
@@ -161,13 +167,14 @@ startup_messages = "silent"
 | Cache | 3 | ✅ Documented |
 | Results | 2 | ✅ Documented |
 | Codebase | 1 | ✅ Documented |
-| Snippets | 4 | ✅ Documented |
+| Snippets | 5 | ✅ Documented |
 | SVN | 6 | ✅ Documented |
 | Floating Windows | 6 | ✅ Documented |
 | Debug Streaming | 5 | ✅ Documented |
 | Autocomplete | 2 | ✅ Documented |
+| Keybindings | 1 | ✅ Documented |
 | Other | 2 | ✅ Documented |
-| **Total** | **70+** | **✅ All Documented** |
+| **Total** | **72+** | **✅ All Documented** |
 
 ---
 
@@ -260,8 +267,8 @@ Root/
 
 | File | Lines | Config Options | Status |
 |------|-------|-----------------|--------|
-| init.lua.example | 741 | 70+ | ✅ Complete |
-| .vimrc.example | 348 | 70+ | ✅ Complete |
+| init.lua.example | 741 | 72+ | ✅ Complete |
+| .vimrc.example | 352 | 72+ | ✅ Complete |
 | NEOVIM_SETUP.md | 385 | 50+ | ✅ Current |
 
 ---

@@ -47,8 +47,8 @@ endfunction
 
 " Register a hint detector module
 " Detectors are functions that analyze code and return hints
-function! genero_tools#hints#register_detector(name, detector_func) abort
-  let g:genero_tools_hints_state.detectors[a:name] = a:detector_func
+function! genero_tools#hints#register_detector(name, Detector_Func) abort
+  let g:genero_tools_hints_state.detectors[a:name] = a:Detector_Func
 endfunction
 
 " Analyze a buffer and return all hints
@@ -72,9 +72,9 @@ function! genero_tools#hints#analyze(bufnr) abort
   
   " Run all enabled detectors
   let all_hints = []
-  for [detector_name, detector_func] in items(g:genero_tools_hints_state.detectors)
+  for [detector_name, Detector_Func] in items(g:genero_tools_hints_state.detectors)
     try
-      let hints = detector_func(bufnr, config)
+      let hints = Detector_Func(bufnr, config)
       if !empty(hints)
         let all_hints = all_hints + hints
       endif

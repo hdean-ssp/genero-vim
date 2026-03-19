@@ -102,6 +102,7 @@ Perform health check for Lua layer.
 - `async_enabled` (boolean) - Async operations enabled
 - `ui_enabled` (boolean) - UI module enabled
 - `snippets_enabled` (boolean) - Snippets enabled
+- `lua_enabled` (boolean) - Lua layer enabled in configuration
 
 **Example:**
 ```lua
@@ -962,6 +963,34 @@ local value = vim.fn['genero_tools#config#get']('config_key')
 -- Or access directly
 local config = vim.g.genero_tools_config
 local value = config.config_key
+```
+
+### Lua Layer Configuration
+
+The `lua_enabled` configuration option controls whether Lua features are available:
+
+```lua
+-- Check if Lua layer is enabled
+if vim.g.genero_tools_config.lua_enabled then
+  require('genero_tools').setup()
+end
+```
+
+**Default Behavior:**
+- Automatically set to `true` on Neovim
+- Automatically set to `false` on Vim
+- Can be manually overridden in configuration
+
+**Example:**
+```lua
+-- Force disable Lua layer (not recommended)
+vim.g.genero_tools_config.lua_enabled = false
+
+-- Or in init.lua before plugin loads
+vim.g.genero_tools_config = {
+  lua_enabled = false,  -- Disable Lua features
+  -- ... other config
+}
 ```
 
 ---

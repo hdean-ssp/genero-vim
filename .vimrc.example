@@ -163,6 +163,7 @@ let g:genero_tools_config = {
   \ 'autocomplete_on_pause': 1,
   \ 'autocomplete_delay': 500,
   \ 'debug_mode': 0,
+  \ 'lua_enabled': has('nvim'),
   \ }
 
 " Uncomment and adjust if your query.sh is in a custom location
@@ -399,6 +400,12 @@ function! s:show_genero_help()
   echo '  :GeneroFileMetadata         - Get file metadata'
   echo '  :GeneroSnippetList          - List all available snippets'
   echo '  :GeneroSnippetHelp          - Show snippet documentation'
+  echo '  :GeneroDebugStream          - Start debug streaming'
+  echo '  :GeneroDebugStreamStop      - Stop debug streaming'
+  echo '  :GeneroDebugStreamToggle    - Toggle debug stream on/off'
+  echo '  :GeneroDebugStreamSelect    - Select different debug file'
+  echo '  :GeneroDebugStreamClear     - Clear debug stream content'
+  echo '  :GeneroDebugStreamStatus    - Show debug stream status'
   echo '  :GeneroNextHint             - Jump to next hint'
   echo '  :GeneroPrevHint             - Jump to previous hint'
   echo '  :GeneroListHints            - List all hints in file'

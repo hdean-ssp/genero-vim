@@ -79,6 +79,10 @@ Lazy.nvim will automatically download and install plugins on first launch.
 | `Space+hl` | List all hints |
 | `Space+hd` | Show hint details |
 | `Space+hf` | Apply auto-fix for hint |
+| `Space+sv` | Toggle SVN markers on/off |
+| `Space+sr` | Refresh SVN markers |
+| `Space+ss` | Show SVN status and changes |
+| `Space+su` | Toggle unified signs (compiler + SVN) |
 | `Space+sl` | List available snippets |
 | `Space+sh` | Show snippet help |
 | `Space+gd` | Toggle debug stream on/off |
@@ -104,8 +108,11 @@ Lazy.nvim will automatically download and install plugins on first launch.
 :GeneroClearErrors          " Clear error markers
 :GeneroNextError            " Jump to next error
 :GeneroPrevError            " Jump to previous error
+:GeneroFirstError           " Jump to first error
+:GeneroLastError            " Jump to last error
 :GeneroLookup               " Lookup function definition
 :GeneroListFunctions        " List functions in file
+:GeneroListModuleFiles      " List files in module
 :GeneroFunctionSignature    " Get function signature
 :GeneroFileMetadata         " Get file metadata
 :GeneroNextHint             " Jump to next hint
@@ -113,16 +120,29 @@ Lazy.nvim will automatically download and install plugins on first launch.
 :GeneroListHints            " List all hints in file
 :GeneroHintDetails          " Show hint details
 :GeneroHintAutofix          " Apply auto-fix for hint
+:GeneroHintHelp             " Show hint documentation
+:GeneroClearHintCache       " Clear all cached hints
+:GeneroSVNRefresh           " Manually refresh SVN markers
+:GeneroSVNToggle            " Toggle SVN markers on/off
+:GeneroSVNStatus            " Show SVN status and changes
+:GeneroSVNCacheStats        " Show SVN cache statistics
+:GeneroSVNCacheClear        " Clear SVN cache
+:GeneroUnifiedSignsEnable   " Enable unified sign column
+:GeneroUnifiedSignsDisable  " Disable unified sign column
+:GeneroUnifiedSignsToggle   " Toggle unified sign column
+:GeneroUnifiedSignsStatus   " Show unified signs status
 :GeneroSnippetList          " List all available snippets
 :GeneroSnippetHelp          " Show snippet documentation
 :GeneroDebugStream          " Start debug streaming
 :GeneroDebugStreamStop      " Stop debug streaming
 :GeneroDebugStreamToggle    " Toggle debug stream on/off
+:GeneroDebugStreamSelect    " Select different debug file
 :GeneroDebugStreamClear     " Clear debug stream content
 :GeneroDebugStreamStatus    " Show debug stream status
-:GeneroSVNRefresh           " Manually refresh SVN markers
-:GeneroSVNToggle            " Toggle SVN markers on/off
-:GeneroSVNStatus            " Show SVN status and changes
+:GeneroClearCache           " Clear result cache
+:GeneroCompleteEnable       " Enable autocomplete
+:GeneroCompleteDisable      " Disable autocomplete
+:GeneroConfigShow           " Show current configuration
 :GeneroHelp                 " Show this help
 ```
 
@@ -189,6 +209,29 @@ svn_enabled = true                         -- Enable SVN diff markers
 svn_show_added = true                      -- Show added lines
 svn_show_modified = true                   -- Show modified lines
 svn_show_deleted = true                    -- Show deleted lines
+svn_cache_ttl = 300                        -- SVN cache TTL in seconds
+svn_auto_update = true                     -- Auto-update on save
+```
+
+**Lua Layer (Neovim only):**
+```lua
+lua_enabled = true                         -- Enable Lua layer features
+```
+
+**Per-File Configuration:**
+Create `.genero-hints` in project root for per-file hint configuration:
+```json
+{
+  "rules": [
+    {
+      "pattern": "src/**/*.4gl",
+      "config": {
+        "max_line_length": 120,
+        "max_nesting_depth": 6
+      }
+    }
+  ]
+}
 ```
 
 **Floating Window Settings:**
@@ -341,6 +384,12 @@ Non-fatal code quality warnings that help maintain consistency:
 - **Configurable display**: Show/hide specific change types
 - **Auto-update**: Updates markers on file save
 - **Caching**: Efficient caching with configurable TTL
+
+### Unified Sign Column
+- **Combined display**: Compiler errors/warnings and SVN markers in one column
+- **Space-efficient**: Reduces screen real estate compared to separate columns
+- **Smart combination**: Intelligently combines signs when both appear on same line
+- **Toggle on/off**: Enable/disable unified signs with `:GeneroUnifiedSignsToggle`
 
 ### Helpful Features
 - **Which-key** integration for discovering keybindings (press `<leader>`)

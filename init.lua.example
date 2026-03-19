@@ -158,6 +158,13 @@ vim.g.genero_tools_config = {
   svn_show_deleted = true,
   svn_cache_ttl = 300,                  -- SVN cache time-to-live in seconds
   svn_auto_update = true,               -- Auto-update SVN markers on save
+  
+  -- Lua layer (Neovim only)
+  lua_enabled = true,                   -- Enable Lua layer features (auto-detected: true on Neovim, false on Vim)
+  
+  -- Per-file configuration
+  -- Create .genero-hints in project root for per-file hint configuration
+  -- Example: { "rules": [ { "pattern": "src/**/*.4gl", "config": { "max_line_length": 120 } } ] }
 }
 
 -- ============================================================================

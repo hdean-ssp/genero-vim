@@ -103,6 +103,10 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `<space>hl` | List all hints |
 | `<space>hd` | Show hint details |
 | `<space>hf` | Apply auto-fix for hint |
+| `<space>sv` | Toggle SVN diff markers |
+| `<space>sr` | Refresh SVN diff markers |
+| `<space>ss` | Show SVN status |
+| `<space>su` | Toggle unified signs (compiler + SVN) |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
 | `<space>bn` | Next buffer (Vim 7+) |
@@ -178,6 +182,8 @@ let g:genero_tools_config.keybindings_enabled = 0
 :GeneroFileMetadata [file_path]         " Get file metadata
 :GeneroConfigShow                       " Display current config
 :GeneroClearCache                       " Clear result cache
+:GeneroCompleteEnable                   " Enable autocomplete
+:GeneroCompleteDisable                  " Disable autocomplete
 :GeneroHelp                             " Show keybindings and commands (from .vimrc.example)
 ```
 
@@ -188,6 +194,8 @@ let g:genero_tools_config.keybindings_enabled = 0
 :GeneroClearErrors                      " Clear error markers and quickfix
 :GeneroNextError                        " Jump to next error in quickfix
 :GeneroPrevError                        " Jump to previous error in quickfix
+:GeneroFirstError                       " Jump to first error in quickfix
+:GeneroLastError                        " Jump to last error in quickfix
 :GeneroAutocompileEnable                " Enable autocompile on save
 :GeneroAutocompileDisable               " Disable autocompile on save
 :GeneroAutocompileStatus                " Show autocompile status
@@ -236,8 +244,8 @@ let g:genero_tools_config.keybindings_enabled = 0
 :GeneroListHints                        " Display all hints in current file
 :GeneroHintDetails                      " Show details for hint at cursor
 :GeneroHintAutofix                      " Apply auto-fix for hint at cursor
-:GeneroClearHintCache                   " Clear all cached hints
 :GeneroHintHelp [hint_name]             " Show help for a specific hint
+:GeneroClearHintCache                   " Clear all cached hints
 ```
 
 **Note**: Code hints are fully configurable and can be enabled/disabled per hint type. See [Code Hints Documentation](docs/HINTS.md) for details.
@@ -487,6 +495,7 @@ let g:genero_tools_config.snippets_enabled = 1                   " Enable/disabl
 let g:genero_tools_config.snippet_engine = 'luasnip'             " Snippet engine (luasnip, vim-snipmate, vim-vsnip)
 let g:genero_tools_config.snippet_smart_expansion = 1            " Enable async parameter population
 let g:genero_tools_config.snippet_custom_dir = expand('~/.config/nvim/genero-snippets') " Custom snippet directory
+let g:genero_tools_config.keybindings_enabled = 1                " Enable/disable default keybindings
 ```
 
 ### Floating Window Configuration (Neovim only)
@@ -511,6 +520,7 @@ Control plugin startup behavior:
 ```vim
 let g:genero_tools_config.startup_messages = 'silent'            " Startup messages: 'silent', 'normal', 'verbose' (default: 'silent')
 let g:genero_tools_config.debug_mode = 0                         " Debug mode: 0 = off, 1 = on (default: 0)
+let g:genero_tools_config.lua_enabled = 1                        " Enable Lua layer (Neovim only, auto-detected)
 ```
 
 **Startup Message Modes:**

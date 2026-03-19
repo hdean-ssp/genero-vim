@@ -57,6 +57,7 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('autocomplete_on_pause', 1)
   call genero_tools#config#init_key('autocomplete_delay', 500)
   call genero_tools#config#init_key('debug_mode', 0)
+  call genero_tools#config#init_key('lua_enabled', has('nvim'))
   
   " Validate configuration after initialization
   call genero_tools#config#validate()
@@ -191,6 +192,10 @@ function! genero_tools#config#get(key) abort
     return 1
   elseif a:key == 'autocomplete_delay'
     return 500
+  elseif a:key == 'debug_mode'
+    return 0
+  elseif a:key == 'lua_enabled'
+    return has('nvim')
   else
     return ''
   endif
