@@ -133,6 +133,6 @@ function! genero_tools#hints#nav#details() abort
   call add(details, 'Severity: ' . hint_at_cursor.severity)
   call add(details, 'Message: ' . hint_at_cursor.message)
   
-  " Display details
-  call genero_tools#display#result({'success': 1, 'data': details}, 'popup')
+  " Display details as inline popup
+  call genero_tools#display#result({'success': 1, 'data': details}, 'inline')
 endfunction
