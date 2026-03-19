@@ -25,6 +25,8 @@ endfunction
 
 " Start debug streaming
 function! genero_tools#debug_stream#start(file_path) abort
+  echom 'DEBUG: genero_tools#debug_stream#start called with: ' . a:file_path
+  
   if s:debug_stream_state.enabled
     call genero_tools#debug_stream#stop()
   endif
