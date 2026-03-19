@@ -287,7 +287,44 @@ end
 
 ## Integration Opportunities
 
-### 1. LSP Integration (Future)
+### 1. Better Query Output Integration and Navigation
+
+**Status:** Not started
+
+**Priority:** High
+
+**Details:**
+- Improve parsing and presentation of large query results
+- Many genero-tools queries return large amounts of text/entries
+- Need navigable, user-friendly way to present results
+- Current popup/display modes don't scale well for large datasets
+
+**Potential Features:**
+- Paginated result display with navigation commands
+- Filterable result lists
+- Sortable columns for structured results
+- Searchable result windows
+- Result caching and history
+- Quick navigation between results
+- Keyboard shortcuts for result navigation
+
+**Implementation Notes:**
+- Could use floating windows (Neovim) or split windows (Vim)
+- Requires result parsing and structuring
+- Should integrate with existing display modes
+- Consider performance for very large result sets
+
+**Related Commands:**
+- `:GeneroLookup` - Function lookup (can return many results)
+- `:GeneroListFunctions` - List functions in file
+- `:GeneroListModuleFiles` - List files in module
+- `:GeneroFileMetadata` - File metadata
+
+**Status:** Ready for design phase
+
+---
+
+### 2. LSP Integration (Future)
 
 **Status:** Not started
 
@@ -413,11 +450,12 @@ end
 
 ### High Priority (Ready for Implementation)
 
-1. ✅ Error filtering (show/hide errors/warnings)
-2. ✅ Configurable sign separators
-3. ✅ SVN status in statusline
-4. ✅ Cache statistics display
-5. ✅ Result pagination navigation
+1. ✅ Better query output integration and navigation
+2. ✅ Error filtering (show/hide errors/warnings)
+3. ✅ Configurable sign separators
+4. ✅ SVN status in statusline
+5. ✅ Cache statistics display
+6. ✅ Result pagination navigation
 
 ### Medium Priority (Design Needed)
 
