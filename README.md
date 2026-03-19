@@ -73,6 +73,7 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `F5` | Compile current file |
 | `Ctrl+,` | Jump to previous error |
 | `Ctrl+.` | Jump to next error |
+| `Ctrl+Space` | Trigger autocomplete (insert mode) |
 | `<space>ca` | Enable autocompile |
 | `<space>cd` | Disable autocompile |
 | `<space>cc` | Clear error markers |

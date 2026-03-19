@@ -1,8 +1,9 @@
 " Genero-Tools Plugin - Filetype Plugin for Genero
 
-" Disable omnifunc to avoid conflicts with Tab key
-" Users can trigger completion manually with Ctrl+Space
-" setlocal omnifunc=genero_tools#complete#omnifunc
+" Setup auto-completion on pause if enabled
+if genero_tools#config#get('autocomplete_on_pause')
+  call genero_tools#complete#setup_auto()
+endif
 
 " Set comment string for genero files (# for comments)
 setlocal commentstring=#\ %s
@@ -12,6 +13,16 @@ if genero_tools#config#get('compiler_autocompile')
   call genero_tools#compiler#autocompile#enable()
 endif
 
-" Manual completion keybinding (Ctrl+Space)
-" This avoids conflicts with Tab and other keys used for indentation
-inoremap <buffer> <C-Space> <C-x><C-o>
+" Load SVN signs on file entry if SVN is enabled
+if genero_tools#config#get('svn_enabled')
+  call genero_tools#svn#load_signs_for_buffer(bufnr('%'))
+endif
+
+" Setup statusline integration for error/warning counts
+call genero_tools#display#setup_statusline()
+
+" Navigation in completion menu
+inoremap <buffer> <expr> <Down> pumvisible() ? "\<C-n>" : "\<Down>"
+inoremap <buffer> <expr> <Up> pumvisible() ? "\<C-p>" : "\<Up>"
+inoremap <buffer> <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
+inoremap <buffer> <expr> <Esc> pumvisible() ? "\<C-e>" : "\<Esc>"

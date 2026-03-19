@@ -82,6 +82,55 @@ function! genero_tools#svn#setup_autocommand() abort
   augroup END
 endfunction
 
+" Load SVN signs for a buffer (called on file entry)
+function! genero_tools#svn#load_signs_for_buffer(bufnr) abort
+  " Check if SVN is enabled
+  if !genero_tools#config#get('svn_enabled')
+    return
+  endif
+  
+  let file_path = expand('%:p')
+  
+  if empty(file_path)
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#detection#is_in_working_copy(file_path)
+    return
+  endif
+  
+  " Try to get cached diff first
+  let cached = genero_tools#svn#cache#get(file_path)
+  
+  if cached.cached
+    " Use cached result
+    let changes = genero_tools#svn#parser#parse_diff(cached.diff)
+  else
+    " Get fresh diff
+    let diff_result = genero_tools#svn#diff#get_diff(file_path)
+    
+    if !diff_result.success
+      " Silently fail - don't disrupt user workflow
+      return
+    endif
+    
+    " Cache the result
+    call genero_tools#svn#cache_set(file_path, diff_result)
+    
+    " Parse the diff
+    let changes = genero_tools#svn#parser#parse_diff(diff_result.diff)
+  endif
+  
+  " Check if signs are enabled for this buffer
+  let toggle_key = 'buffer_' . a:bufnr
+  let is_enabled = get(g:genero_tools_svn_toggle_state, toggle_key, 1)
+  
+  if is_enabled
+    call genero_tools#svn#signs#place(a:bufnr, changes)
+  endif
+endfunction
+
 " Handle file save event
 function! genero_tools#svn#on_file_save() abort
   " Check if SVN is enabled

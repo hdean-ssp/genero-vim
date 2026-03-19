@@ -200,6 +200,9 @@ endif
 " Compile current file (F5)
 nnoremap <F5> :GeneroCompile<CR>
 
+" Autocomplete (Ctrl+Space in insert mode)
+inoremap <C-Space> <C-x><C-o>
+
 " Navigate errors/warnings
 nnoremap <C-,> :GeneroPrevError<CR>
 nnoremap <C-.> :GeneroNextError<CR>
@@ -258,6 +261,9 @@ function! s:show_genero_help()
   echo 'SNIPPETS:'
   echo '  Space+sl        - List available snippets'
   echo '  Space+sh        - Show snippet help'
+  echo ''
+  echo 'AUTOCOMPLETE:'
+  echo '  Ctrl+Space      - Trigger code completion (insert mode)'
   echo ''
   echo 'COMMENTING:'
   echo '  gcc             - Toggle comment on line'

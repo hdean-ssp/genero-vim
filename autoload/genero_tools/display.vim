@@ -335,3 +335,57 @@ function! genero_tools#display#close_inline_window(win_id, timer_id) abort
   catch
   endtry
 endfunction
+
+" Get error and warning counts for current buffer
+function! genero_tools#display#get_diagnostic_counts() abort
+  let bufnr = bufnr('%')
+  let errors = 0
+  let warnings = 0
+  
+  " Get all signs in the current buffer for compiler group
+  try
+    let signs = sign_getplaced(bufnr, {'group': 'genero_compiler'})
+    
+    if !empty(signs) && !empty(signs[0].signs)
+      for sign in signs[0].signs
+        if sign.name == 'GeneroCompilerError'
+          let errors += 1
+        elseif sign.name == 'GeneroCompilerWarning'
+          let warnings += 1
+        endif
+      endfor
+    endif
+  catch
+    " Silently ignore if sign_getplaced is not available
+  endtry
+  
+  return {'errors': errors, 'warnings': warnings}
+endfunction
+
+" Format diagnostic counts for statusline
+function! genero_tools#display#format_diagnostics() abort
+  let counts = genero_tools#display#get_diagnostic_counts()
+  let parts = []
+  
+  if counts.errors > 0
+    call add(parts, '%#ErrorMsg#E' . counts.errors . '%*')
+  endif
+  
+  if counts.warnings > 0
+    call add(parts, '%#WarningMsg#W' . counts.warnings . '%*')
+  endif
+  
+  if empty(parts)
+    return ''
+  endif
+  
+  return ' ' . join(parts, ' ')
+endfunction
+
+" Setup statusline integration
+function! genero_tools#display#setup_statusline() abort
+  " Add diagnostic counts to statusline if not already present
+  if &statusline !~# 'genero_tools#display#format_diagnostics'
+    let &statusline = &statusline . '%{genero_tools#display#format_diagnostics()}'
+  endif
+endfunction

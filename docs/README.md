@@ -11,6 +11,7 @@ Welcome to the genero-tools plugin documentation. This guide will help you get s
 
 - **[COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md)** - Compiler integration, autocompile, error display
 - **[API_INTEGRATION.md](API_INTEGRATION.md)** - Code navigation and lookup functionality
+- **[AUTOCOMPLETE.md](AUTOCOMPLETE.md)** - Code completion and auto-completion on pause
 - **[SNIPPETS.md](SNIPPETS.md)** - Code snippet expansion (Neovim only)
 - **[COMPATIBILITY.md](COMPATIBILITY.md)** - Vim/Neovim compatibility details
 - **[NEOVIM.md](NEOVIM.md)** - Neovim-specific features and setup
@@ -37,6 +38,16 @@ Navigate your Genero codebase efficiently:
 - Get file metadata and references
 
 **See:** [API_INTEGRATION.md](API_INTEGRATION.md)
+
+### Autocomplete
+
+Intelligent code completion for functions and modules:
+- Manual completion with Ctrl+Space
+- Automatic completion on pause (configurable)
+- Function signatures in completion menu
+- Smart triggering for identifier characters
+
+**See:** [AUTOCOMPLETE.md](AUTOCOMPLETE.md)
 
 ### Code Snippets (Neovim)
 
@@ -189,7 +200,7 @@ See [LICENSE](../LICENSE) for license information.
 
 ## Quick Links
 
-- **User Guides:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md), [API_INTEGRATION.md](API_INTEGRATION.md), [SNIPPETS.md](SNIPPETS.md)
+- **User Guides:** [COMPILER_INTEGRATION.md](COMPILER_INTEGRATION.md), [API_INTEGRATION.md](API_INTEGRATION.md), [AUTOCOMPLETE.md](AUTOCOMPLETE.md), [SNIPPETS.md](SNIPPETS.md)
 - **Setup:** [QUICK_START.md](QUICK_START.md), [SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)
 - **Development:** [.kiro/steering/COMPILER_DEVELOPMENT.md](../.kiro/steering/COMPILER_DEVELOPMENT.md)
 - **Roadmap:** [QUICK_ENHANCEMENTS_ROADMAP.md](../QUICK_ENHANCEMENTS_ROADMAP.md)

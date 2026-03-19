@@ -69,6 +69,10 @@ vim.g.genero_tools_config = {
   snippets_enabled = true,
   keybindings_enabled = true,
   
+  -- Autocomplete configuration
+  autocomplete_on_pause = true,      -- Auto-trigger completion on pause (default: true)
+  autocomplete_delay = 500,          -- Delay in ms before triggering (default: 500)
+  
   -- Floating window configuration
   floating_window_border = "rounded",
   floating_window_width = 80,
@@ -84,6 +88,9 @@ vim.g.genero_tools_config = {
   debug_stream_auto_scroll = true,
   debug_stream_directory = (os.getenv("BRODIR") or "/opt/brodir") .. "/debug",
   
+  -- Autocomplete configuration
+  autocomplete_on_pause = true,  -- Show suggestions after pause while typing
+  autocomplete_delay = 500,      -- Delay in milliseconds before showing suggestions
   -- SVN integration
   svn_enabled = true,
   svn_show_added = true,
@@ -447,6 +454,9 @@ local opts = { noremap = true, silent = true }
 
 -- Compile current file (F5)
 map("n", "<F5>", ":GeneroCompile<CR>", opts)
+
+-- Autocomplete (Ctrl+Space in insert mode)
+map("i", "<C-Space>", "<C-x><C-o>", opts)
 
 -- Navigate errors/warnings
 map("n", "<C-,>", ":GeneroPrevError<CR>", opts)

@@ -51,6 +51,8 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('debug_stream_max_lines', 1000)
   call genero_tools#config#init_key('debug_stream_auto_scroll', 1)
   call genero_tools#config#init_key('debug_stream_directory', './debug')
+  call genero_tools#config#init_key('autocomplete_on_pause', 1)
+  call genero_tools#config#init_key('autocomplete_delay', 500)
 endfunction
 
 " Initialize a single config key with type safety
@@ -172,6 +174,10 @@ function! genero_tools#config#get(key) abort
     return 1
   elseif a:key == 'debug_stream_directory'
     return './debug'
+  elseif a:key == 'autocomplete_on_pause'
+    return 1
+  elseif a:key == 'autocomplete_delay'
+    return 500
   else
     return ''
   endif
