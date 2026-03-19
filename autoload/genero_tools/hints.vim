@@ -199,3 +199,137 @@ function! genero_tools#hints#create_hint(line, col, message, category, check, se
     \ 'auto_fix': {}
     \ }
 endfunction
+
+
+" Show help for a specific hint or all hints
+function! genero_tools#hints#help(hint_name) abort
+  if empty(a:hint_name)
+    " Show help for all hints
+    let help_text = [
+      \ 'Available Hints:',
+      \ '================',
+      \ '',
+      \ 'Whitespace Hints:',
+      \ '  trailing_whitespace - Detects trailing whitespace at end of lines',
+      \ '  mixed_indentation - Detects mixed tabs and spaces in indentation',
+      \ '  multiple_blank_lines - Detects excessive consecutive blank lines',
+      \ '',
+      \ 'Keyword Hints:',
+      \ '  lowercase_keywords - Detects lowercase Genero keywords',
+      \ '  lowercase_functions - Detects lowercase function names',
+      \ '  keyword_consistency - Detects inconsistent keyword casing',
+      \ '',
+      \ 'Structure Hints:',
+      \ '  unclosed_blocks - Detects unclosed code blocks',
+      \ '  nesting_depth - Detects excessive nesting depth',
+      \ '  line_length - Detects lines exceeding maximum length',
+      \ '',
+      \ 'Genero-Specific Hints:',
+      \ '  deprecated_functions - Detects use of deprecated functions',
+      \ '  missing_error_handling - Detects missing error handling',
+      \ '',
+      \ 'Use :GeneroHintHelp <hint_name> for details on a specific hint'
+      \ ]
+  else
+    " Show help for specific hint
+    let help_text = genero_tools#hints#get_help_for_hint(a:hint_name)
+  endif
+  
+  call genero_tools#display#result({'success': 1, 'data': help_text}, 'popup')
+endfunction
+
+" Get help text for a specific hint
+function! genero_tools#hints#get_help_for_hint(hint_name) abort
+  let hints_help = {
+    \ 'trailing_whitespace': [
+    \   'Trailing Whitespace',
+    \   '===================',
+    \   'Detects whitespace characters at the end of lines.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Trailing whitespace can cause issues with version control',
+    \   '  - It increases file size unnecessarily',
+    \   '  - Many coding standards prohibit trailing whitespace',
+    \   '',
+    \   'Auto-fix: Removes trailing whitespace from the line'
+    \ ],
+    \ 'mixed_indentation': [
+    \   'Mixed Indentation',
+    \   '=================',
+    \   'Detects lines that mix tabs and spaces for indentation.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Mixed indentation can cause display issues',
+    \   '  - It makes code harder to read and maintain',
+    \   '  - Most projects enforce consistent indentation',
+    \   '',
+    \   'Auto-fix: Converts tabs to spaces'
+    \ ],
+    \ 'lowercase_keywords': [
+    \   'Lowercase Keywords',
+    \   '==================',
+    \   'Detects Genero keywords that are not uppercase.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Genero convention is to use uppercase keywords',
+    \   '  - Consistent keyword casing improves readability',
+    \   '  - Many projects enforce this standard',
+    \   '',
+    \   'Auto-fix: Converts keywords to uppercase'
+    \ ],
+    \ 'unclosed_blocks': [
+    \   'Unclosed Blocks',
+    \   '===============',
+    \   'Detects code blocks that are not properly closed.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Unclosed blocks cause compilation errors',
+    \   '  - They indicate incomplete or malformed code',
+    \   '  - This is a critical code quality issue',
+    \   '',
+    \   'Auto-fix: Not available (requires manual review)'
+    \ ],
+    \ 'line_length': [
+    \   'Line Length',
+    \   '===========',
+    \   'Detects lines that exceed the maximum configured length.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Long lines are harder to read and maintain',
+    \   '  - Many editors and terminals have line length limits',
+    \   '  - Most projects enforce a maximum line length',
+    \   '',
+    \   'Auto-fix: Not available (requires manual refactoring)'
+    \ ],
+    \ 'nesting_depth': [
+    \   'Excessive Nesting',
+    \   '=================',
+    \   'Detects code with nesting depth exceeding the configured maximum.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Deep nesting makes code harder to understand',
+    \   '  - It increases cognitive complexity',
+    \   '  - Refactoring can improve code quality',
+    \   '',
+    \   'Auto-fix: Not available (requires manual refactoring)'
+    \ ],
+    \ 'deprecated_functions': [
+    \   'Deprecated Functions',
+    \   '====================',
+    \   'Detects use of functions that are deprecated in Genero.',
+    \   '',
+    \   'Why it matters:',
+    \   '  - Deprecated functions may be removed in future versions',
+    \   '  - They may have performance or security issues',
+    \   '  - Using current functions ensures compatibility',
+    \   '',
+    \   'Auto-fix: Not available (requires manual code review)'
+    \ ]
+    \ }
+  
+  if has_key(hints_help, a:hint_name)
+    return hints_help[a:hint_name]
+  else
+    return ['Unknown hint: ' . a:hint_name, 'Use :GeneroHintHelp to see all available hints']
+  endif
+endfunction
