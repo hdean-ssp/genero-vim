@@ -41,6 +41,7 @@ function! genero_tools#debug_stream#start(file_path) abort
     " Calculate 1/3 of available width, minimum 50 columns
     let available_width = &columns
     let width = max([available_width / 3, 50])
+    call genero_tools#display#echo('Debug stream: columns=' . available_width . ', width=' . width)
   endif
   execute 'rightbelow ' . width . 'vsplit'
   
