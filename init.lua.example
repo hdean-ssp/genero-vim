@@ -122,7 +122,12 @@ vim.g.genero_tools_config = {
   -- Display and features
   display_mode = "floating",  -- Use floating windows for results
   snippets_enabled = true,
-  keybindings_enabled = true,
+  snippet_engine = "luasnip",            -- Snippet engine: "luasnip", "vim-snipmate", "vim-vsnip"
+  snippet_smart_expansion = true,        -- Enable async parameter population
+  snippet_custom_dir = vim.fn.expand("~/.config/nvim/genero-snippets"),  -- Custom snippet directory
+  keybindings_enabled = true,            -- Enable default keybindings
+  timeout = 10000,                       -- Command timeout in milliseconds
+  async_enabled = true,                  -- Enable async operations
   
   -- Autocomplete configuration
   autocomplete_on_pause = true,      -- Auto-trigger completion on pause (default: true)
@@ -151,6 +156,8 @@ vim.g.genero_tools_config = {
   svn_show_added = true,
   svn_show_modified = true,
   svn_show_deleted = true,
+  svn_cache_ttl = 300,                  -- SVN cache time-to-live in seconds
+  svn_auto_update = true,               -- Auto-update SVN markers on save
 }
 
 -- ============================================================================
@@ -534,6 +541,14 @@ map("n", "<leader>hl", ":GeneroListHints<CR>", opts)
 map("n", "<leader>hd", ":GeneroHintDetails<CR>", opts)
 map("n", "<leader>hf", ":GeneroHintAutofix<CR>", opts)
 
+-- SVN diff markers
+map("n", "<leader>sv", ":GeneroSVNToggle<CR>", opts)
+map("n", "<leader>sr", ":GeneroSVNRefresh<CR>", opts)
+map("n", "<leader>ss", ":GeneroSVNStatus<CR>", opts)
+
+-- Unified signs (compiler + SVN)
+map("n", "<leader>su", ":GeneroUnifiedSignsToggle<CR>", opts)
+
 -- Debug streaming (toggle on/off)
 map("n", "<leader>gd", ":GeneroDebugStreamToggle<CR>", opts)
 
@@ -591,6 +606,13 @@ wk.register({
     f = { ":GeneroHintAutofix<CR>", "Apply auto-fix" },
   },
   s = {
+    name = "+SVN/Signs",
+    v = { ":GeneroSVNToggle<CR>", "Toggle SVN markers" },
+    r = { ":GeneroSVNRefresh<CR>", "Refresh SVN markers" },
+    s = { ":GeneroSVNStatus<CR>", "SVN status" },
+    u = { ":GeneroUnifiedSignsToggle<CR>", "Toggle unified signs" },
+  },
+  sl = {
     name = "+Snippets",
     l = { ":GeneroSnippetList<CR>", "List snippets" },
     h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
@@ -641,6 +663,14 @@ CODE HINTS:
   Space+hl        - List all hints in file
   Space+hd        - Show hint details
   Space+hf        - Apply auto-fix for hint
+
+SVN DIFF MARKERS:
+  Space+sv        - Toggle SVN markers on/off
+  Space+sr        - Refresh SVN markers
+  Space+ss        - Show SVN status and changes
+
+UNIFIED SIGNS:
+  Space+su        - Toggle unified signs (compiler + SVN combined)
 
 SNIPPETS:
   Space+sl        - List available snippets
