@@ -34,36 +34,28 @@ endfunction
 " Get completions based on base string
 function! genero_tools#complete#get_completions(base) abort
   try
-    if empty(a:base)
+    if len(a:base) < 2
       return []
     endif
     
     let completions = []
     
-    " Search for functions matching the base
-    let func_results = genero_tools#complete#search_functions(a:base)
-    for func in func_results
-      call add(completions, {
-        \ 'word': func.name,
-        \ 'abbr': func.name,
-        \ 'menu': 'Function',
-        \ 'info': func.signature,
-        \ 'kind': 'f',
-        \ 'icase': 1
-        \ })
-    endfor
+    " Get functions from current file
+    let current_file = expand('%:p')
+    let file_functions = genero_tools#list_functions_in_file(current_file)
     
-    " Search for modules matching the base
-    let module_results = genero_tools#complete#search_modules(a:base)
-    for module in module_results
-      call add(completions, {
-        \ 'word': module.name,
-        \ 'abbr': module.name,
-        \ 'menu': 'Module',
-        \ 'info': 'Module: ' . module.name,
-        \ 'kind': 'm',
-        \ 'icase': 1
-        \ })
+    " Filter functions matching the base
+    for func in file_functions
+      if func.name =~? '^' . a:base
+        call add(completions, {
+          \ 'word': func.name,
+          \ 'abbr': func.name,
+          \ 'menu': 'Function',
+          \ 'info': 'Line ' . func.line,
+          \ 'kind': 'f',
+          \ 'icase': 1
+          \ })
+      endif
     endfor
     
     return completions
@@ -142,6 +134,7 @@ function! genero_tools#complete#setup_auto() abort
   augroup GeneroAutoComplete
     autocmd!
     autocmd TextChangedI <buffer> call s:on_text_changed()
+    autocmd InsertLeave <buffer> call s:close_completion()
   augroup END
 endfunction
 
@@ -161,12 +154,21 @@ function! s:on_text_changed() abort
   let line = getline('.')
   let char_before = current_col > 1 ? line[current_col - 2] : ''
   
-  " Only trigger if we're typing an identifier
+  " Only trigger if we're typing an identifier (at least 2 chars)
   if char_before =~# '[a-zA-Z0-9_.]'
-    let delay = genero_tools#config#get('autocomplete_delay')
-    let s:autocomplete_state.timer_id = timer_start(delay, function('s:trigger_autocomplete'))
-    let s:autocomplete_state.last_col = current_col
-    let s:autocomplete_state.last_line = current_line
+    let word_start = current_col - 1
+    while word_start > 0 && line[word_start - 1] =~# '[a-zA-Z0-9_.]'
+      let word_start -= 1
+    endwhile
+    let word_len = current_col - word_start - 1
+    
+    " Only trigger if we have at least 2 characters
+    if word_len >= 2
+      let delay = genero_tools#config#get('autocomplete_delay')
+      let s:autocomplete_state.timer_id = timer_start(delay, function('s:trigger_autocomplete'))
+      let s:autocomplete_state.last_col = current_col
+      let s:autocomplete_state.last_line = current_line
+    endif
   endif
 endfunction
 
@@ -180,5 +182,12 @@ function! s:trigger_autocomplete(timer_id) abort
     setlocal omnifunc=genero_tools#complete#omnifunc
     " Trigger completion
     call feedkeys("\<C-x>\<C-o>", 'n')
+  endif
+endfunction
+
+" Close completion menu
+function! s:close_completion() abort
+  if pumvisible()
+    call feedkeys("\<C-e>", 'n')
   endif
 endfunction

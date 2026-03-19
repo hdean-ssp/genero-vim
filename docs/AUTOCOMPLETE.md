@@ -56,11 +56,13 @@ In the completion menu:
 
 When `autocomplete_on_pause` is enabled (default), completion automatically triggers after you pause typing for the configured delay (default: 500ms).
 
-This works while typing identifiers (letters, numbers, underscores, dots):
+This works while typing identifiers (letters, numbers, underscores, dots), but only after you've typed **at least 2 characters**:
 
 ```genero
 FUNCTION myFunc()
-  LET x = myVar.  " Completion triggers after 500ms pause
+  LET x = myVar.  " Completion triggers after 500ms pause (3+ chars)
+  LET y = a      " No auto-completion (only 1 char)
+  LET z = ab     " Completion triggers after 500ms pause (2+ chars)
 END FUNCTION
 ```
 
@@ -88,9 +90,9 @@ let g:genero_tools_config.autocomplete_delay = 1000  " 1 second instead of 500ms
 - **Function Matching**: Searches for functions by name or pattern
 - **Module Matching**: Finds modules matching your input
 - **Signature Display**: Shows function signatures in completion menu
-- **Smart Triggering**: Only triggers when typing identifiers
+- **Smart Triggering**: Auto-completion only triggers after 2+ identifier characters
 - **Configurable Delay**: Adjust pause duration before auto-trigger
-- **Manual Trigger**: Always available with Ctrl+Space
+- **Manual Trigger**: Always available with Ctrl+Space (works with any input)
 
 ## Completion Menu
 
@@ -108,6 +110,7 @@ The completion menu displays:
 - Auto-completion only triggers when typing identifier characters
 - Cursor position must not change for auto-completion to trigger
 - Manual completion (Ctrl+Space) works anywhere in insert mode
+- The omnifunc is automatically ensured to be set before triggering completion
 
 ## Troubleshooting
 
@@ -115,7 +118,7 @@ The completion menu displays:
 
 **Auto-completion triggering too frequently**: Increase `autocomplete_delay` to a higher value (e.g., 1000ms).
 
-**Auto-completion not triggering**: Verify `autocomplete_on_pause` is set to `1` (or `true` in Lua).
+**Auto-completion not triggering**: Verify `autocomplete_on_pause` is set to `1` (or `true` in Lua). The plugin automatically ensures the omnifunc is properly configured.
 
 **Completion menu closes immediately**: This is normal if you continue typing. The menu will reappear after the configured delay.
 
