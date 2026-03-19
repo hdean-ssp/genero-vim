@@ -24,12 +24,33 @@ function! genero_tools#hints#structure#detect(bufnr, config) abort
         continue
       endif
       
-      " Count opening blocks
-      let opens = len(split(line, 'IF\|WHILE\|FOR\|FUNCTION\|CLASS\|TRY', 1)) - 1
-      let closes = len(split(line, 'ENDIF\|ENDWHILE\|ENDFOR\|ENDFUNCTION\|ENDCLASS\|ENDTRY', 1)) - 1
+      " Convert to uppercase for case-insensitive matching
+      let line_upper = toupper(line)
       
-      let current_depth += opens - closes
+      " Count opening blocks (case-insensitive)
+      let opens = 0
+      for keyword in ['IF', 'WHILE', 'FOR', 'FUNCTION', 'CLASS', 'TRY', 'RECORD', 'TYPE', 'DEFINE']
+        " Count occurrences of keyword at word boundaries
+        let opens += len(split(line_upper, '\<' . keyword . '\>', 1)) - 1
+      endfor
       
+      " Count closing blocks (case-insensitive)
+      let closes = 0
+      for keyword in ['ENDIF', 'ENDWHILE', 'ENDFOR', 'ENDFUNCTION', 'ENDCLASS', 'ENDTRY', 'ENDRECORD', 'ENDTYPE', 'ENDDEFINE']
+        " Count occurrences of keyword at word boundaries
+        let closes += len(split(line_upper, '\<' . keyword . '\>', 1)) - 1
+      endfor
+      
+      " Update depth (closes first to handle same-line open/close)
+      let current_depth -= closes
+      let current_depth += opens
+      
+      " Ensure depth doesn't go negative
+      if current_depth < 0
+        let current_depth = 0
+      endif
+      
+      " Report if depth exceeds maximum
       if current_depth > max_depth
         call add(hints, genero_tools#hints#create_hint(
           \ line_num,
