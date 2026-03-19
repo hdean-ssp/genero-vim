@@ -713,17 +713,41 @@ COMMANDS:
   :GeneroClearErrors          - Clear error markers
   :GeneroNextError            - Jump to next error
   :GeneroPrevError            - Jump to previous error
+  :GeneroFirstError           - Jump to first error
+  :GeneroLastError            - Jump to last error
   :GeneroLookup               - Lookup function definition
   :GeneroListFunctions        - List functions in file
+  :GeneroListModuleFiles      - List files in module
   :GeneroFunctionSignature    - Get function signature
   :GeneroFileMetadata         - Get file metadata
+  :GeneroNextHint             - Jump to next hint
+  :GeneroPrevHint             - Jump to previous hint
+  :GeneroListHints            - List all hints in file
+  :GeneroHintDetails          - Show hint details
+  :GeneroHintAutofix          - Apply auto-fix for hint
+  :GeneroHintHelp             - Show hint documentation
+  :GeneroClearHintCache       - Clear all cached hints
+  :GeneroSVNRefresh           - Manually refresh SVN markers
+  :GeneroSVNToggle            - Toggle SVN markers on/off
+  :GeneroSVNStatus            - Show SVN status and changes
+  :GeneroSVNCacheStats        - Show SVN cache statistics
+  :GeneroSVNCacheClear        - Clear SVN cache
+  :GeneroUnifiedSignsEnable   - Enable unified sign column
+  :GeneroUnifiedSignsDisable  - Disable unified sign column
+  :GeneroUnifiedSignsToggle   - Toggle unified sign column
+  :GeneroUnifiedSignsStatus   - Show unified signs status
   :GeneroSnippetList          - List all available snippets
   :GeneroSnippetHelp          - Show snippet documentation
   :GeneroDebugStream          - Start debug streaming
   :GeneroDebugStreamStop      - Stop debug streaming
   :GeneroDebugStreamToggle    - Toggle debug stream on/off
+  :GeneroDebugStreamSelect    - Select different debug file
   :GeneroDebugStreamClear     - Clear debug stream content
   :GeneroDebugStreamStatus    - Show debug stream status
+  :GeneroClearCache           - Clear result cache
+  :GeneroCompleteEnable       - Enable autocomplete
+  :GeneroCompleteDisable      - Disable autocomplete
+  :GeneroConfigShow           - Show current configuration
   :GeneroHelp                 - Show this help
 
 FEATURES:
@@ -731,9 +755,12 @@ FEATURES:
   • Real-time debug file streaming
   • which-key integration for keybinding discovery
   • SVN diff markers in sign column
+  • Unified sign column (compiler + SVN combined)
+  • Code hints system (real-time code quality analysis)
   • Compiler error/warning highlighting
   • Automatic code snippets
   • Autocompile on save (500ms delay)
+  • Autocomplete on pause (500ms delay)
 
 TIPS:
   • Press Space to see available keybindings (which-key)

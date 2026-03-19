@@ -244,7 +244,22 @@ wk.register({
     d = { ':GeneroAutocompileDisable<CR>', 'Disable autocompile' },
     c = { ':GeneroClearErrors<CR>', 'Clear errors' },
   },
+  h = {
+    name = '+Hints',
+    n = { ':GeneroNextHint<CR>', 'Next hint' },
+    p = { ':GeneroPrevHint<CR>', 'Previous hint' },
+    l = { ':GeneroListHints<CR>', 'List all hints' },
+    d = { ':GeneroHintDetails<CR>', 'Hint details' },
+    f = { ':GeneroHintAutofix<CR>', 'Apply auto-fix' },
+  },
   s = {
+    name = '+SVN/Signs',
+    v = { ':GeneroSVNToggle<CR>', 'Toggle SVN markers' },
+    r = { ':GeneroSVNRefresh<CR>', 'Refresh SVN markers' },
+    s = { ':GeneroSVNStatus<CR>', 'SVN status' },
+    u = { ':GeneroUnifiedSignsToggle<CR>', 'Toggle unified signs' },
+  },
+  sl = {
     name = '+Snippets',
     l = { ':GeneroSnippetList<CR>', 'List snippets' },
     h = { ':GeneroSnippetHelp<CR>', 'Snippet help' },
@@ -283,6 +298,21 @@ nnoremap <leader>cc :GeneroClearErrors<CR>
 " Snippet commands
 nnoremap <leader>sl :GeneroSnippetList<CR>
 nnoremap <leader>sh :GeneroSnippetHelp<CR>
+
+" SVN diff markers
+nnoremap <leader>sv :GeneroSVNToggle<CR>
+nnoremap <leader>sr :GeneroSVNRefresh<CR>
+nnoremap <leader>ss :GeneroSVNStatus<CR>
+
+" Unified signs (compiler + SVN)
+nnoremap <leader>su :GeneroUnifiedSignsToggle<CR>
+
+" Hint navigation
+nnoremap <leader>hn :GeneroNextHint<CR>
+nnoremap <leader>hp :GeneroPrevHint<CR>
+nnoremap <leader>hl :GeneroListHints<CR>
+nnoremap <leader>hd :GeneroHintDetails<CR>
+nnoremap <leader>hf :GeneroHintAutofix<CR>
 
 " Window navigation
 nnoremap <C-h> <C-w>h
@@ -328,6 +358,21 @@ function! s:show_genero_help()
   echo '  Space+sl        - List available snippets'
   echo '  Space+sh        - Show snippet help'
   echo ''
+  echo 'SVN DIFF MARKERS:'
+  echo '  Space+sv        - Toggle SVN markers on/off'
+  echo '  Space+sr        - Refresh SVN markers'
+  echo '  Space+ss        - Show SVN status and changes'
+  echo ''
+  echo 'UNIFIED SIGNS:'
+  echo '  Space+su        - Toggle unified signs (compiler + SVN combined)'
+  echo ''
+  echo 'CODE HINTS:'
+  echo '  Space+hn        - Jump to next hint'
+  echo '  Space+hp        - Jump to previous hint'
+  echo '  Space+hl        - List all hints'
+  echo '  Space+hd        - Show hint details'
+  echo '  Space+hf        - Apply auto-fix for hint'
+  echo ''
   echo 'AUTOCOMPLETE:'
   echo '  Ctrl+Space      - Trigger code completion (insert mode)'
   echo ''
@@ -341,11 +386,39 @@ function! s:show_genero_help()
   echo '  :GeneroCompile              - Compile current file'
   echo '  :GeneroAutocompileEnable    - Enable autocompile on save'
   echo '  :GeneroAutocompileDisable   - Disable autocompile on save'
+  echo '  :GeneroAutocompileStatus    - Show autocompile status'
   echo '  :GeneroClearErrors          - Clear error markers'
   echo '  :GeneroNextError            - Jump to next error'
   echo '  :GeneroPrevError            - Jump to previous error'
+  echo '  :GeneroFirstError           - Jump to first error'
+  echo '  :GeneroLastError            - Jump to last error'
+  echo '  :GeneroLookup               - Lookup function definition'
+  echo '  :GeneroListFunctions        - List functions in file'
+  echo '  :GeneroListModuleFiles      - List files in module'
+  echo '  :GeneroFunctionSignature    - Get function signature'
+  echo '  :GeneroFileMetadata         - Get file metadata'
   echo '  :GeneroSnippetList          - List all available snippets'
   echo '  :GeneroSnippetHelp          - Show snippet documentation'
+  echo '  :GeneroNextHint             - Jump to next hint'
+  echo '  :GeneroPrevHint             - Jump to previous hint'
+  echo '  :GeneroListHints            - List all hints in file'
+  echo '  :GeneroHintDetails          - Show hint details'
+  echo '  :GeneroHintAutofix          - Apply auto-fix for hint'
+  echo '  :GeneroHintHelp             - Show hint documentation'
+  echo '  :GeneroClearHintCache       - Clear all cached hints'
+  echo '  :GeneroSVNRefresh           - Manually refresh SVN markers'
+  echo '  :GeneroSVNToggle            - Toggle SVN markers on/off'
+  echo '  :GeneroSVNStatus            - Show SVN status and changes'
+  echo '  :GeneroSVNCacheStats        - Show SVN cache statistics'
+  echo '  :GeneroSVNCacheClear        - Clear SVN cache'
+  echo '  :GeneroUnifiedSignsEnable   - Enable unified sign column'
+  echo '  :GeneroUnifiedSignsDisable  - Disable unified sign column'
+  echo '  :GeneroUnifiedSignsToggle   - Toggle unified sign column'
+  echo '  :GeneroUnifiedSignsStatus   - Show unified signs status'
+  echo '  :GeneroClearCache           - Clear result cache'
+  echo '  :GeneroCompleteEnable       - Enable autocomplete'
+  echo '  :GeneroCompleteDisable      - Disable autocomplete'
+  echo '  :GeneroConfigShow           - Show current configuration'
   echo '  :GeneroHelp                 - Show this help'
   echo ''
   echo 'TIPS:'
@@ -353,6 +426,9 @@ function! s:show_genero_help()
   echo '  • Use Ctrl+h/j/k/l to navigate between split windows'
   echo '  • Autocompile is enabled by default (500ms delay)'
   echo '  • Errors appear in the sign column and quickfix list'
+  echo '  • Code hints provide real-time code quality analysis'
+  echo '  • SVN markers show added/modified/deleted lines'
+  echo '  • Unified signs combine compiler and SVN markers in one column'
   echo ''
 endfunction
 
