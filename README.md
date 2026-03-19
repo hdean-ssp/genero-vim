@@ -214,35 +214,25 @@ let g:genero_tools_config.display_mode = 'popup'     " Large floating window (Ne
 
 ## Autocomplete
 
-The plugin provides intelligent autocomplete for function and module names. Autocomplete is automatically enabled for `.4gl` files.
+The plugin provides intelligent autocomplete for function and module names. Autocomplete is available for `.4gl` files and triggered manually to avoid conflicts with Tab key indentation.
 
 **Usage:**
 ```
 1. Open a .4gl file
 2. Start typing a function or module name
-3. Press Tab to trigger autocomplete
-4. Use Tab/Shift+Tab or Up/Down arrows to navigate
+3. Press Ctrl+Space to trigger autocomplete
+4. Use Up/Down arrows to navigate
 5. Press Enter to select
 6. Press Esc to cancel
 ```
 
-**Tab Behavior (Smart):**
-- **Completion menu visible** - Navigate down in menu
-- **Empty line or only whitespace** - Insert tab character (for indentation)
-- **Otherwise** - Trigger autocomplete
+**Manual Completion Keybinding:**
+- `Ctrl+Space` - Trigger autocomplete menu (works in insert mode)
 
 **Keybindings in Autocomplete Menu:**
-- `Tab` - Next item (or trigger if menu closed)
-- `Shift+Tab` - Previous item
 - `Up/Down` - Navigate menu
 - `Enter` - Accept selection
 - `Esc` - Cancel and close menu
-
-**Manual Control:**
-```vim
-:GeneroCompleteEnable   " Enable autocomplete for current buffer
-:GeneroCompleteDisable  " Disable autocomplete for current buffer
-```
 
 **Completion Features:**
 - Function name completion with signatures
@@ -250,6 +240,7 @@ The plugin provides intelligent autocomplete for function and module names. Auto
 - Cached results for performance
 - Works with partial matches (e.g., typing "val" completes "validate_input")
 - Robust error handling - completion errors are silently handled and don't interrupt editing
+- Manual trigger avoids conflicts with Tab key for indentation
 
 ## Setup
 

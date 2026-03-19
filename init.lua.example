@@ -556,6 +556,13 @@ SNIPPETS:
   Space+sl        - List available snippets
   Space+sh        - Show snippet documentation
 
+AUTOCOMPLETE:
+  Ctrl+Space      - Trigger code completion (shows function/module suggestions)
+  In completion menu:
+    Up/Down       - Navigate suggestions
+    Enter         - Accept selected suggestion
+    Esc           - Close completion menu
+
 DEBUG STREAMING:
   Space+gd        - Toggle debug stream on/off
   In debug window:
