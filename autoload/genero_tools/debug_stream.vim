@@ -170,12 +170,10 @@ function! s:update_debug_stream(timer_id) abort
     call nvim_buf_set_lines(s:debug_stream_state.buffer_id, 0, -1, 0, all_lines)
     call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', v:false)
     
-    " Auto-scroll if enabled
-    if genero_tools#config#get('debug_stream_auto_scroll')
-      let line_count = len(all_lines)
-      if line_count > 0
-        call nvim_win_set_cursor(s:debug_stream_state.window_id, [line_count, 0])
-      endif
+    " Auto-scroll to end (always keep focus on final line)
+    let line_count = len(all_lines)
+    if line_count > 0
+      call nvim_win_set_cursor(s:debug_stream_state.window_id, [line_count, 0])
     endif
   catch
     " Silently ignore if buffer is closed
@@ -209,4 +207,115 @@ function! genero_tools#debug_stream#status() abort
     \ 'lines': len(s:debug_stream_state.lines),
     \ 'window_id': s:debug_stream_state.window_id
     \ }
+endfunction
+
+" Select debug file from directory
+function! genero_tools#debug_stream#select_file() abort
+  let debug_dir = genero_tools#config#get('debug_stream_directory')
+  
+  " Expand path
+  let debug_dir = expand(debug_dir)
+  
+  " Check if directory exists
+  if !isdirectory(debug_dir)
+    call genero_tools#error#log('Debug directory not found: ' . debug_dir)
+    return
+  endif
+  
+  " Get list of files in debug directory
+  let files = glob(debug_dir . '/*', 0, 1)
+  
+  " Filter to only files (not directories)
+  let files = filter(files, '!isdirectory(v:val)')
+  
+  if empty(files)
+    call genero_tools#error#log('No files found in debug directory: ' . debug_dir)
+    return
+  endif
+  
+  " Sort by modification time (most recent first)
+  let files = sort(files, function('s:sort_by_mtime'))
+  
+  " Get just the filenames
+  let file_names = map(copy(files), 'fnamemodify(v:val, ":t")')
+  
+  " Create floating window for selection
+  call s:show_file_selector(file_names, files)
+endfunction
+
+" Sort files by modification time (most recent first)
+function! s:sort_by_mtime(a, b) abort
+  let mtime_a = getftime(a:a)
+  let mtime_b = getftime(a:b)
+  return mtime_b - mtime_a
+endfunction
+
+" Show file selector in floating window
+function! s:show_file_selector(file_names, file_paths) abort
+  " Create buffer for file list
+  let buf = nvim_create_buf(v:false, v:true)
+  
+  " Set buffer content
+  call nvim_buf_set_lines(buf, 0, -1, v:false, a:file_names)
+  
+  " Get window dimensions
+  let width = 40
+  let height = min([len(a:file_names) + 2, 20])
+  let row = ((&lines - height) / 2) - 1
+  let col = (&columns - width) / 2
+  
+  " Create floating window
+  let opts = {
+    \ 'relative': 'editor',
+    \ 'width': width,
+    \ 'height': height,
+    \ 'row': row,
+    \ 'col': col,
+    \ 'style': 'minimal',
+    \ 'border': 'rounded'
+    \ }
+  
+  let win = nvim_open_win(buf, v:true, opts)
+  
+  " Set buffer options
+  call nvim_buf_set_option(buf, 'modifiable', v:false)
+  call nvim_buf_set_option(buf, 'buftype', 'nofile')
+  
+  " Set window options
+  call nvim_win_set_option(win, 'cursorline', v:true)
+  
+  " Store file paths for selection
+  let b:file_paths = a:file_paths
+  
+  " Set keybindings for selection
+  nnoremap <buffer> <CR> :call <SID>select_file_from_list()<CR>
+  nnoremap <buffer> <Esc> :call <SID>close_file_selector()<CR>
+  nnoremap <buffer> q :call <SID>close_file_selector()<CR>
+  
+  " Move cursor to first line
+  call nvim_win_set_cursor(win, [1, 0])
+endfunction
+
+" Select file from list
+function! s:select_file_from_list() abort
+  let line_num = line('.')
+  let file_paths = b:file_paths
+  
+  if line_num > 0 && line_num <= len(file_paths)
+    let selected_file = file_paths[line_num - 1]
+    
+    " Close selector window
+    call s:close_file_selector()
+    
+    " Start debug stream with selected file
+    call genero_tools#debug_stream#start(selected_file)
+  endif
+endfunction
+
+" Close file selector window
+function! s:close_file_selector() abort
+  try
+    close
+  catch
+  endtry
 endfunction

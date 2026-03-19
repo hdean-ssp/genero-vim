@@ -59,6 +59,16 @@ Open a debug stream for a file:
 
 The debug window will open in a vertical split on the right side and automatically update as new content is appended to the file.
 
+### Select and Open Debug File
+
+Show an interactive floating window to select a debug file from the configured debug directory:
+
+```vim
+:GeneroDebugStreamSelect
+```
+
+This displays a floating window with files from the debug directory, sorted by modification time (most recent first). Use arrow keys or `j`/`k` to navigate, then press `Enter` to open the selected file. Press `Esc` or `q` to close the selector without opening a file.
+
 ### Toggle Debug Stream
 
 Use the keybinding to quickly toggle the debug stream:
@@ -67,10 +77,11 @@ Use the keybinding to quickly toggle the debug stream:
 <space>gd    " Toggle debug stream (if keybindings enabled)
 ```
 
-Or use the command:
+Or use the command with optional file path:
 
 ```vim
-:GeneroDebugStreamToggle
+:GeneroDebugStreamToggle                " Shows file selection menu
+:GeneroDebugStreamToggle /path/to/file  " Opens specific file
 ```
 
 ### Clear Output
