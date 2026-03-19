@@ -60,6 +60,7 @@ if has('nvim')
   command! -nargs=? GeneroDebugStream call genero_tools#debug_stream#start(<q-args>)
   command! GeneroDebugStreamStop call genero_tools#debug_stream#stop()
   command! GeneroDebugStreamToggle call genero_tools#debug_stream#toggle(genero_tools#config#get('debug_stream_directory') . '/debug.log')
+  command! GeneroDebugStreamSelect call genero_tools#commands#debug_stream_select()
   command! GeneroDebugStreamClear call genero_tools#debug_stream#clear()
   command! GeneroDebugStreamStatus call genero_tools#debug_stream#status()
 endif

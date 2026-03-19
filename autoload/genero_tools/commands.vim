@@ -104,3 +104,54 @@ endfunction
 function! genero_tools#commands#prev_error() abort
   call genero_tools#compiler#quickfix#prev()
 endfunction
+
+" GeneroDebugStreamSelect command - select and open debug file
+function! genero_tools#commands#debug_stream_select() abort
+  let debug_dir = genero_tools#config#get('debug_stream_directory')
+  
+  " Expand path
+  let debug_dir = expand(debug_dir)
+  
+  " Check if directory exists
+  if !isdirectory(debug_dir)
+    call genero_tools#error#log('Debug directory not found: ' . debug_dir)
+    return
+  endif
+  
+  " Get list of files in debug directory
+  let files = glob(debug_dir . '/*', 0, 1)
+  
+  " Filter to only files (not directories)
+  let files = filter(files, '!isdirectory(v:val)')
+  
+  " Get just the filenames
+  let file_names = map(copy(files), 'fnamemodify(v:val, ":t")')
+  
+  if empty(file_names)
+    call genero_tools#error#log('No files found in debug directory: ' . debug_dir)
+    return
+  endif
+  
+  " Show menu for user to select
+  call inputsave()
+  let choice = inputlist(map(copy(file_names), 'v:key + 1 . ". " . v:val'))
+  call inputrestore()
+  
+  if choice > 0 && choice <= len(file_names)
+    let selected_file = files[choice - 1]
+    call genero_tools#debug_stream#start(selected_file)
+  endif
+endfunction
+
+" GeneroDebugStreamToggle command - toggle debug streaming
+function! genero_tools#commands#debug_stream_toggle(args) abort
+  let file_path = empty(a:args) ? '' : a:args
+  
+  if empty(file_path)
+    " If no file specified, show selection menu
+    call genero_tools#commands#debug_stream_select()
+  else
+    " Use specified file
+    call genero_tools#debug_stream#toggle(file_path)
+  endif
+endfunction

@@ -11,7 +11,9 @@ Debug streaming opens a split window that automatically updates as new content i
 ## Commands
 
 ```vim
-:GeneroDebugStreamToggle                " Toggle debug stream window on/off
+:GeneroDebugStreamToggle                " Toggle debug stream window on/off (shows file selection menu)
+:GeneroDebugStreamToggle {file}         " Toggle debug stream for a specific file
+:GeneroDebugStreamSelect                " Select and open a debug file from the debug directory
 :GeneroDebugStreamOpen {file}           " Open debug stream for a specific file
 :GeneroDebugStreamClose                 " Close the debug stream window
 :GeneroDebugStreamClear                 " Clear all debug output from the window
