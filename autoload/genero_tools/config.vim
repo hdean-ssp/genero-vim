@@ -47,7 +47,7 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('floating_window_title', 'Genero-Tools')
   call genero_tools#config#init_key('popup_auto_close_delay', 5000)
   call genero_tools#config#init_key('debug_stream_enabled', 0)
-  call genero_tools#config#init_key('debug_stream_width', 33)
+  call genero_tools#config#init_key('debug_stream_width', 0)
   call genero_tools#config#init_key('debug_stream_max_lines', 1000)
   call genero_tools#config#init_key('debug_stream_auto_scroll', 1)
   call genero_tools#config#init_key('debug_stream_directory', './debug')
@@ -165,7 +165,7 @@ function! genero_tools#config#get(key) abort
   elseif a:key == 'debug_stream_enabled'
     return 0
   elseif a:key == 'debug_stream_width'
-    return 33
+    return 0
   elseif a:key == 'debug_stream_max_lines'
     return 1000
   elseif a:key == 'debug_stream_auto_scroll'

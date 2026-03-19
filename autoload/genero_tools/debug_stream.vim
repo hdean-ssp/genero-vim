@@ -25,8 +25,6 @@ endfunction
 
 " Start debug streaming
 function! genero_tools#debug_stream#start(file_path) abort
-  echom 'DEBUG: genero_tools#debug_stream#start called with: ' . a:file_path
-  
   if s:debug_stream_state.enabled
     call genero_tools#debug_stream#stop()
   endif
@@ -39,26 +37,17 @@ function! genero_tools#debug_stream#start(file_path) abort
   
   " Create split window with configured width (1/3 of screen if not set)
   let width = genero_tools#config#get('debug_stream_width')
-  echom 'DEBUG: config width = ' . width
-  
   if width <= 0
     " Calculate 1/3 of available width, minimum 50 columns
     let available_width = &columns
     let width = max([available_width / 3, 50])
-    echom 'DEBUG: calculated width = ' . width . ' (columns=' . available_width . ')'
   endif
   
   " Create the split
-  echom 'DEBUG: executing vsplit with width ' . width
   execute 'rightbelow ' . width . 'vsplit'
   
   " Explicitly set the window width
-  echom 'DEBUG: resizing to ' . width
   execute 'vertical resize ' . width
-  
-  " Verify the resize worked
-  let actual_width = winwidth(0)
-  echom 'DEBUG: actual window width = ' . actual_width
   
   " Create buffer
   let buf = nvim_create_buf(0, 1)
