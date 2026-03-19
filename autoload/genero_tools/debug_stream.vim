@@ -52,8 +52,8 @@ function! genero_tools#debug_stream#start(file_path) abort
   
   " Set buffer options
   call nvim_buf_set_option(buf, 'buftype', 'nofile')
-  call nvim_buf_set_option(buf, 'modifiable', 0)
-  call nvim_buf_set_option(buf, 'swapfile', 0)
+  call nvim_buf_set_option(buf, 'modifiable', v:false)
+  call nvim_buf_set_option(buf, 'swapfile', v:false)
   
   " Set window options
   call nvim_win_set_option(s:debug_stream_state.window_id, 'wrap', 1)
@@ -147,9 +147,9 @@ function! s:update_debug_stream(timer_id) abort
   
   " Update buffer
   try
-    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', 1)
+    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', v:true)
     call nvim_buf_set_lines(s:debug_stream_state.buffer_id, 0, -1, 0, all_lines)
-    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', 0)
+    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', v:false)
     
     " Auto-scroll if enabled
     if genero_tools#config#get('debug_stream_auto_scroll')
@@ -170,9 +170,9 @@ function! genero_tools#debug_stream#clear() abort
   let s:debug_stream_state.last_size = 0
   
   try
-    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', 1)
+    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', v:true)
     call nvim_buf_set_lines(s:debug_stream_state.buffer_id, 0, -1, 0, [])
-    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', 0)
+    call nvim_buf_set_option(s:debug_stream_state.buffer_id, 'modifiable', v:false)
   catch
   endtry
   
