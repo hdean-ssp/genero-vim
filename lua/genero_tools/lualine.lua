@@ -25,39 +25,49 @@ local function get_diagnostic_counts()
   return { errors = errors, warnings = warnings }
 end
 
--- Format diagnostics for lualine display
+-- Format diagnostics for lualine display with background colors
 function M.diagnostics()
   local counts = get_diagnostic_counts()
-  local parts = {}
-
-  if counts.errors > 0 then
-    table.insert(parts, { 'E' .. counts.errors, 'lualine_diagnostics_error' })
-  end
-
-  if counts.warnings > 0 then
-    table.insert(parts, { 'W' .. counts.warnings, 'lualine_diagnostics_warn' })
-  end
-
-  if #parts == 0 then
+  
+  if counts.errors == 0 and counts.warnings == 0 then
     return ''
   end
 
-  -- Format as a single string with color codes
-  local result = ''
-  for i, part in ipairs(parts) do
-    if i > 1 then
-      result = result .. ' '
-    end
-    result = result .. part[1]
+  -- Build display string with color codes
+  local parts = {}
+  
+  if counts.errors > 0 then
+    table.insert(parts, '%#GeneroLualineError# E' .. counts.errors .. ' %*')
   end
 
-  return result
+  if counts.warnings > 0 then
+    table.insert(parts, '%#GeneroLualineWarning# W' .. counts.warnings .. ' %*')
+  end
+
+  return table.concat(parts, '')
+end
+
+-- Setup highlight groups for lualine
+function M.setup_highlights()
+  -- Error highlight: red background, white text
+  vim.api.nvim_set_hl(0, 'GeneroLualineError', {
+    bg = '#ff0000',
+    fg = '#ffffff',
+    bold = true,
+  })
+  
+  -- Warning highlight: yellow background, black text
+  vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
+    bg = '#ffff00',
+    fg = '#000000',
+    bold = true,
+  })
 end
 
 -- Setup lualine integration
 function M.setup()
-  -- This function is called from the lualine config
-  -- It registers the custom component
+  -- Initialize highlight groups
+  M.setup_highlights()
 end
 
 return M

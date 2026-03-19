@@ -67,18 +67,19 @@ function! genero_tools#svn#cache_clear() abort
   call genero_tools#svn#cache#clear()
 endfunction
 
-" Setup autocommand for file save
+" Setup autocommand for file save and buffer entry
 function! genero_tools#svn#setup_autocommand() abort
-  " Only setup if auto_update is enabled
-  if !genero_tools#config#get('svn_auto_update')
-    return
-  endif
-  
   " Create autocommand group for SVN
   augroup genero_svn_autocommand
     autocmd!
-    " Update SVN signs on file save
-    autocmd BufWritePost * call genero_tools#svn#on_file_save()
+    
+    " Load SVN signs when entering a buffer (for genero files)
+    autocmd BufEnter *.fgl,*.4gl call genero_tools#svn#load_signs_for_buffer(bufnr('%'))
+    
+    " Update SVN signs on file save if auto_update is enabled
+    if genero_tools#config#get('svn_auto_update')
+      autocmd BufWritePost * call genero_tools#svn#on_file_save()
+    endif
   augroup END
 endfunction
 

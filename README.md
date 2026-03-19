@@ -6,6 +6,8 @@ A vim plugin that brings modern IDE capabilities to the classic vim editor for G
 
 ## Quick Start
 
+**New to the plugin?** See the [Developer Quick Reference](docs/DEVELOPER_QUICK_REFERENCE.md) for a concise command and keybinding cheat sheet.
+
 ```vim
 :GeneroLookup myFunction
 <leader>gl  " Lookup function under cursor

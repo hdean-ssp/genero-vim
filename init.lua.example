@@ -179,6 +179,7 @@ local plugins = {
     version = "v0.9.*",
     config = function()
       local lualine_genero = require("genero_tools.lualine")
+      lualine_genero.setup()  -- Initialize highlights
       
       require("lualine").setup({
         options = {
