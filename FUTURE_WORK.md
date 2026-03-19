@@ -55,86 +55,21 @@ compiler_form_args = ['-M', '-W', 'all']
 
 ### Task 28: Debug File Streaming Feature
 
-**Priority:** HIGH | **Complexity:** High | **Effort:** 8-10 hours
+**Priority:** HIGH | **Complexity:** High | **Effort:** 8-10 hours | **Status:** ✅ COMPLETED
 
 **Objective:** Stream debug output from files in a 1/3 width split window
 
-**Current Issue:** Developers output debug info to files, no way to view while coding
-
-**Target State:** Split window streams live changes from debug files with auto-scroll
-
-**Implementation Phases:**
-1. Configuration & setup - 1.5 hours
-2. File watcher implementation - 3 hours
-3. UI implementation (split window, auto-scroll) - 3 hours
-4. Commands & keybindings - 1.5 hours
-5. Testing & documentation - 1.5 hours
-
-**Configuration Options:**
-```vim
-debug_stream_enabled = false
-debug_stream_directory = './debug'
-debug_stream_width = 33  " 1/3 width
-debug_stream_auto_scroll = true
-debug_stream_max_lines = 1000
-debug_stream_refresh_interval = 500
-```
-
-**Commands:**
-- `:GeneroDebugStreamOpen` - Open debug window
-- `:GeneroDebugStreamClose` - Close debug window
-- `:GeneroDebugStreamToggle` - Toggle debug window
-- `:GeneroDebugStreamClear` - Clear debug output
-
-**Success Criteria:**
-- ✓ Debug window opens and displays file content
-- ✓ Window updates when debug files change
-- ✓ Auto-scroll works correctly
-- ✓ Multiple debug files can be monitored
-- ✓ Window can be toggled open/closed
+**Implementation:** Already implemented in `autoload/genero_tools/debug_stream.vim`
 
 ---
 
-## 📊 Medium Priority Tasks
-
 ### Task 19: SVN Diff Markers Feature
 
-**Priority:** MEDIUM | **Complexity:** Medium | **Effort:** 6-8 hours
+**Priority:** MEDIUM | **Complexity:** Medium | **Effort:** 6-8 hours | **Status:** ✅ COMPLETED
 
 **Objective:** Display SVN diff markers in sign column
 
-**Current State:** No SVN integration, no diff markers
-
-**Target State:** Detect SVN working copies, display added/modified/deleted markers
-
-**Implementation Phases:**
-1. SVN detection - 1.5 hours
-2. Diff retrieval and parsing - 2 hours
-3. Sign display integration - 2 hours
-4. Commands and caching - 1.5 hours
-5. Testing & documentation - 1 hour
-
-**Configuration Options:**
-```vim
-svn_enabled = true
-svn_show_added = true
-svn_show_modified = true
-svn_show_deleted = true
-svn_cache_ttl = 300
-svn_auto_update = true
-```
-
-**Commands:**
-- `:GeneroSVNRefresh` - Refresh SVN markers
-- `:GeneroSVNToggle` - Toggle SVN markers
-- `:GeneroSVNStatus` - Show SVN status
-
-**Success Criteria:**
-- ✓ SVN working copies detected
-- ✓ Diff markers appear in sign column
-- ✓ Added/modified/deleted distinguished
-- ✓ Caching works correctly
-- ✓ No conflicts with compiler signs
+**Implementation:** Already implemented in `autoload/genero_tools/svn/` module
 
 ---
 
@@ -143,9 +78,9 @@ svn_auto_update = true
 | Task | Priority | Complexity | Effort | Status |
 |------|----------|------------|--------|--------|
 | Task 20: .per File Support | HIGH | Medium | 5-7 hrs | Not Started |
-| Task 28: Debug Streaming | HIGH | High | 8-10 hrs | Not Started |
-| Task 19: SVN Diff Markers | MEDIUM | Medium | 6-8 hrs | Not Started |
-| **Total** | - | - | **19-25 hrs** | - |
+| Task 28: Debug Streaming | HIGH | High | 8-10 hrs | ✅ COMPLETED |
+| Task 19: SVN Diff Markers | MEDIUM | Medium | 6-8 hrs | ✅ COMPLETED |
+| **Total Remaining** | - | - | **5-7 hrs** | - |
 
 ---
 
@@ -155,11 +90,11 @@ svn_auto_update = true
 - Highest priority, medium complexity
 - Enables form file compilation
 
-**Phase 2 (Week 3-4):** Task 28 - Debug Streaming
+**Phase 2 (Completed):** Task 28 - Debug Streaming ✅
 - High priority, high complexity
 - Improves developer debugging
 
-**Phase 3 (Week 5-6):** Task 19 - SVN Diff Markers
+**Phase 3 (Completed):** Task 19 - SVN Diff Markers ✅
 - Medium priority, medium complexity
 - Adds version control integration
 
@@ -174,8 +109,8 @@ svn_auto_update = true
 
 ---
 
-**Status:** Future Tasks Identified  
+**Status:** Future Tasks Identified - Only Task 20 Remaining  
 **Date:** March 19, 2026  
-**Total Future Effort:** 19-25 hours  
-**Ready for:** Next Phase of Development
+**Total Remaining Effort:** 5-7 hours  
+**Ready for:** Task 20 Implementation
 
