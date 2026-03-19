@@ -19,7 +19,7 @@ function! genero_tools#hints#config#init() abort
   
   " Individual hint checks (1 = enabled, 0 = disabled)
   call genero_tools#hints#config#init_key('trailing_whitespace', 1)
-  call genero_tools#hints#config#init_key('mixed_indentation', 1)
+  call genero_tools#hints#config#init_key('mixed_indentation', 0)
   call genero_tools#hints#config#init_key('indentation_consistency', 1)
   call genero_tools#hints#config#init_key('multiple_blank_lines', 1)
   call genero_tools#hints#config#init_key('lowercase_keywords', 0)
@@ -73,7 +73,7 @@ function! genero_tools#hints#config#get_default(key) abort
     \ 'auto_fix_enabled': 1,
     \ 'hints_delay': 500,
     \ 'trailing_whitespace': 1,
-    \ 'mixed_indentation': 1,
+    \ 'mixed_indentation': 0,
     \ 'indentation_consistency': 1,
     \ 'multiple_blank_lines': 1,
     \ 'lowercase_keywords': 0,
