@@ -176,6 +176,8 @@ function! s:trigger_autocomplete(timer_id) abort
   
   " Check if cursor position hasn't changed
   if col('.') == s:autocomplete_state.last_col && line('.') == s:autocomplete_state.last_line
+    " Ensure our omnifunc is set
+    setlocal omnifunc=genero_tools#complete#omnifunc
     " Trigger completion
     call feedkeys("\<C-x>\<C-o>", 'n')
   endif

@@ -572,6 +572,7 @@ AUTOCOMPLETE:
     Up/Down       - Navigate suggestions
     Enter         - Accept selected suggestion
     Esc           - Close completion menu
+  Auto-completion triggers after 500ms pause (configurable)
 
 DEBUG STREAMING:
   Space+gd        - Toggle debug stream on/off
