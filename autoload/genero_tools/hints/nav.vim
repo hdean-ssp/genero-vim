@@ -91,8 +91,9 @@ function! genero_tools#hints#nav#list() abort
     call add(formatted, line_text)
   endfor
   
-  " Display in popup
-  call genero_tools#display#result({'success': 1, 'data': formatted}, 'popup')
+  " Use configured display mode
+  let display_mode = genero_tools#config#get('display_mode')
+  call genero_tools#display#result({'success': 1, 'data': formatted}, display_mode)
 endfunction
 
 " Show details for hint at cursor
@@ -133,6 +134,7 @@ function! genero_tools#hints#nav#details() abort
   call add(details, 'Severity: ' . hint_at_cursor.severity)
   call add(details, 'Message: ' . hint_at_cursor.message)
   
-  " Display details as inline popup
-  call genero_tools#display#result({'success': 1, 'data': details}, 'inline')
+  " Use configured display mode
+  let display_mode = genero_tools#config#get('display_mode')
+  call genero_tools#display#result({'success': 1, 'data': details}, display_mode)
 endfunction

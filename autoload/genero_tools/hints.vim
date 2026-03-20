@@ -261,7 +261,9 @@ function! genero_tools#hints#help(hint_name) abort
     let help_text = genero_tools#hints#get_help_for_hint(a:hint_name)
   endif
   
-  call genero_tools#display#result({'success': 1, 'data': help_text}, 'popup')
+  " Use configured display mode
+  let display_mode = genero_tools#config#get('display_mode')
+  call genero_tools#display#result({'success': 1, 'data': help_text}, display_mode)
 endfunction
 
 " Get help text for a specific hint
