@@ -167,6 +167,11 @@ end
 
 -- Display help for a specific snippet
 function M.show_help(trigger)
+  -- Handle case where trigger is passed as array from luaeval
+  if type(trigger) == 'table' and trigger[1] then
+    trigger = trigger[1]
+  end
+  
   if not M.snippets then
     vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
     return
@@ -233,6 +238,11 @@ end
 
 -- Expand a snippet by name/trigger
 function M.expand_by_name(trigger)
+  -- Handle case where trigger is passed as array from luaeval
+  if type(trigger) == 'table' and trigger[1] then
+    trigger = trigger[1]
+  end
+  
   if not M.luasnip then
     vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
     return false
