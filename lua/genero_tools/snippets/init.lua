@@ -13,11 +13,7 @@ function M.setup()
   -- Check if LuaSnip is available
   local ok, luasnip = pcall(require, 'luasnip')
   if not ok then
-    vim.notify(
-      'LuaSnip not found. Install LuaSnip to use snippet features: https://github.com/L3MON4D3/LuaSnip',
-      vim.log.levels.WARN,
-      { title = 'Genero-Tools Snippets' }
-    )
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not found. Install LuaSnip to use snippet features: https://github.com/L3MON4D3/LuaSnip')
     return
   end
 
@@ -78,13 +74,13 @@ end
 -- Expand snippet by trigger
 function M.expand_snippet(trigger)
   if not M.luasnip then
-    vim.notify('LuaSnip not available', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available')
     return false
   end
 
   local snippet = M.get_snippet(trigger)
   if not snippet then
-    vim.notify('Snippet not found: ' .. trigger, vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet not found: ' .. trigger)
     return false
   end
 
@@ -128,7 +124,7 @@ end
 -- List all available snippets in a formatted display
 function M.list_snippets_display()
   if not M.snippets then
-    vim.notify('No snippets loaded', vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
     return
   end
 
@@ -172,13 +168,13 @@ end
 -- Display help for a specific snippet
 function M.show_help(trigger)
   if not M.snippets then
-    vim.notify('No snippets loaded', vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
     return
   end
 
   local snippet = M.snippets[trigger]
   if not snippet then
-    vim.notify('Snippet not found: ' .. trigger, vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet not found: ' .. trigger)
     return
   end
 
@@ -238,18 +234,18 @@ end
 -- Expand a snippet by name/trigger
 function M.expand_by_name(trigger)
   if not M.luasnip then
-    vim.notify('LuaSnip not available. Install LuaSnip to use snippet expansion.', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
     return false
   end
 
   local snippet = M.get_snippet(trigger)
   if not snippet then
-    vim.notify('Snippet not found: ' .. trigger, vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet not found: ' .. trigger)
     return false
   end
 
   if not snippet.body then
-    vim.notify('Snippet has no body: ' .. trigger, vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet has no body: ' .. trigger)
     return false
   end
 
@@ -269,7 +265,7 @@ function M.expand_by_name(trigger)
   end
 
   if #lines == 0 then
-    vim.notify('Snippet body is empty: ' .. trigger, vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty: ' .. trigger)
     return false
   end
 
