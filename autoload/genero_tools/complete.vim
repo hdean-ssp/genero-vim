@@ -110,59 +110,42 @@ function! genero_tools#complete#get_external_completions(base) abort
     endif
     
     let completions = []
-    
-    " Search project-wide functions
-    let cache_key = 'search-functions:' . a:base
-    let cached = genero_tools#cache#get(cache_key)
-    
-    if empty(cached)
-      let result = genero_tools#command#execute_shell('search-functions', [a:base . '*'])
-      if result.success
-        call genero_tools#cache#set(cache_key, result)
-        let search_results = result.data
-      else
-        return []
-      endif
-    else
-      let search_results = cached.data
-    endif
-    
-    " Filter and limit to top 10-20 closest matches
     let current_file = expand('%:p')
-    let matches = []
     
-    if type(search_results) == type([])
-      for func in search_results
-        if type(func) == type({}) && has_key(func, 'name')
-          " Skip functions from current file (already shown)
-          let func_file = get(func, 'file', '')
-          if func_file != current_file
-            if func.name =~? '^' . a:base
-              call add(matches, func)
-            endif
-          endif
-        endif
-      endfor
+    " Search project-wide functions using query.sh
+    let result = genero_tools#command#execute_shell('search-functions', [a:base])
+    
+    if !result.success
+      return []
     endif
     
-    " Sort by relevance (exact prefix match first, then substring)
-    let exact_matches = filter(copy(matches), 'v:val.name =~? "^' . a:base . '$"')
-    let prefix_matches = filter(copy(matches), 'v:val.name =~? "^' . a:base . '" && v:val.name !=? "' . a:base . '"')
-    let other_matches = filter(copy(matches), 'v:val.name !~? "^' . a:base . '"')
+    let search_results = result.data
     
-    let sorted_matches = exact_matches + prefix_matches + other_matches
+    if type(search_results) != type([])
+      return []
+    endif
+    
+    " Filter results: only include functions from other files that match the base
+    let matches = []
+    for func in search_results
+      if type(func) == type({}) && has_key(func, 'name')
+        let func_file = get(func, 'file', '')
+        " Include functions from other files that start with the base
+        if func_file != current_file && func.name =~? '^' . a:base
+          call add(matches, func)
+        endif
+      endif
+    endfor
     
     " Limit to 20 results
-    let limited_matches = sorted_matches[0:19]
+    let limited_matches = matches[0:19]
     
     " Format completions
     for func in limited_matches
-      " Format complete info for hover/selection
       let complete_info = genero_tools#signature#format_complete_info(func)
       let param_count = genero_tools#signature#param_count(func)
       let return_count = genero_tools#signature#return_count(func)
       
-      " Format menu label with parameter count - this is what shows in the menu
       let menu_label = func.name . '(' . param_count . ' params)'
       if return_count > 0
         let menu_label .= ' -> ' . return_count . ' return'
@@ -249,6 +232,11 @@ function! genero_tools#complete#setup_auto() abort
   " Always set omnifunc for Ctrl+N to work
   call genero_tools#complete#enable()
   
+  " Clear any existing autocmds for this buffer
+  augroup GeneroAutoComplete
+    autocmd! * <buffer>
+  augroup END
+  
   " Only setup pause-based autocomplete if explicitly enabled
   if !genero_tools#config#get('autocomplete_on_pause')
     return
@@ -264,24 +252,17 @@ endfunction
 
 " Setup completion preview window
 function! genero_tools#complete#setup_preview() abort
-  " Enable preview window for completion info
-  set completeopt=menu,menuone,preview,noinsert,noselect
-  
-  " Setup autocmd to update preview on completion selection
-  augroup GeneroCompletePreview
-    autocmd!
-    autocmd CompleteDone <buffer> call s:on_complete_done()
-  augroup END
-endfunction
-
-" Handle completion done event
-function! s:on_complete_done() abort
-  " Preview window is automatically managed by Vim
-  " Just ensure it stays visible during selection
+  " Enable preview window for completion info (buffer-local)
+  setlocal completeopt=menu,menuone,preview,noinsert,noselect
 endfunction
 
 " Handle text changed event
 function! s:on_text_changed() abort
+  " Guard: only run if pause-based autocomplete is enabled
+  if !genero_tools#config#get('autocomplete_on_pause')
+    return
+  endif
+  
   " Cancel existing timer
   if s:autocomplete_state.timer_id != -1
     call timer_stop(s:autocomplete_state.timer_id)
