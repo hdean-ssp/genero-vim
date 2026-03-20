@@ -78,73 +78,7 @@ This document consolidates all identified future tasks, enhancements, and known 
 
 ---
 
-### 4. Customizable Keybinding Categories
-**Status**: Not started  
-**Category**: UI/UX Enhancement  
-**Effort**: Low (2-3 hours)
-
-**Description**: Allow users to define custom categories for which-key integration
-
-**Related**: which-key integration (already implemented)
-
-**Use Case**: Better organization of keybindings for large projects
-
----
-
-## Low Priority
-
-### 5. Resizable/Draggable Windows
-**Status**: Not started  
-**Category**: UI Enhancement  
-**Effort**: Medium (4-6 hours)
-
-**Description**: Make floating windows resizable and draggable for better UX
-
-**Use Case**: Users can customize window layout to their preference
-
----
-
-### 6. Machine Learning-Based Hints
-**Status**: Not started  
-**Category**: Advanced Feature  
-**Effort**: High (12+ hours)
-
-**Description**: Learn coding patterns and suggest hints based on project style
-
-**Use Case**: Personalized code quality suggestions
-
----
-
-### 7. Vim-Compatible Alternatives for Neovim-Only Features
-**Status**: Not started  
-**Category**: Compatibility  
-**Effort**: High (8-12 hours)
-
-**Description**: Add Vim-compatible implementations for Neovim-only features (snippets, debug streaming, etc.)
-
-**Current Neovim-Only Features**:
-- Code snippets with LuaSnip
-- Debug streaming
-- Lua layer features
-
-**Use Case**: Support for Vim users
-
----
-
-### 8. Alternative Snippet Engines
-**Status**: Not started  
-**Category**: Feature Enhancement  
-**Effort**: Medium (6-8 hours)
-
-**Description**: Add support for other snippet engines (vim-snipmate, vim-vsnip)
-
-**Current**: LuaSnip only (Neovim)
-
-**Use Case**: Users with different snippet engine preferences
-
----
-
-### 9. Incremental Caching for Large Codebases
+### 4. Incremental Caching for Large Codebases
 **Status**: Not started  
 **Category**: Performance  
 **Effort**: Medium (6-8 hours)
@@ -157,7 +91,7 @@ This document consolidates all identified future tasks, enhancements, and known 
 
 ---
 
-### 10. Result Filtering
+### 5. Result Filtering
 **Status**: Not started  
 **Category**: Feature Enhancement  
 **Effort**: Low (2-4 hours)
@@ -170,7 +104,7 @@ This document consolidates all identified future tasks, enhancements, and known 
 
 ## Documentation & Testing
 
-### 11. Expand Documentation
+### 6. Expand Documentation
 **Status**: Ongoing  
 **Category**: Documentation  
 **Effort**: Low (2-4 hours per topic)
@@ -184,7 +118,7 @@ This document consolidates all identified future tasks, enhancements, and known 
 
 ---
 
-### 12. Vim Compatibility Testing
+### 7. Vim Compatibility Testing
 **Status**: Not started  
 **Category**: Testing  
 **Effort**: Medium (4-6 hours)
@@ -230,4 +164,4 @@ When implementing future tasks:
 2. Git diff markers (complements existing SVN feature)
 3. Multiple debug windows (useful for complex debugging)
 4. Result filtering (improves usability)
-5. Alternative snippet engines (expands compatibility)
+5. Incremental caching (performance improvement)
