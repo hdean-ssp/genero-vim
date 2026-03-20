@@ -67,7 +67,7 @@ vim.g.genero_tools_config = {
   
   -- Code hints configuration
   hints_enabled = true,
-  hints_display = "signs",              -- Display mode: "signs", "virtual_text", "both"
+  hints_display = "both",               -- Display mode: "signs", "virtual_text", "both"
   hints_severity = "warning",           -- Severity level: "info", "warning", "style"
   hints_realtime = true,                -- Enable real-time detection
   hints_cache_enabled = true,           -- Enable hint caching
@@ -77,25 +77,25 @@ vim.g.genero_tools_config = {
   
   -- Individual hint checks (true = enabled, false = disabled)
   trailing_whitespace = true,           -- Detect trailing whitespace
-  mixed_indentation = true,             -- Detect mixed tabs/spaces
-  indentation_consistency = true,       -- Detect inconsistent indentation
-  multiple_blank_lines = true,          -- Detect excessive blank lines
-  lowercase_keywords = true,            -- Detect lowercase keywords
-  lowercase_functions = true,           -- Detect lowercase functions
-  keyword_consistency = true,           -- Detect inconsistent casing
+  mixed_indentation = false,            -- Detect mixed tabs/spaces
+  indentation_consistency = false,      -- Detect inconsistent indentation
+  multiple_blank_lines = false,         -- Detect excessive blank lines
+  lowercase_keywords = false,           -- Detect lowercase keywords
+  lowercase_functions = false,          -- Detect lowercase functions
+  keyword_consistency = false,          -- Detect inconsistent casing
   naming_convention = false,            -- Detect naming violations
-  unclosed_blocks = true,               -- Detect unclosed blocks
-  nesting_depth = true,                 -- Detect excessive nesting
+  unclosed_blocks = false,              -- Detect unclosed blocks
+  nesting_depth = false,                -- Detect excessive nesting
   line_length = true,                   -- Detect long lines
   missing_comments = false,             -- Detect missing comments
   missing_error_handling = false,       -- Detect missing error handling
-  deprecated_functions = true,          -- Detect deprecated functions
+  deprecated_functions = false,         -- Detect deprecated functions
   
   -- Hint thresholds
   max_line_length = 100,                -- Maximum line length
   max_nesting_depth = 5,                -- Maximum nesting depth
   max_blank_lines = 2,                  -- Maximum consecutive blank lines
-  naming_convention_style = "camelCase", -- Naming style: "camelCase", "snake_case"
+  naming_convention_style = "snake_case", -- Naming style: "camelCase", "snake_case"
   
   -- Cache settings
   cache_enabled = true,                 -- Enable result caching
@@ -114,13 +114,13 @@ vim.g.genero_tools_config = {
   
   -- Query tool path (adjust if needed)
   -- Default: uses BRODIR environment variable
-  genero_tools_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
+  -- genero_tools_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
   
   -- Uncomment and adjust the line below if your query.sh is in a custom location
-  -- genero_tools_path = vim.fn.expand("~/personal/genero-tools/query.sh"),
+  genero_tools_path = vim.fn.expand("~/personal/genero-tools/query.sh"),
   
   -- Display and features
-  display_mode = "popup",  -- Use popup windows for results (valid modes: quickfix, popup, split, echo, inline)
+  display_mode = "inline",  -- Use inline windows for results (valid modes: quickfix, popup, split, echo, inline)
   snippets_enabled = true,
   snippet_engine = "luasnip",            -- Snippet engine: "luasnip", "vim-snipmate", "vim-vsnip"
   snippet_smart_expansion = true,        -- Enable async parameter population
