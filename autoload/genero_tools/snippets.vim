@@ -45,7 +45,7 @@ function! genero_tools#snippets#help(trigger) abort
   endif
 
   try
-    call luaeval('require("genero_tools.snippets").show_help(...)', [a:trigger])
+    call luaeval('require("genero_tools.snippets").show_help(...)', a:trigger)
   catch
     call genero_tools#error#error('Snippets', 'Error showing snippet help: ' . v:exception)
   endtry
@@ -69,7 +69,7 @@ function! genero_tools#snippets#expand(trigger) abort
   endif
 
   try
-    call luaeval('require("genero_tools.snippets").expand_by_name(...)', [a:trigger])
+    call luaeval('require("genero_tools.snippets").expand_by_name(...)', a:trigger)
   catch
     call genero_tools#error#error('Snippets', 'Error expanding snippet: ' . v:exception)
   endtry
