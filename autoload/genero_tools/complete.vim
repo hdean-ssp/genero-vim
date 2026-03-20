@@ -92,12 +92,9 @@ function! genero_tools#complete#get_completions(base) abort
       endfor
     endif
     
-    " Always try to get external completions as fallback
-    " If no current file matches, query external files
-    if empty(completions)
-      let external = genero_tools#complete#get_external_completions(a:base)
-      let completions = external
-    endif
+    " Always query external files to supplement current file matches
+    let external = genero_tools#complete#get_external_completions(a:base)
+    let completions = completions + external
     
     return completions
   catch
@@ -249,12 +246,13 @@ endfunction
 
 " Setup auto-completion on pause
 function! genero_tools#complete#setup_auto() abort
+  " Always set omnifunc for Ctrl+N to work
+  call genero_tools#complete#enable()
+  
+  " Only setup pause-based autocomplete if explicitly enabled
   if !genero_tools#config#get('autocomplete_on_pause')
     return
   endif
-  
-  " Set omnifunc
-  call genero_tools#complete#enable()
   
   " Setup autocmd for text changed
   augroup GeneroAutoComplete
@@ -262,6 +260,24 @@ function! genero_tools#complete#setup_auto() abort
     autocmd TextChangedI <buffer> call s:on_text_changed()
     autocmd InsertLeave <buffer> call s:close_completion()
   augroup END
+endfunction
+
+" Setup completion preview window
+function! genero_tools#complete#setup_preview() abort
+  " Enable preview window for completion info
+  set completeopt=menu,menuone,preview,noinsert,noselect
+  
+  " Setup autocmd to update preview on completion selection
+  augroup GeneroCompletePreview
+    autocmd!
+    autocmd CompleteDone <buffer> call s:on_complete_done()
+  augroup END
+endfunction
+
+" Handle completion done event
+function! s:on_complete_done() abort
+  " Preview window is automatically managed by Vim
+  " Just ensure it stays visible during selection
 endfunction
 
 " Handle text changed event

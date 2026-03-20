@@ -1,9 +1,10 @@
 " Genero-Tools Plugin - Filetype Plugin for Genero Form Files (.per)
 
-" Setup auto-completion on pause if enabled
-if genero_tools#config#get('autocomplete_on_pause')
-  call genero_tools#complete#setup_auto()
-endif
+" Setup completion (omnifunc always enabled for Ctrl+N, pause-based optional)
+call genero_tools#complete#setup_auto()
+
+" Setup completion preview window
+call genero_tools#complete#setup_preview()
 
 " Set comment string for per files (# for comments)
 setlocal commentstring=#\ %s
