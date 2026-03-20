@@ -289,6 +289,9 @@ local plugins = {
     },
     config = function()
       require("noice").setup({
+        notify = {
+          enabled = false,  -- Disable noice notifications to avoid nvim-notify issues
+        },
         lsp = {
           progress = {
             enabled = false,  -- Disable LSP progress for Neovim 0.9.5 compatibility
