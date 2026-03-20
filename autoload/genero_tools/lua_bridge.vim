@@ -94,6 +94,15 @@ function! genero_tools#lua_bridge#init() abort
   
   try
     call luaeval('require("genero_tools").setup(...)', [g:genero_tools_config])
+    
+    " Initialize snippets if enabled
+    if genero_tools#config#get('snippets_enabled')
+      try
+        call luaeval('require("genero_tools.snippets").setup()')
+      catch
+        call genero_tools#error#debug('lua_bridge', 'Snippets initialization failed: ' . v:exception)
+      endtry
+    endif
   catch
     call genero_tools#error#log('Lua layer initialization failed: ' . v:exception)
   endtry
