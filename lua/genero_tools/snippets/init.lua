@@ -246,8 +246,23 @@ function M.expand_by_name(trigger)
     trigger = trigger[1]
   end
   
+  -- Try to load LuaSnip if not already loaded
   if not M.luasnip then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
+    local ok, luasnip = pcall(require, 'luasnip')
+    if not ok then
+      vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
+      return false
+    end
+    M.luasnip = luasnip
+  end
+  
+  -- Try to load snippets if not already loaded
+  if not M.snippets then
+    M.setup()
+  end
+  
+  if not M.snippets or vim.tbl_count(M.snippets) == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
     return false
   end
 
