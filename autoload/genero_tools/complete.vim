@@ -72,7 +72,7 @@ function! genero_tools#complete#get_completions(base) abort
             let param_count = genero_tools#signature#param_count(func)
             let return_count = genero_tools#signature#return_count(func)
             
-            " Format menu label with parameter count
+            " Format menu label with parameter count - this is what shows in the menu
             let menu_label = func.name . '(' . param_count . ' params)'
             if return_count > 0
               let menu_label .= ' -> ' . return_count . ' return'
@@ -83,8 +83,8 @@ function! genero_tools#complete#get_completions(base) abort
             
             call add(completions, {
               \ 'word': func.name,
-              \ 'abbr': func.name,
-              \ 'menu': menu_label,
+              \ 'abbr': menu_label,
+              \ 'menu': '',
               \ 'info': complete_info,
               \ 'kind': 'f',
               \ 'icase': 1,
@@ -95,13 +95,14 @@ function! genero_tools#complete#get_completions(base) abort
       endfor
     endif
     
+    " Always try to get external completions as fallback
+    " Store base for external query
+    let s:autocomplete_state.last_base = a:base
+    
     " If no current file matches, query external files
     if empty(completions)
       let external = genero_tools#complete#get_external_completions(a:base)
       let completions = external
-    else
-      " Store base for potential external query
-      let s:autocomplete_state.last_base = a:base
     endif
     
     return completions
@@ -175,7 +176,7 @@ function! genero_tools#complete#get_external_completions(base) abort
       let param_count = genero_tools#signature#param_count(func)
       let return_count = genero_tools#signature#return_count(func)
       
-      " Format menu label with parameter count
+      " Format menu label with parameter count - this is what shows in the menu
       let menu_label = func.name . '(' . param_count . ' params)'
       if return_count > 0
         let menu_label .= ' -> ' . return_count . ' return'
@@ -186,8 +187,8 @@ function! genero_tools#complete#get_external_completions(base) abort
       
       call add(completions, {
         \ 'word': func.name,
-        \ 'abbr': func.name,
-        \ 'menu': menu_label,
+        \ 'abbr': menu_label,
+        \ 'menu': '',
         \ 'info': complete_info,
         \ 'kind': 'f',
         \ 'icase': 1,
