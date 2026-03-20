@@ -53,7 +53,7 @@ function! genero_tools#complete#get_completions(base) abort
         call genero_tools#cache#set(cache_key, result)
         let file_functions = result.data
       else
-        return []
+        let file_functions = []
       endif
     else
       let file_functions = cached.data
@@ -80,8 +80,8 @@ function! genero_tools#complete#get_completions(base) abort
             
             call add(completions, {
               \ 'word': func.name,
-              \ 'abbr': menu_label,
-              \ 'menu': '',
+              \ 'abbr': func.name,
+              \ 'menu': menu_label,
               \ 'info': complete_info,
               \ 'kind': 'f',
               \ 'icase': 1,
@@ -176,8 +176,8 @@ function! genero_tools#complete#get_external_completions(base) abort
       
       call add(completions, {
         \ 'word': func.name,
-        \ 'abbr': menu_label,
-        \ 'menu': '',
+        \ 'abbr': func.name,
+        \ 'menu': menu_label,
         \ 'info': complete_info,
         \ 'kind': 'f',
         \ 'icase': 1,
