@@ -281,8 +281,14 @@ function M.expand_by_name(trigger)
   local buf = vim.api.nvim_get_current_buf()
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
 
-  -- Insert snippet body at cursor position
-  local lines = vim.split(snippet.body, '\n')
+  -- Parse snippet body to extract placeholders
+  local body = snippet.body
+  
+  -- Remove leading/trailing whitespace from body
+  body = body:gsub('^%s+', ''):gsub('%s+$', '')
+  
+  -- Split into lines
+  local lines = vim.split(body, '\n')
 
   -- Remove leading/trailing empty lines
   while #lines > 0 and lines[1]:match('^%s*$') do
@@ -300,16 +306,21 @@ function M.expand_by_name(trigger)
   -- Insert lines at cursor
   vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
 
-  -- Try to expand with LuaSnip if available
-  local ok, luasnip = pcall(require, 'luasnip')
-  if ok and luasnip.expand then
-    -- Position cursor at first placeholder
-    vim.api.nvim_win_set_cursor(0, { row, col })
-    -- Try to expand
-    pcall(function()
-      luasnip.expand()
-    end)
-  end
+  -- Create a temporary snippet with the body and expand it
+  local ls = require('luasnip')
+  local s = ls.snippet
+  local t = ls.text_node
+  
+  -- Create snippet object with the body
+  local temp_snippet = s(trigger, t(body))
+  
+  -- Position cursor at the start of inserted text
+  vim.api.nvim_win_set_cursor(0, { row, col })
+  
+  -- Expand the snippet using LuaSnip
+  pcall(function()
+    ls.snip_expand(temp_snippet)
+  end)
 
   return true
 end
