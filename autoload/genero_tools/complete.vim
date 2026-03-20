@@ -4,10 +4,7 @@
 let s:autocomplete_state = {
   \ 'timer_id': -1,
   \ 'last_col': -1,
-  \ 'last_line': -1,
-  \ 'external_query_timer': -1,
-  \ 'last_base': '',
-  \ 'external_results': []
+  \ 'last_line': -1
   \ }
 
 " Main omnifunc for genero-tools completion
@@ -96,9 +93,6 @@ function! genero_tools#complete#get_completions(base) abort
     endif
     
     " Always try to get external completions as fallback
-    " Store base for external query
-    let s:autocomplete_state.last_base = a:base
-    
     " If no current file matches, query external files
     if empty(completions)
       let external = genero_tools#complete#get_external_completions(a:base)
@@ -116,11 +110,6 @@ function! genero_tools#complete#get_external_completions(base) abort
   try
     if len(a:base) < 2
       return []
-    endif
-    
-    " Check if we have cached external results for this base
-    if s:autocomplete_state.last_base == a:base && !empty(s:autocomplete_state.external_results)
-      return s:autocomplete_state.external_results
     endif
     
     let completions = []
@@ -195,9 +184,6 @@ function! genero_tools#complete#get_external_completions(base) abort
         \ 'dup': 1
         \ })
     endfor
-    
-    " Cache external results
-    let s:autocomplete_state.external_results = completions
     
     return completions
   catch
