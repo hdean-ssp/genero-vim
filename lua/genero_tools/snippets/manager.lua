@@ -19,9 +19,11 @@ function M.load_builtin()
   end
 
   -- Load snippets from templates/builtin/ directory
-  -- Use the plugin's runtime path
-  local plugin_dir = vim.fn.fnamemodify(debug.getinfo(1).source:sub(2), ':h:h:h')
-  local snippet_dir = plugin_dir .. '/lua/genero_tools/snippets/templates/builtin'
+  -- Get the directory of this file (lua/genero_tools/snippets/manager.lua)
+  -- Then go up to lua/ and construct the path to templates/builtin
+  local this_file = debug.getinfo(1).source:sub(2)
+  local this_dir = vim.fn.fnamemodify(this_file, ':h')  -- lua/genero_tools/snippets
+  local snippet_dir = vim.fn.fnamemodify(this_dir, ':h:h') .. '/genero_tools/snippets/templates/builtin'
 
   -- Load all Lua files from builtin directory
   builtin_snippets = M.load_snippets_from_directory(snippet_dir)
