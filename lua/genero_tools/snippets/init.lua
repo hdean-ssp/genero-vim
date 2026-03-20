@@ -35,9 +35,6 @@ function M.setup()
   -- Store reference for later use
   M.luasnip = luasnip
   M.snippets = all_snippets
-  
-  -- Debug: Log snippet count
-  vim.api.nvim_err_writeln('Genero-Tools Snippets: Loaded ' .. vim.tbl_count(all_snippets) .. ' snippets')
 end
 
 -- Merge built-in and custom snippets
