@@ -207,7 +207,7 @@ end
 --   level: Log level (INFO, WARN, ERROR)
 function M.notify(message, level)
   level = level or vim.log.levels.INFO
-  vim.notify(message, level, { title = 'Genero-Tools' })
+  vim.api.nvim_err_writeln('Genero-Tools: ' .. message)
 end
 
 -- Show progress indicator

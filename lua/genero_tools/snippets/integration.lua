@@ -38,21 +38,21 @@ end
 -- Expand a function call snippet with the given function name
 function M.expand_function_call_snippet(function_name)
   if not function_name or function_name == '' then
-    vim.notify('No function name provided', vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: No function name provided')
     return
   end
 
   -- Get the snippets module
   local ok, snippets = pcall(require, 'genero_tools.snippets')
   if not ok then
-    vim.notify('Snippets module not available', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippets module not available')
     return
   end
 
   -- Get the async params module
   local ok_async, async_params = pcall(require, 'genero_tools.snippets.async_params')
   if not ok_async then
-    vim.notify('Async params module not available', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Async params module not available')
     return
   end
 
@@ -94,7 +94,7 @@ end
 -- Insert a snippet at the current cursor position
 function M.insert_snippet_at_cursor(snippet_body)
   if not snippet_body or snippet_body == '' then
-    vim.notify('Snippet body is empty', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty')
     return
   end
 
@@ -114,7 +114,7 @@ function M.insert_snippet_at_cursor(snippet_body)
   end
 
   if #lines == 0 then
-    vim.notify('Snippet body is empty after processing', vim.log.levels.ERROR)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty after processing')
     return
   end
 

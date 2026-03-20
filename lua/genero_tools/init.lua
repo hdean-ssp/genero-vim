@@ -63,7 +63,7 @@ function M.setup_autocommands()
             package.loaded[key] = nil
           end
         end
-        vim.notify('Genero-Tools Lua modules reloaded', vim.log.levels.INFO)
+        vim.api.nvim_err_writeln('Genero-Tools: Lua modules reloaded')
       end,
     })
   end
