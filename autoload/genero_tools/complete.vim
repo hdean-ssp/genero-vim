@@ -69,8 +69,8 @@ function! genero_tools#complete#get_completions(base) abort
             let param_count = genero_tools#signature#param_count(func)
             let return_count = genero_tools#signature#return_count(func)
             
-            " Format menu label with parameter count - this is what shows in the menu
-            let menu_label = func.name . '(' . param_count . ' params)'
+            " Format menu label with parameter count only
+            let menu_label = '(' . param_count . ' params)'
             if return_count > 0
               let menu_label .= ' -> ' . return_count . ' return'
               if return_count != 1
@@ -92,9 +92,11 @@ function! genero_tools#complete#get_completions(base) abort
       endfor
     endif
     
-    " Always query external files to supplement current file matches
-    let external = genero_tools#complete#get_external_completions(a:base)
-    let completions = completions + external
+    " Only query external files if no matches found in current file
+    if empty(completions)
+      let external = genero_tools#complete#get_external_completions(a:base)
+      let completions = external
+    endif
     
     return completions
   catch
@@ -146,7 +148,8 @@ function! genero_tools#complete#get_external_completions(base) abort
       let param_count = genero_tools#signature#param_count(func)
       let return_count = genero_tools#signature#return_count(func)
       
-      let menu_label = func.name . '(' . param_count . ' params)'
+      " Format menu label with parameter count only (no duplicate function name)
+      let menu_label = '(' . param_count . ' params)'
       if return_count > 0
         let menu_label .= ' -> ' . return_count . ' return'
         if return_count != 1
@@ -253,7 +256,15 @@ endfunction
 " Setup completion preview window
 function! genero_tools#complete#setup_preview() abort
   " Enable preview window for completion info (buffer-local)
+  " menu: show completion menu
+  " menuone: show menu even with single match
+  " preview: show preview window with info
+  " noinsert: don't insert text until selection
+  " noselect: don't auto-select first item
   setlocal completeopt=menu,menuone,preview,noinsert,noselect
+  
+  " Ensure preview window is visible and properly sized
+  set previewheight=10
 endfunction
 
 " Handle text changed event
