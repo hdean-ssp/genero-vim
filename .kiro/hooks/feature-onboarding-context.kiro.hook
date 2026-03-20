@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Feature Implementation Onboarding",
+  "description": "References the new feature implementation onboarding documentation to gather useful context before implementing a new feature",
+  "version": "1",
+  "when": {
+    "type": "preTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before implementing this feature, please review #[.kiro/AGENT_ONBOARDING_NEW_FEATURES.md] to gather context on the recommended approach for implementing new features in this codebase."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Bug Fix Onboarding",
+  "description": "References the bug fix implementation onboarding documentation to gather useful context before fixing a bug",
+  "version": "1",
+  "when": {
+    "type": "preTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before fixing this bug, please review #[.kiro/AGENT_ONBOARDING_BUGFIX.md] to gather context on the recommended approach for fixing bugs in this codebase."
+  }
+}
