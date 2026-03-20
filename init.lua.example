@@ -282,7 +282,7 @@ local plugins = {
   -- Floating Window UI for commands
   {
     "folke/noice.nvim",
-    version = "v3.*",
+    version = "v3.10.*",  -- Pinned to v3.10.x for compatibility
     dependencies = {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
@@ -323,6 +323,7 @@ local plugins = {
   -- Notification system
   {
     "rcarriga/nvim-notify",
+    version = "0.4.*",  -- Pinned to 0.4.x for compatibility with noice.nvim v3.10
     config = function()
       require("notify").setup({
         background_colour = "#000000",
