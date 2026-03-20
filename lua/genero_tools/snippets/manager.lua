@@ -25,6 +25,9 @@ function M.load_builtin()
 
   -- Load all Lua files from builtin directory
   builtin_snippets = M.load_snippets_from_directory(snippet_dir)
+  
+  -- Debug: Log loaded snippets
+  vim.api.nvim_err_writeln('Genero-Tools Snippets Manager: Loaded ' .. vim.tbl_count(builtin_snippets) .. ' built-in snippets from ' .. snippet_dir)
 
   return builtin_snippets
 end
@@ -84,7 +87,7 @@ function M.load_snippets_from_directory(dir)
         end
       end
     else
-      vim.notify('Error loading snippets from ' .. file, vim.log.levels.WARN)
+      vim.api.nvim_err_writeln('Genero-Tools Snippets: Error loading snippets from ' .. file)
     end
 
     ::continue::
@@ -97,7 +100,7 @@ end
 function M.register_with_luasnip(snippets)
   local ok, luasnip = pcall(require, 'luasnip')
   if not ok then
-    vim.notify('LuaSnip not available', vim.log.levels.WARN)
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available')
     return
   end
 
@@ -158,7 +161,7 @@ function M.watch_files()
       -- Re-register with LuaSnip
       M.register_with_luasnip(new_custom)
 
-      vim.notify('Genero snippets reloaded', vim.log.levels.INFO)
+      vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippets reloaded')
     end,
   })
 end
