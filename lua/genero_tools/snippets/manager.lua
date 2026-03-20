@@ -100,10 +100,34 @@ end
 
 -- Register snippets with LuaSnip
 function M.register_with_luasnip(snippets)
-  -- We don't need to register with LuaSnip for basic snippet expansion
-  -- We just store the snippets in our own format and insert them directly
-  -- This avoids compatibility issues with different LuaSnip versions
-  vim.api.nvim_err_writeln('Genero-Tools Snippets: Registered ' .. vim.tbl_count(snippets) .. ' snippets')
+  local ok, luasnip = pcall(require, 'luasnip')
+  if not ok then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available')
+    return
+  end
+
+  -- Create snippet objects using LuaSnip's Snippet class
+  local ls = require('luasnip')
+  local s = ls.snippet
+  local t = ls.text_node
+  local i = ls.insert_node
+  
+  local snippet_list = {}
+  
+  -- Convert our snippets to LuaSnip format
+  for trigger, snippet_data in pairs(snippets) do
+    if snippet_data.body then
+      -- For now, just insert the body as text without placeholder expansion
+      -- This avoids the retrieve_all error
+      local snippet_obj = s(trigger, t(snippet_data.body))
+      table.insert(snippet_list, snippet_obj)
+    end
+  end
+  
+  -- Register snippets for genero filetype
+  if #snippet_list > 0 then
+    ls.add_snippets('genero', snippet_list)
+  end
 end
 
 -- Watch for snippet file changes and reload
