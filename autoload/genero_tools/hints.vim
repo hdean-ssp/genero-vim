@@ -34,14 +34,20 @@ function! genero_tools#hints#init() abort
   call genero_tools#hints#register_detector('genero', function('genero_tools#hints#genero#detect'))
   
   " Set up autocommands for hint analysis
-  " Only analyze on buffer read and write to avoid performance issues during typing
+  " Analyze on buffer read, write, and when entering a buffer
   augroup GeneroToolsHints
     autocmd!
     autocmd BufRead *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_read()
     autocmd BufWrite *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_write()
+    autocmd BufEnter *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_enter()
   augroup END
   
   let g:genero_tools_hints_state.initialized = 1
+  
+  " Analyze current buffer if it's a Genero file
+  if &filetype =~ '4gl\|m3\|m4\|per' || expand('%:e') =~ '4gl\|m3\|m4\|per'
+    call genero_tools#hints#on_buffer_enter()
+  endif
 endfunction
 
 " Register a hint detector module
@@ -133,6 +139,27 @@ function! genero_tools#hints#on_buffer_read() abort
   
   " Analyze buffer and display hints
   let hints = genero_tools#hints#analyze(bufnr)
+  call genero_tools#hints#display#show(bufnr, hints)
+endfunction
+
+" Autocommand handler: buffer enter
+function! genero_tools#hints#on_buffer_enter() abort
+  let bufnr = bufnr('%')
+  
+  " Check if hints are enabled
+  if !genero_tools#hints#config#get('hints_enabled')
+    return
+  endif
+  
+  " Get hints (from cache or analyze)
+  let hints = genero_tools#hints#get_hints(bufnr)
+  
+  " If no cached hints, analyze now
+  if empty(hints)
+    let hints = genero_tools#hints#analyze(bufnr)
+  endif
+  
+  " Display hints
   call genero_tools#hints#display#show(bufnr, hints)
 endfunction
 

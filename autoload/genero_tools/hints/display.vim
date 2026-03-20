@@ -19,17 +19,34 @@ function! genero_tools#hints#display#init() abort
     \ 'texthl': 'GeneroHintStyle'
     \ })
   
-  " Define highlight groups
+  " Define highlight groups with subtle styling for hints
+  " Hints are recommendations, so they should be less prominent than errors
   if !hlexists('GeneroHintInfo')
-    highlight GeneroHintInfo ctermfg=Blue guifg=#0087FF
+    " Info hints: subtle blue with light background
+    highlight GeneroHintInfo ctermfg=Blue ctermbg=NONE guifg=#0087FF guibg=NONE
   endif
   
   if !hlexists('GeneroHintWarning')
-    highlight GeneroHintWarning ctermfg=Yellow guifg=#FFFF00
+    " Warning hints: subtle yellow/orange with light background
+    highlight GeneroHintWarning ctermfg=Yellow ctermbg=NONE guifg=#FFB000 guibg=NONE
   endif
   
   if !hlexists('GeneroHintStyle')
-    highlight GeneroHintStyle ctermfg=Cyan guifg=#00FFFF
+    " Style hints: subtle cyan/gray with light background
+    highlight GeneroHintStyle ctermfg=Gray ctermbg=NONE guifg=#808080 guibg=NONE
+  endif
+  
+  " Virtual text highlight groups - more subtle with background color
+  if !hlexists('GeneroHintInfoVirtual')
+    highlight GeneroHintInfoVirtual ctermfg=Blue ctermbg=NONE guifg=#0087FF guibg=#F0F8FF
+  endif
+  
+  if !hlexists('GeneroHintWarningVirtual')
+    highlight GeneroHintWarningVirtual ctermfg=Yellow ctermbg=NONE guifg=#FFB000 guibg=#FFFACD
+  endif
+  
+  if !hlexists('GeneroHintStyleVirtual')
+    highlight GeneroHintStyleVirtual ctermfg=Gray ctermbg=NONE guifg=#808080 guibg=#F5F5F5
   endif
 endfunction
 
@@ -115,12 +132,14 @@ function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
   let ns_id = nvim_create_namespace('genero_hints')
   
   for hint in a:hints
-    let hl_group = genero_tools#hints#display#get_highlight_group(hint.severity)
+    " Use virtual text highlight group (more subtle)
+    let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
     
     try
       call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-        \ 'virt_text': [[hint.message, hl_group]],
-        \ 'virt_text_pos': 'eol'
+        \ 'virt_text': [[' ◆ ' . hint.message, hl_group]],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 50
         \ })
     catch
       " Silently ignore extmark errors
@@ -183,6 +202,19 @@ function! genero_tools#hints#display#get_highlight_group(severity) abort
     return 'GeneroHintStyle'
   else
     return 'GeneroHintWarning'
+  endif
+endfunction
+
+" Get virtual text highlight group for severity level (more subtle)
+function! genero_tools#hints#display#get_virtual_text_highlight_group(severity) abort
+  if a:severity == 'info'
+    return 'GeneroHintInfoVirtual'
+  elseif a:severity == 'warning'
+    return 'GeneroHintWarningVirtual'
+  elseif a:severity == 'style'
+    return 'GeneroHintStyleVirtual'
+  else
+    return 'GeneroHintWarningVirtual'
   endif
 endfunction
 

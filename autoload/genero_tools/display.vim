@@ -148,6 +148,9 @@ endfunction
 " Format successful result
 function! genero_tools#display#format_success(data) abort
   if type(a:data) == type([])
+    if empty(a:data)
+      return ['No results found']
+    endif
     let lines = []
     for item in a:data
       if type(item) == type({})
@@ -158,6 +161,9 @@ function! genero_tools#display#format_success(data) abort
     endfor
     return lines
   elseif type(a:data) == type({})
+    if empty(a:data)
+      return ['No results found']
+    endif
     return [genero_tools#display#format_item(a:data)]
   else
     return [string(a:data)]

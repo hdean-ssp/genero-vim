@@ -30,6 +30,11 @@ function! genero_tools#keybindings#register() abort
     nnoremap <silent> <C-,> :call genero_tools#compiler#commands#prev_error()<CR>
   endif
   
+  " Clear errors keybinding
+  if empty(maparg('<leader>cc', 'n'))
+    nnoremap <silent> <leader>cc :GeneroClearErrors<CR>
+  endif
+  
   " Autocomplete keybinding (Ctrl+N for omnifunc)
   if empty(maparg('<C-n>', 'i'))
     inoremap <silent> <C-n> <C-x><C-o>

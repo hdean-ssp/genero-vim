@@ -10,7 +10,7 @@ function! genero_tools#lookup_function(function_name) abort
   endif
   
   if empty(function_name)
-    call genero_tools#display#echo('Error: No function name provided')
+    call genero_tools#error#error('Lookup', 'No function name provided')
     return {}
   endif
   
@@ -24,7 +24,13 @@ function! genero_tools#lookup_function(function_name) abort
   let result = genero_tools#command#execute_shell('find-function', [function_name])
   
   if result.success
-    call genero_tools#cache#set(cache_key, result)
+    " Check if result is empty
+    if (type(result.data) == type([]) && empty(result.data)) || 
+       (type(result.data) == type({}) && empty(result.data))
+      call genero_tools#error#warn('Lookup', 'Function not found: ' . function_name)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
   endif
   
   call genero_tools#display_result(result)
@@ -40,7 +46,7 @@ function! genero_tools#list_module_files(module_name) abort
   endif
   
   if empty(module_name)
-    call genero_tools#display#echo('Error: No module name provided')
+    call genero_tools#error#error('Module', 'No module name provided')
     return {}
   endif
   
@@ -54,7 +60,13 @@ function! genero_tools#list_module_files(module_name) abort
   let result = genero_tools#command#execute_shell('find-functions-in-module', [module_name])
   
   if result.success
-    call genero_tools#cache#set(cache_key, result)
+    " Check if result is empty
+    if (type(result.data) == type([]) && empty(result.data)) || 
+       (type(result.data) == type({}) && empty(result.data))
+      call genero_tools#error#warn('Module', 'No files found in module: ' . module_name)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
   endif
   
   call genero_tools#display_result(result)
@@ -70,7 +82,7 @@ function! genero_tools#list_functions_in_file(file_path) abort
   endif
   
   if empty(file_path)
-    call genero_tools#display#echo('Error: No file path provided')
+    call genero_tools#error#error('File', 'No file path provided')
     return {}
   endif
   
@@ -87,7 +99,13 @@ function! genero_tools#list_functions_in_file(file_path) abort
   let result = genero_tools#command#execute_shell('list-file-functions', [file_path])
   
   if result.success
-    call genero_tools#cache#set(cache_key, result)
+    " Check if result is empty
+    if (type(result.data) == type([]) && empty(result.data)) || 
+       (type(result.data) == type({}) && empty(result.data))
+      call genero_tools#error#warn('File', 'No functions found in file: ' . file_path)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
   endif
   
   call genero_tools#display_result(result)
@@ -103,7 +121,7 @@ function! genero_tools#get_function_signature(function_name) abort
   endif
   
   if empty(function_name)
-    call genero_tools#display#echo('Error: No function name provided')
+    call genero_tools#error#error('Signature', 'No function name provided')
     return {}
   endif
   
@@ -117,7 +135,13 @@ function! genero_tools#get_function_signature(function_name) abort
   let result = genero_tools#command#execute_shell('find-function', [function_name])
   
   if result.success
-    call genero_tools#cache#set(cache_key, result)
+    " Check if result is empty
+    if (type(result.data) == type([]) && empty(result.data)) || 
+       (type(result.data) == type({}) && empty(result.data))
+      call genero_tools#error#warn('Signature', 'Function not found: ' . function_name)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
   endif
   
   call genero_tools#display_result(result)
@@ -133,7 +157,7 @@ function! genero_tools#get_file_metadata(file_path) abort
   endif
   
   if empty(file_path)
-    call genero_tools#display#echo('Error: No file path provided')
+    call genero_tools#error#error('Metadata', 'No file path provided')
     return {}
   endif
   
@@ -150,7 +174,13 @@ function! genero_tools#get_file_metadata(file_path) abort
   let result = genero_tools#command#execute_shell('file-references', [file_path])
   
   if result.success
-    call genero_tools#cache#set(cache_key, result)
+    " Check if result is empty
+    if (type(result.data) == type([]) && empty(result.data)) || 
+       (type(result.data) == type({}) && empty(result.data))
+      call genero_tools#error#warn('Metadata', 'No metadata found for file: ' . file_path)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
   endif
   
   call genero_tools#display_result(result)
