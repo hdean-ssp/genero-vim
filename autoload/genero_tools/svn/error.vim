@@ -51,9 +51,9 @@ function! genero_tools#svn#error#format_parse_error() abort
   return 'Failed to parse SVN diff output. The diff format may be unsupported.'
 endfunction
 
-" Display error message to user
+" Display error message to user (using standard display functions - Phase 7)
 function! genero_tools#svn#error#show(error_msg) abort
-  call genero_tools#display#echo('Error: ' . a:error_msg)
+  call genero_tools#error#display('SVN Error', a:error_msg)
 endfunction
 
 " Log error message (for debugging)

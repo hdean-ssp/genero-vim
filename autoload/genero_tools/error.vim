@@ -21,12 +21,67 @@ function! genero_tools#error#warn(module, message) abort
   echohl None
 endfunction
 
-" Display error message
+" Display error message (legacy - use display_error for new code)
 function! genero_tools#error#error(module, message) abort
   let l:formatted = genero_tools#error#format(a:module, a:message)
   echohl ErrorMsg
   echo l:formatted
   echohl None
+endfunction
+
+" Display error with display mode support (Phase 7)
+function! genero_tools#error#display(error_message, details) abort
+  let display_mode = genero_tools#display#get_mode('error')
+  
+  let formatted = [a:error_message]
+  
+  if !empty(a:details)
+    call add(formatted, '')
+    call add(formatted, 'Details:')
+    call add(formatted, '--------')
+    
+    if type(a:details) == type([])
+      call extend(formatted, a:details)
+    else
+      call add(formatted, a:details)
+    endif
+  endif
+  
+  if genero_tools#config#get('error_show_details')
+    call add(formatted, '')
+    call add(formatted, 'For more information, check the debug log.')
+  endif
+  
+  call genero_tools#display#result({'success': 0, 'data': formatted}, display_mode)
+endfunction
+
+" Display error with title and details (Phase 7)
+function! genero_tools#error#display_detailed(title, error_message, details) abort
+  let display_mode = genero_tools#display#get_mode('error')
+  
+  let formatted = [a:title]
+  call add(formatted, repeat('=', len(a:title)))
+  call add(formatted, '')
+  call add(formatted, 'Error: ' . a:error_message)
+  
+  if !empty(a:details)
+    call add(formatted, '')
+    call add(formatted, 'Details:')
+    call add(formatted, '--------')
+    
+    if type(a:details) == type([])
+      call extend(formatted, a:details)
+    else
+      call add(formatted, a:details)
+    endif
+  endif
+  
+  if genero_tools#config#get('error_show_details')
+    call add(formatted, '')
+    call add(formatted, 'For more information, check the debug log.')
+  endif
+  
+  call genero_tools#display#result({'success': 0, 'data': formatted}, display_mode)
 endfunction
 
 " Log debug message (if debug mode enabled)

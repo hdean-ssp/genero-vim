@@ -49,6 +49,21 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('floating_window_position', 'center')
   call genero_tools#config#init_key('floating_window_title', 'Genero-Tools')
   call genero_tools#config#init_key('popup_auto_close_delay', 5000)
+  
+  " Feature-specific display mode overrides (Phase 1)
+  call genero_tools#config#init_key('compiler_display_mode', '')
+  call genero_tools#config#init_key('hints_display_mode', '')
+  call genero_tools#config#init_key('signatures_display_mode', '')
+  call genero_tools#config#init_key('progress_display_mode', '')
+  call genero_tools#config#init_key('debug_display_mode', '')
+  call genero_tools#config#init_key('error_display_mode', '')
+  
+  " Notification display options (Phase 1)
+  call genero_tools#config#init_key('notify_enabled', 1)
+  call genero_tools#config#init_key('notify_duration', 3000)
+  
+  " Error display options (Phase 1)
+  call genero_tools#config#init_key('error_show_details', 1)
   call genero_tools#config#init_key('debug_stream_enabled', 0)
   call genero_tools#config#init_key('debug_stream_width', 0)
   call genero_tools#config#init_key('debug_stream_max_lines', 1000)
@@ -196,6 +211,24 @@ function! genero_tools#config#get(key) abort
     return 0
   elseif a:key == 'lua_enabled'
     return has('nvim')
+  elseif a:key == 'compiler_display_mode'
+    return ''
+  elseif a:key == 'hints_display_mode'
+    return ''
+  elseif a:key == 'signatures_display_mode'
+    return ''
+  elseif a:key == 'progress_display_mode'
+    return ''
+  elseif a:key == 'debug_display_mode'
+    return ''
+  elseif a:key == 'error_display_mode'
+    return ''
+  elseif a:key == 'notify_enabled'
+    return 1
+  elseif a:key == 'notify_duration'
+    return 3000
+  elseif a:key == 'error_show_details'
+    return 1
   else
     return ''
   endif
@@ -389,5 +422,24 @@ function! genero_tools#config#validate() abort
   if l:autocomplete_delay < 0
     call genero_tools#error#warn('config', 'autocomplete_delay must be non-negative, using default 500')
     let g:genero_tools_config.autocomplete_delay = 500
+  endif
+  
+  " Validate feature-specific display modes (Phase 1)
+  for feature in ['compiler', 'signatures', 'progress', 'debug', 'error']
+    let mode_key = feature . '_display_mode'
+    let mode = genero_tools#config#get(mode_key)
+    
+    " Only validate if not empty (empty = inherit from global)
+    if !empty(mode)
+      let mode = genero_tools#compat#validate_display_mode(mode)
+      let g:genero_tools_config[mode_key] = mode
+    endif
+  endfor
+  
+  " Validate notification options (Phase 1)
+  let l:notify_duration = genero_tools#config#get('notify_duration')
+  if l:notify_duration < 0
+    call genero_tools#error#warn('config', 'notify_duration must be non-negative, using default 3000')
+    let g:genero_tools_config.notify_duration = 3000
   endif
 endfunction

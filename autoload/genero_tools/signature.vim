@@ -1,6 +1,67 @@
 " Genero-Tools Plugin - Function Signature Formatting
 " Parses and formats function signatures for concise display
 
+" Display a single signature using configured display mode
+function! genero_tools#signature#show(func_obj) abort
+  if type(a:func_obj) != type({})
+    return
+  endif
+  
+  " Get effective display mode for signatures (respects signatures_display_mode override)
+  let display_mode = genero_tools#display#get_mode('signatures')
+  
+  " Format complete info
+  let info = genero_tools#signature#format_complete_info(a:func_obj)
+  
+  " Display using configured mode
+  let result = {
+    \ 'success': 1,
+    \ 'data': split(info, "\n"),
+    \ 'error': ''
+    \ }
+  
+  call genero_tools#display#result(result, display_mode)
+endfunction
+
+" Display multiple signatures using configured display mode
+function! genero_tools#signature#show_list(func_objects) abort
+  if type(a:func_objects) != type([])
+    return
+  endif
+  
+  if empty(a:func_objects)
+    call genero_tools#display#notify('No signatures found', 0)
+    return
+  endif
+  
+  " Get effective display mode for signatures (respects signatures_display_mode override)
+  let display_mode = genero_tools#display#get_mode('signatures')
+  
+  " Format all signatures
+  let lines = []
+  call add(lines, '=== Function Signatures ===')
+  call add(lines, '')
+  
+  for func_obj in a:func_objects
+    if type(func_obj) == type({})
+      let info = genero_tools#signature#format_complete_info(func_obj)
+      call extend(lines, split(info, "\n"))
+      call add(lines, '')
+      call add(lines, repeat('-', 60))
+      call add(lines, '')
+    endif
+  endfor
+  
+  " Display using configured mode
+  let result = {
+    \ 'success': 1,
+    \ 'data': lines,
+    \ 'error': ''
+    \ }
+  
+  call genero_tools#display#result(result, display_mode)
+endfunction
+
 " Format function signature for display
 " Abbreviates types and handles long signatures intelligently
 function! genero_tools#signature#format(func_obj) abort

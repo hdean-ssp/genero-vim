@@ -12,6 +12,7 @@ function! genero_tools#compiler#quickfix#format_entry(entry, type) abort
 endfunction
 
 " Populate quickfix list with compiler results
+" This function now respects display_mode configuration
 function! genero_tools#compiler#quickfix#populate(result, filter) abort
   let qf_list = []
   
@@ -44,8 +45,22 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
     endfor
   endif
   
-  " Populate quickfix list
-  call setqflist(qf_list)
+  " Get effective display mode for compiler (respects compiler_display_mode override)
+  let display_mode = genero_tools#display#get_mode('compiler')
+  
+  " For quickfix mode, populate the quickfix list directly
+  if display_mode == 'quickfix'
+    call setqflist(qf_list)
+  else
+    " For other display modes, use the display module
+    " Format results for display module
+    let formatted_result = {
+      \ 'success': 1,
+      \ 'data': qf_list,
+      \ 'error': ''
+      \ }
+    call genero_tools#display#result(formatted_result, display_mode)
+  endif
   
   return {
     \ 'success': 1,

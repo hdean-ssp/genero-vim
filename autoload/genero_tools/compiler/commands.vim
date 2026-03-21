@@ -28,7 +28,7 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   let elapsed = localtime() - start_time
   
   if !result.success
-    echom 'Compilation failed: ' . result.error
+    call genero_tools#error#display('Compilation Failed', result.error)
     return
   endif
   
@@ -58,7 +58,7 @@ function! genero_tools#compiler#commands#compile(file_path) abort
           \ warning_count . ' warnings, ' . 
           \ info_count . ' info'
   else
-    echom 'Failed to populate quickfix: ' . qf_result.error
+    call genero_tools#error#display('Quickfix Population Failed', qf_result.error)
   endif
   
   " Place signs if enabled
@@ -86,7 +86,7 @@ function! genero_tools#compiler#commands#next_error() abort
   let result = genero_tools#compiler#quickfix#next()
   
   if !result.success
-    echom result.error
+    call genero_tools#error#display('Navigation Error', result.error)
   endif
 endfunction
 
@@ -95,7 +95,7 @@ function! genero_tools#compiler#commands#prev_error() abort
   let result = genero_tools#compiler#quickfix#prev()
   
   if !result.success
-    echom result.error
+    call genero_tools#error#display('Navigation Error', result.error)
   endif
 endfunction
 
@@ -104,7 +104,7 @@ function! genero_tools#compiler#commands#first_error() abort
   let result = genero_tools#compiler#quickfix#first()
   
   if !result.success
-    echom result.error
+    call genero_tools#error#display('Navigation Error', result.error)
   endif
 endfunction
 
@@ -113,7 +113,7 @@ function! genero_tools#compiler#commands#last_error() abort
   let result = genero_tools#compiler#quickfix#last()
   
   if !result.success
-    echom result.error
+    call genero_tools#error#display('Navigation Error', result.error)
   endif
 endfunction
 

@@ -392,3 +392,133 @@ function! genero_tools#display#setup_statusline() abort
     let &statusline = &statusline . '%{genero_tools#display#format_diagnostics()}'
   endif
 endfunction
+
+" Get effective display mode for a feature
+" Returns feature-specific override if set, otherwise returns global display_mode
+function! genero_tools#display#get_mode(feature) abort
+  " Check for feature-specific override
+  let override_key = a:feature . '_display_mode'
+  let override = genero_tools#config#get(override_key)
+  
+  if !empty(override)
+    return override
+  endif
+  
+  " Fall back to global display_mode
+  return genero_tools#config#get('display_mode')
+endfunction
+
+" Display notification/status message
+" Auto-dismisses after duration (0 = no auto-dismiss)
+function! genero_tools#display#notify(message, duration) abort
+  if !genero_tools#config#get('notify_enabled')
+    return
+  endif
+  
+  let duration = a:duration > 0 ? a:duration : genero_tools#config#get('notify_duration')
+  
+  if genero_tools#compat#is_neovim()
+    call genero_tools#display#notify_neovim(a:message, duration)
+  else
+    call genero_tools#display#notify_vim(a:message, duration)
+  endif
+endfunction
+
+" Neovim notification using floating window
+function! genero_tools#display#notify_neovim(message, duration) abort
+  if !has('nvim')
+    call genero_tools#display#notify_vim(a:message, a:duration)
+    return
+  endif
+  
+  try
+    let buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(buf, 0, -1, v:false, [a:message])
+    
+    let width = min([len(a:message) + 2, &columns - 4])
+    let height = 1
+    
+    let opts = {
+      \ 'relative': 'editor',
+      \ 'width': width,
+      \ 'height': height,
+      \ 'col': (&columns - width) / 2,
+      \ 'row': 1,
+      \ 'anchor': 'NW',
+      \ 'style': 'minimal',
+      \ 'border': 'rounded'
+      \ }
+    
+    let win = nvim_open_win(buf, v:false, opts)
+    
+    if a:duration > 0
+      call timer_start(a:duration, function('genero_tools#display#close_inline_window', [win]))
+    endif
+  catch
+    call genero_tools#display#echo(a:message)
+  endtry
+endfunction
+
+" Vim notification using echo
+function! genero_tools#display#notify_vim(message, duration) abort
+  call genero_tools#display#echo(a:message)
+  
+  if a:duration > 0 && has('timers')
+    call timer_start(a:duration, function('s:clear_notification'))
+  endif
+endfunction
+
+" Helper function to clear notification
+function! s:clear_notification(timer_id) abort
+  redraw
+endfunction
+
+" Display error with display mode support
+function! genero_tools#display#error(error_message, display_mode) abort
+  let display_mode = genero_tools#compat#validate_display_mode(a:display_mode)
+  
+  let formatted = ['Error: ' . a:error_message]
+  
+  if genero_tools#config#get('error_show_details')
+    call add(formatted, '')
+    call add(formatted, 'For more information, check the debug log.')
+  endif
+  
+  call genero_tools#display#result({'success': 0, 'data': formatted}, display_mode)
+endfunction
+
+" Display detailed information in appropriate mode
+function! genero_tools#display#details(title, content, display_mode) abort
+  let display_mode = genero_tools#compat#validate_display_mode(a:display_mode)
+  
+  let formatted = [a:title]
+  call add(formatted, repeat('=', len(a:title)))
+  call add(formatted, '')
+  
+  if type(a:content) == type([])
+    call extend(formatted, a:content)
+  else
+    call add(formatted, a:content)
+  endif
+  
+  call genero_tools#display#result({'success': 1, 'data': formatted}, display_mode)
+endfunction
+
+" Safe display with error handling
+function! genero_tools#display#safe_result(result, display_mode) abort
+  try
+    call genero_tools#display#result(a:result, a:display_mode)
+  catch /E\d\+/
+    " Log error for debugging if debug_mode enabled
+    if genero_tools#config#get('debug_mode')
+      call genero_tools#error#log('display', 'Error in display: ' . v:exception)
+    endif
+    
+    " Fallback to echo
+    if a:result.success
+      call genero_tools#display#echo(join(a:result.data, "\n"))
+    else
+      call genero_tools#display#echo('Error: ' . a:result.error)
+    endif
+  endtry
+endfunction

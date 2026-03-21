@@ -15,7 +15,8 @@ function! genero_tools#compiler#autocompile#enable() abort
   if !genero_tools#config#get('compiler_enabled')
     let startup_mode = genero_tools#config#get('startup_messages')
     if startup_mode == 'verbose'
-      echom 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = v:true'
+      let message = 'Compiler integration is disabled. Enable with: let g:genero_tools_config.compiler_enabled = v:true'
+      call genero_tools#display#notify(message, 0)
     endif
     return
   endif
@@ -31,7 +32,7 @@ function! genero_tools#compiler#autocompile#enable() abort
   
   let startup_mode = genero_tools#config#get('startup_messages')
   if startup_mode == 'verbose'
-    echom 'Autocompile enabled for current buffer'
+    call genero_tools#display#notify('Autocompile enabled for current buffer', 0)
   endif
 endfunction
 
@@ -43,7 +44,7 @@ function! genero_tools#compiler#autocompile#disable() abort
   
   let startup_mode = genero_tools#config#get('startup_messages')
   if startup_mode == 'verbose'
-    echom 'Autocompile disabled for current buffer'
+    call genero_tools#display#notify('Autocompile disabled for current buffer', 0)
   endif
 endfunction
 
@@ -153,8 +154,11 @@ function! genero_tools#compiler#autocompile#status() abort
   let delay = genero_tools#config#get('compiler_autocompile_delay')
   
   if enabled
-    echom 'Autocompile is enabled (delay: ' . delay . 'ms)'
+    let message = 'Autocompile is enabled (delay: ' . delay . 'ms)'
   else
-    echom 'Autocompile is disabled'
+    let message = 'Autocompile is disabled'
   endif
+  
+  " Use display#notify for status messages (respects display_mode)
+  call genero_tools#display#notify(message, 0)
 endfunction

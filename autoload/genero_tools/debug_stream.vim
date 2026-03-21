@@ -260,75 +260,60 @@ function! s:sort_by_mtime(a, b) abort
   return mtime_b - mtime_a
 endfunction
 
-" Show file selector in floating window
+" Show file selector using standard display functions
 function! s:show_file_selector(file_names, file_paths) abort
-  " Create buffer for file list
-  let buf = nvim_create_buf(v:false, v:true)
+  " Format file list with numbering for selection
+  let formatted_list = []
+  for idx in range(len(a:file_names))
+    let line_num = idx + 1
+    call add(formatted_list, printf('%2d. %s', line_num, a:file_names[idx]))
+  endfor
   
-  " Set buffer content
-  call nvim_buf_set_lines(buf, 0, -1, v:false, a:file_names)
-  
-  " Get window dimensions
-  let width = 40
-  let height = min([len(a:file_names) + 2, 20])
-  let row = ((&lines - height) / 2) - 1
-  let col = (&columns - width) / 2
-  
-  " Create floating window
-  let opts = {
-    \ 'relative': 'editor',
-    \ 'width': width,
-    \ 'height': height,
-    \ 'row': row,
-    \ 'col': col,
-    \ 'style': 'minimal',
-    \ 'border': 'rounded'
+  " Store file paths in script variable for selection handler
+  let s:file_selector_state = {
+    \ 'file_paths': a:file_paths,
+    \ 'file_names': a:file_names
     \ }
   
-  let win = nvim_open_win(buf, v:true, opts)
+  " Use standard display function to show file list
+  let display_mode = genero_tools#display#get_mode('debug_stream')
+  call genero_tools#display#details('Debug Stream Files', formatted_list, display_mode)
   
-  " Set buffer options
-  call nvim_buf_set_option(buf, 'modifiable', v:false)
-  call nvim_buf_set_option(buf, 'buftype', 'nofile')
-  
-  " Set window options
-  call nvim_win_set_option(win, 'cursorline', v:true)
-  
-  " Store file paths for selection
-  let b:file_paths = a:file_paths
-  
-  " Set keybindings for selection
-  nnoremap <buffer> <CR> :call <SID>select_file_from_list()<CR>
-  nnoremap <buffer> <Esc> :call <SID>close_file_selector()<CR>
-  nnoremap <buffer> q :call <SID>close_file_selector()<CR>
-  
-  " Move cursor to first line
-  call nvim_win_set_cursor(win, [1, 0])
+  " Prompt user for selection
+  call s:prompt_file_selection()
 endfunction
 
-" Select file from list
-function! s:select_file_from_list() abort
-  let line_num = line('.')
-  let file_paths = b:file_paths
-  
-  if line_num > 0 && line_num <= len(file_paths)
-    let selected_file = file_paths[line_num - 1]
-    
-    " Close selector window first
-    call s:close_file_selector()
-    
-    " Give the editor a moment to update dimensions
-    sleep 50m
-    
-    " Start debug stream with selected file
-    call genero_tools#debug_stream#start(selected_file)
+" Prompt user to select a file
+function! s:prompt_file_selection() abort
+  if empty(s:file_selector_state.file_paths)
+    return
   endif
-endfunction
-
-" Close file selector window
-function! s:close_file_selector() abort
+  
+  let num_files = len(s:file_selector_state.file_paths)
+  let prompt = printf('Select file (1-%d): ', num_files)
+  
   try
-    close
+    let choice = input(prompt)
+    
+    if !empty(choice) && choice =~ '^\d\+$'
+      let file_idx = str2nr(choice) - 1
+      
+      if file_idx >= 0 && file_idx < num_files
+        let selected_file = s:file_selector_state.file_paths[file_idx]
+        call genero_tools#debug_stream#start(selected_file)
+      else
+        call genero_tools#display#echo('Invalid selection')
+      endif
+    else
+      call genero_tools#display#echo('Selection cancelled')
+    endif
   catch
+    call genero_tools#display#echo('Selection cancelled')
+  finally
+    " Clear state
+    let s:file_selector_state = {}
   endtry
 endfunction
+
+" File selector state
+let s:file_selector_state = {}
