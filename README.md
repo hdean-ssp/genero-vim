@@ -2,96 +2,76 @@
 
 A Vim plugin for Genero development with code navigation, intelligent autocomplete, and compiler integration. Optimized for large-scale codebases (thousands of files, 6M+ LOC).
 
-**Compatibility:** Vi, Vim 7+, Vim 8+, and Neovim 0.4+
+**Compatibility:** Vim 7+, Vim 8+, and Neovim 0.4+
 
-## Quick Start
+## Quick Start (2 Minutes)
 
-**New user?** See [SETUP.md](SETUP.md) for installation and first steps.
+**New user?** Start here:
 
-```vim
-F5              " Compile current file
-Ctrl+,          " Previous error
-Ctrl+.          " Next error
-Ctrl+N          " Autocomplete (insert mode)
-<space>gl       " Lookup function
-<space>gf       " List functions in file
-<space>gs       " Get function signature
-```
+1. **Install the plugin** (using vim-plug):
+   ```vim
+   Plug 'hdean-ssp/genero-vim'
+   ```
 
-## Installation
+2. **Copy example config**:
+   ```bash
+   # For Neovim (recommended for new users)
+   mkdir -p ~/.config/nvim
+   cp init.lua.example ~/.config/nvim/init.lua
+   
+   # For Vim
+   cp .vimrc.example ~/.vimrc
+   ```
 
-Using vim-plug:
-```vim
-Plug 'hdean-ssp/genero-vim'
-```
+3. **Start using it**:
+   ```
+   F5              Compile current file
+   Ctrl+,          Previous error
+   Ctrl+.          Next error
+   Ctrl+N          Autocomplete (insert mode)
+   <space>gl       Lookup function
+   <space>gf       List functions in file
+   <space>gs       Get function signature
+   ```
 
-**Quick setup:** Copy example config:
-```bash
-cp .vimrc.example ~/.vimrc  # Vim
-cp init.lua.example ~/.config/nvim/init.lua  # Neovim
-```
-
-See [SETUP.md](SETUP.md) for detailed instructions.
+See [SETUP.md](SETUP.md) for detailed installation and first-time setup.
 
 ## Features
 
-- **Code Navigation** - Function lookup, module exploration, and file metadata retrieval
+- **Code Navigation** - Function lookup, module exploration, file metadata
 - **Intelligent Autocomplete** - Function and module name completion with signatures
-- **Code Hints** - Non-fatal code quality warnings (fully configurable)
-  - Whitespace & formatting issues (trailing whitespace, mixed indentation, excessive blank lines)
-  - Keyword & naming conventions (lowercase keywords, inconsistent casing, naming violations)
-  - Code structure issues (unclosed blocks, excessive nesting, long lines, missing comments)
-  - Genero-specific issues (missing error handling, deprecated functions)
-  - Real-time detection with configurable debounce delay
-  - Display in sign column and/or virtual text (Neovim)
-  - Auto-fix suggestions for common issues
-  - Per-file and project-wide configuration support
-  - Severity levels (info, warning, style) with visual distinction
-  - Navigation commands to jump between hints
-  - Hint details display with explanations
 - **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
-  - Support for `.4gl`, `.m3`, `.m4` files with `fglcomp` compiler
-  - Support for `.per` (form) files with `fglform` compiler
-  - Sign column indicators for errors and warnings
-  - Unified sign column for compiler, hints, and SVN markers (space-efficient)
-  - Syntax error highlighting (errors highlighted with red background, warnings with yellow)
-  - Unused variable detection and highlighting
-  - Automatic highlighting applied on compilation
+  - Support for `.4gl`, `.m3`, `.m4` files (fglcomp) and `.per` files (fglform)
+  - Sign column indicators and syntax highlighting
+  - Autocompile on save (configurable)
+- **Code Hints** - Real-time code quality warnings (fully configurable)
+  - Whitespace, formatting, naming, and structure issues
+  - Auto-fix suggestions for common issues
+  - Display in sign column and/or virtual text (Neovim)
 - **Code Snippets** (Neovim only) - Intelligent snippet expansion with smart parameter population
-  - Requires LuaSnip plugin
-  - Automatic function parameter population from genero-tools API
-  - Placeholder navigation with Tab/Shift+Tab
+- **SVN Integration** - Visual diff markers for added/modified/deleted lines
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
-- **Omnifunc autocomplete** - Function and module name completion with signatures
-- **Neovim Lua Layer** (optional) - Enhanced features for Neovim users
-  - Async operations with non-blocking execution
-  - Floating windows for rich UI
-- **Vi/Vim 7+ Compatible** - Works with Vi, Vim 7+, Vim 8+, and Neovim
-- **Advanced Features** (Vim 8+ and Neovim) - Plugin manager, snippets, modern UI
-- Zero configuration changes required between editors
+- **Unified Sign Column** - Combines compiler and SVN markers in one column (space-efficient)
+- **Neovim Enhancements** (optional) - Async operations, floating windows, modern UI
+- **Zero Configuration** - Works out-of-the-box with sensible defaults
 
 ## Keybindings
 
-The default leader key is space `<space>` (configured in `.vimrc.example`). All keybindings work in normal mode.
-
-**Note:** Advanced keybindings (window navigation, buffer management) require Vim 7+. Vi and Vim 6 users can use basic commands directly (`:GeneroCompile`, `:GeneroNextError`, etc.).
-
-### Default Keybindings (from `.vimrc.example`, Vim 7+ and Neovim)
+The default leader key is space `<space>`. All keybindings work in normal mode unless noted.
 
 | Keybinding | Action |
 |-----------|--------|
 | `F5` | Compile current file |
 | `Ctrl+,` | Jump to previous error |
 | `Ctrl+.` | Jump to next error |
-| `Ctrl+Space` | Trigger autocomplete (insert mode) |
-| `<space>ca` | Enable autocompile |
-| `<space>cd` | Disable autocompile |
+| `Ctrl+N` | Trigger autocomplete (insert mode) |
+| `<space>ca` | Enable autocompile on save |
+| `<space>cd` | Disable autocompile on save |
 | `<space>cc` | Clear error markers |
 | `<space>gl` | Lookup function definition |
 | `<space>gf` | List functions in file |
 | `<space>gs` | Get function signature |
 | `<space>gm` | Get file metadata |
-| `<space>gd` | Toggle debug stream (Neovim only) |
 | `<space>hn` | Jump to next hint |
 | `<space>hp` | Jump to previous hint |
 | `<space>hl` | List all hints |
@@ -103,66 +83,14 @@ The default leader key is space `<space>` (configured in `.vimrc.example`). All 
 | `<space>su` | Toggle unified signs (compiler + SVN) |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
-| `<space>bn` | Next buffer (Vim 7+) |
-| `<space>bp` | Previous buffer (Vim 7+) |
-| `<space>bd` | Delete buffer (Vim 7+) |
-| `Ctrl+h/j/k/l` | Navigate between windows (Vim 7+) |
-| `gcc` | Toggle comment on line (Neovim only) |
-| `gbc` | Toggle block comment (Neovim only) |
+| `<space>bn` | Next buffer |
+| `<space>bp` | Previous buffer |
+| `<space>bd` | Delete buffer |
+| `Ctrl+h/j/k/l` | Navigate between windows |
+| `gcc` | Toggle comment on line (Neovim) |
+| `gbc` | Toggle block comment (Neovim) |
 
-**Note:** Resize window keybindings (`Ctrl+Up/Down/Left/Right`) have been removed from the default config as they interfere with arrow key detection in Vim 8.0. Use `:resize +2` or `:vertical resize -2` commands manually, or add custom keybindings if needed.
-
-### SVN Commands
-
-SVN diff markers automatically load when you open a `.fgl` or `.4gl` file in an SVN working copy. Use these commands to manage markers:
-
-| Command | Action |
-|---------|--------|
-| `:GeneroSVNRefresh` | Manually refresh SVN diff markers for current file |
-| `:GeneroSVNToggle` | Toggle SVN diff markers on/off for current buffer |
-| `:GeneroSVNStatus` | Show SVN status and change summary for current file |
-
-### Sign Column Commands
-
-| Command | Action |
-|---------|--------|
-| `:GeneroUnifiedSignsEnable` | Enable unified sign column (compiler + SVN markers) |
-| `:GeneroUnifiedSignsDisable` | Disable unified sign column |
-| `:GeneroUnifiedSignsToggle` | Toggle unified sign column on/off |
-| `:GeneroUnifiedSignsStatus` | Show unified signs status and configuration |
-
-### which-key Integration
-
-If you have [which-key](https://github.com/folke/which-key.nvim) installed, all genero-tools keybindings are automatically registered with descriptions and organized into groups. Press `<leader>g` to see all available keybindings.
-
-**Keybinding Groups:**
-- `<leader>gl/f/s/m` - Code navigation (lookup, list functions, signature, metadata)
-- `<leader>gc*` - Compiler commands (compile, next/prev error, clear)
-- `<leader>ga*` - Cache commands (clear cache, memory pressure)
-- `<leader>gv*` - SVN commands (diff markers, status)
-- `<leader>gh` - Show help
-- `<leader>gC` - Show configuration
-
-See [which-key Integration Guide](docs/WHICH_KEY_INTEGRATION.md) for details.
-
-### Customizing Keybindings
-
-The `.vimrc.example` uses space as the leader key. To customize:
-
-```vim
-" Change leader key
-let mapleader = ','  " Use comma instead of space
-
-" Or map to different keys
-nnoremap <F6> :GeneroCompile<CR>
-nnoremap <C-l> :GeneroLookup <C-R><C-W><CR>
-```
-
-To disable default keybindings:
-
-```vim
-let g:genero_tools_config.keybindings_enabled = 0
-```
+**Note:** All keybindings can be customized in your config. See [Configuration](#configuration) section.
 
 ## Commands
 
