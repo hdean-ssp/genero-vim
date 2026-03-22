@@ -19,6 +19,8 @@
 2. **Review Architecture**: Read [design.md](specs/display-enhancements/design.md)
 3. **Check Implementation**: Read [IMPLEMENTATION_SUMMARY.md](specs/display-enhancements/IMPLEMENTATION_SUMMARY.md)
 4. **See Tasks**: Read [tasks.md](specs/display-enhancements/tasks.md)
+5. **Check Known Issues**: Read [FUTURE_BUGS.md](FUTURE_BUGS.md)
+6. **See Future Work**: Read [FUTURE_TASKS.md](FUTURE_TASKS.md)
 
 ---
 
@@ -329,4 +331,38 @@ The Display Enhancements project is 100% complete with all 6 active phases finis
 All code is production-ready, well-tested, and comprehensively documented.
 
 **Start here**: [specs/display-enhancements/README.md](specs/display-enhancements/README.md)
+
+---
+
+## Future Work & Enhancements
+
+### For Bug Fixes
+- **File**: [FUTURE_BUGS.md](FUTURE_BUGS.md)
+- **Contains**: Known issues, monitoring points, bug reporting process
+- **Status**: No critical bugs identified
+- **Action**: Monitor for user-reported issues
+
+### For New Features
+- **File**: [FUTURE_TASKS.md](FUTURE_TASKS.md)
+- **Contains**: Enhancement roadmap, planned phases, implementation guide
+- **Phases**: 8-13 planned (optional, low priority)
+- **Action**: Choose a phase and follow implementation guide
+
+### Recommended Next Steps
+1. **Phase 8**: Progress Display Module (Medium priority)
+2. **Phase 9**: Custom Display Modes (Low priority)
+3. **Phase 10**: Performance Optimization (Low priority)
+4. **Phase 11**: Enhanced Error Reporting (Medium priority)
+5. **Phase 12**: Configuration Validation UI (Low priority)
+6. **Phase 13**: Display Mode Presets (Low priority)
+
+### How to Get Started
+1. Read [FUTURE_TASKS.md](FUTURE_TASKS.md) for roadmap
+2. Choose a phase that interests you
+3. Review the task details and effort estimate
+4. Follow the implementation guide
+5. Use existing phases as code examples
+6. Test thoroughly before committing
+
+
 
