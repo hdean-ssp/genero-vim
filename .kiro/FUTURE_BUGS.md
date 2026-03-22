@@ -48,9 +48,81 @@ The Display Enhancements project has been thoroughly tested and verified. All ma
 
 ## Reported Issues
 
-### None Currently
+### Issue #001: Snippet Expansion Not Working with Luasnip
+**Severity**: High
+**Status**: Open
+**Date Reported**: March 22, 2026
 
-If users report issues, they will be documented here with:
+**Description:**
+Snippets are inserting raw text instead of properly expanding through luasnip. Snippet placeholders and navigation are not working. Additionally, snippets do not appear in the autocomplete menu when autocomplete is triggered.
+
+**Expected Behavior:**
+1. Snippets should expand through luasnip with proper placeholder handling
+2. Users should be able to navigate between snippet placeholders
+3. Snippets should appear in autocomplete menu suggestions
+4. Snippet expansion should work seamlessly with existing autocomplete system
+
+**Current Behavior:**
+1. Snippets insert as raw text without luasnip expansion
+2. Placeholder navigation not functional
+3. Snippets missing from autocomplete menu
+4. No snippet integration with autocomplete system
+
+**Steps to Reproduce:**
+1. Trigger snippet insertion (method varies by configuration)
+2. Observe that raw text is inserted instead of expanded snippet
+3. Try to navigate placeholders (fails)
+4. Trigger autocomplete menu
+5. Observe that snippets are not listed in suggestions
+
+**Affected Files:**
+- `autoload/genero_tools/snippets.vim` - Snippet management
+- `autoload/genero_tools/complete.vim` - Autocomplete system
+- `autoload/genero_tools/lua_bridge.vim` - Lua integration
+
+**Root Cause Analysis:**
+- Snippet insertion likely bypassing luasnip expansion
+- Autocomplete system not configured to include snippets
+- Possible Lua bridge integration issue with luasnip
+
+**Workaround:**
+None currently available. Users must manually expand snippets or use alternative snippet plugins.
+
+**Related Configuration:**
+```vim
+" Snippet-related config
+snippets_enabled: 1
+snippets_directory: './snippets'
+autocomplete_include_snippets: 1  " May need to be added
+```
+
+**Investigation Needed:**
+1. Review snippet insertion mechanism in `snippets.vim`
+2. Check luasnip integration in `lua_bridge.vim`
+3. Verify autocomplete menu configuration in `complete.vim`
+4. Test snippet expansion with luasnip directly
+5. Check if snippet sources are registered with autocomplete
+
+**Testing Checklist:**
+- [ ] Snippet expansion works with luasnip
+- [ ] Placeholder navigation functional
+- [ ] Snippets appear in autocomplete menu
+- [ ] Snippet expansion works with all display modes
+- [ ] No conflicts with existing autocomplete
+- [ ] Works in both Vim and Neovim
+- [ ] Backward compatibility maintained
+
+**Notes:**
+- This is a high-priority bug affecting user experience
+- Requires coordination between snippets, autocomplete, and Lua bridge modules
+- May require new configuration options
+- Consider creating new phase for snippet system improvements
+
+---
+
+### None Other Currently
+
+If additional issues are reported, they will be documented here with:
 - Issue ID
 - Severity level
 - Description

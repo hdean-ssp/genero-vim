@@ -16,6 +16,76 @@
 
 ---
 
+## Bug Fix: Snippet Expansion & Autocomplete Integration (High Priority)
+
+**Status**: Open
+**Issue ID**: #001
+**Effort**: 2-3 days
+**Rationale**: Snippets are core feature; broken expansion significantly impacts UX
+
+### Tasks
+- [ ] BF-1.1 Review snippet insertion mechanism in `snippets.vim`
+- [ ] BF-1.2 Check luasnip integration in `lua_bridge.vim`
+- [ ] BF-1.3 Verify autocomplete menu configuration in `complete.vim`
+- [ ] BF-1.4 Test snippet expansion with luasnip directly
+- [ ] BF-1.5 Check if snippet sources registered with autocomplete
+- [ ] BF-1.6 Fix snippet insertion to use luasnip expansion
+- [ ] BF-1.7 Add snippets to autocomplete menu sources
+- [ ] BF-1.8 Implement placeholder navigation
+- [ ] BF-1.9 Test with all display modes
+- [ ] BF-1.10 Test Vim and Neovim compatibility
+- [ ] BF-1.11 Update documentation
+
+### Files to Modify
+- `autoload/genero_tools/snippets.vim` - Snippet management
+- `autoload/genero_tools/complete.vim` - Autocomplete system
+- `autoload/genero_tools/lua_bridge.vim` - Lua integration
+- `autoload/genero_tools/config.vim` - Configuration options
+
+### Configuration
+```vim
+snippets_enabled: 1                    " Enable/disable snippets
+snippets_directory: './snippets'       " Snippet directory
+autocomplete_include_snippets: 1       " Include snippets in autocomplete
+snippet_expansion_mode: 'luasnip'      " Expansion engine (luasnip, vim-snipmate, etc)
+```
+
+### Implementation Steps
+1. **Analyze Current Implementation**
+   - Review how snippets are currently inserted
+   - Check luasnip integration points
+   - Identify why expansion is bypassed
+
+2. **Fix Snippet Expansion**
+   - Modify snippet insertion to use luasnip
+   - Ensure placeholder handling works
+   - Test navigation between placeholders
+
+3. **Integrate with Autocomplete**
+   - Register snippet sources with autocomplete
+   - Add snippets to completion menu
+   - Ensure proper filtering and sorting
+
+4. **Testing**
+   - Test snippet expansion
+   - Test placeholder navigation
+   - Test autocomplete integration
+   - Test all display modes
+   - Test Vim and Neovim
+
+5. **Documentation**
+   - Update snippet documentation
+   - Add configuration examples
+   - Document troubleshooting
+
+### Notes
+- High priority - affects core functionality
+- Requires careful integration with existing systems
+- May need new configuration options
+- Consider creating dedicated snippet phase after fix
+
+---
+
 ## Phase 8: Progress Display Module (Medium Priority)
 
 **Status**: Planned
