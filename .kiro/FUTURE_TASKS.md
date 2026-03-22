@@ -21,23 +21,27 @@
 **Status**: Open
 **Issue ID**: #001
 **Effort**: 2-3 days
-**Rationale**: Snippets are core feature; broken expansion significantly impacts UX
+**Rationale**: Snippets are core feature; broken expansion and selection significantly impact UX
 
 ### Tasks
-- [ ] BF-1.1 Review snippet insertion mechanism in `snippets.vim`
-- [ ] BF-1.2 Check luasnip integration in `lua_bridge.vim`
-- [ ] BF-1.3 Verify autocomplete menu configuration in `complete.vim`
-- [ ] BF-1.4 Test snippet expansion with luasnip directly
-- [ ] BF-1.5 Check if snippet sources registered with autocomplete
-- [ ] BF-1.6 Fix snippet insertion to use luasnip expansion
-- [ ] BF-1.7 Add snippets to autocomplete menu sources
-- [ ] BF-1.8 Implement placeholder navigation
-- [ ] BF-1.9 Test with all display modes
-- [ ] BF-1.10 Test Vim and Neovim compatibility
-- [ ] BF-1.11 Update documentation
+- [ ] BF-1.1 Review snippet list floating window implementation
+- [ ] BF-1.2 Add selection/confirmation mechanism to snippet list
+- [ ] BF-1.3 Implement keyboard selection (Enter to select)
+- [ ] BF-1.4 Implement mouse selection (click to select)
+- [ ] BF-1.5 Review snippet insertion mechanism in `snippets.vim`
+- [ ] BF-1.6 Check luasnip integration in `lua_bridge.vim`
+- [ ] BF-1.7 Verify autocomplete menu configuration in `complete.vim`
+- [ ] BF-1.8 Test snippet expansion with luasnip directly
+- [ ] BF-1.9 Check if snippet sources registered with autocomplete
+- [ ] BF-1.10 Fix snippet insertion to use luasnip expansion
+- [ ] BF-1.11 Add snippets to autocomplete menu sources
+- [ ] BF-1.12 Implement placeholder navigation
+- [ ] BF-1.13 Test with all display modes
+- [ ] BF-1.14 Test Vim and Neovim compatibility
+- [ ] BF-1.15 Update documentation
 
 ### Files to Modify
-- `autoload/genero_tools/snippets.vim` - Snippet management
+- `autoload/genero_tools/snippets.vim` - Snippet management and list display
 - `autoload/genero_tools/complete.vim` - Autocomplete system
 - `autoload/genero_tools/lua_bridge.vim` - Lua integration
 - `autoload/genero_tools/config.vim` - Configuration options
@@ -48,9 +52,36 @@ snippets_enabled: 1                    " Enable/disable snippets
 snippets_directory: './snippets'       " Snippet directory
 autocomplete_include_snippets: 1       " Include snippets in autocomplete
 snippet_expansion_mode: 'luasnip'      " Expansion engine (luasnip, vim-snipmate, etc)
+snippet_list_selectable: 1             " Enable selection in snippet list
+snippet_list_keybindings: {            " Keybindings for snippet list
+  \ 'select': '<CR>',                  " Select snippet
+  \ 'cancel': '<Esc>',                 " Cancel selection
+  \ 'next': '<C-n>',                   " Next snippet
+  \ 'prev': '<C-p>',                   " Previous snippet
+  \ }
 ```
 
 ### Implementation Steps
+
+#### Part 1: Fix Snippet List Selection
+1. **Analyze Current Implementation**
+   - Review floating window implementation
+   - Identify why selection is not implemented
+   - Check keybinding setup
+
+2. **Add Selection Mechanism**
+   - Implement Enter key to select snippet
+   - Implement mouse click to select snippet
+   - Add visual feedback for selection
+   - Implement cancel mechanism (Esc)
+
+3. **Test Selection**
+   - Test keyboard selection
+   - Test mouse selection
+   - Test cancel mechanism
+   - Test with different display modes
+
+#### Part 2: Fix Snippet Expansion
 1. **Analyze Current Implementation**
    - Review how snippets are currently inserted
    - Check luasnip integration points
@@ -66,20 +97,23 @@ snippet_expansion_mode: 'luasnip'      " Expansion engine (luasnip, vim-snipmate
    - Add snippets to completion menu
    - Ensure proper filtering and sorting
 
-4. **Testing**
-   - Test snippet expansion
-   - Test placeholder navigation
-   - Test autocomplete integration
-   - Test all display modes
-   - Test Vim and Neovim
+#### Part 3: Testing
+- Test snippet list selection (keyboard and mouse)
+- Test snippet expansion
+- Test placeholder navigation
+- Test autocomplete integration
+- Test all display modes
+- Test Vim and Neovim
 
-5. **Documentation**
-   - Update snippet documentation
-   - Add configuration examples
-   - Document troubleshooting
+#### Part 4: Documentation
+- Update snippet documentation
+- Add configuration examples
+- Document keybindings
+- Document troubleshooting
 
 ### Notes
 - High priority - affects core functionality
+- Snippet list selection is critical for usability
 - Requires careful integration with existing systems
 - May need new configuration options
 - Consider creating dedicated snippet phase after fix

@@ -54,33 +54,43 @@ The Display Enhancements project has been thoroughly tested and verified. All ma
 **Date Reported**: March 22, 2026
 
 **Description:**
-Snippets are inserting raw text instead of properly expanding through luasnip. Snippet placeholders and navigation are not working. Additionally, snippets do not appear in the autocomplete menu when autocomplete is triggered.
+Snippets system has multiple issues:
+1. Snippets are inserting raw text instead of properly expanding through luasnip
+2. Snippet placeholders and navigation are not working
+3. Snippets do not appear in the autocomplete menu when autocomplete is triggered
+4. Snippet list floating window is not selectable - users cannot select items to insert
 
 **Expected Behavior:**
 1. Snippets should expand through luasnip with proper placeholder handling
 2. Users should be able to navigate between snippet placeholders
 3. Snippets should appear in autocomplete menu suggestions
-4. Snippet expansion should work seamlessly with existing autocomplete system
+4. Snippet list should be selectable with keyboard/mouse to insert snippets
+5. Snippet expansion should work seamlessly with existing autocomplete system
 
 **Current Behavior:**
 1. Snippets insert as raw text without luasnip expansion
 2. Placeholder navigation not functional
 3. Snippets missing from autocomplete menu
-4. No snippet integration with autocomplete system
+4. Snippet list floating window is navigable but not selectable
+5. No way to insert snippets from the floating window list
 
 **Steps to Reproduce:**
-1. Trigger snippet insertion (method varies by configuration)
-2. Observe that raw text is inserted instead of expanded snippet
-3. Try to navigate placeholders (fails)
-4. Trigger autocomplete menu
-5. Observe that snippets are not listed in suggestions
+1. Trigger snippet list display (shows floating window)
+2. Observe that window is navigable but items cannot be selected
+3. Try to insert a snippet from the list (fails - no selection mechanism)
+4. Trigger snippet insertion (method varies by configuration)
+5. Observe that raw text is inserted instead of expanded snippet
+6. Try to navigate placeholders (fails)
+7. Trigger autocomplete menu
+8. Observe that snippets are not listed in suggestions
 
 **Affected Files:**
-- `autoload/genero_tools/snippets.vim` - Snippet management
+- `autoload/genero_tools/snippets.vim` - Snippet management and list display
 - `autoload/genero_tools/complete.vim` - Autocomplete system
 - `autoload/genero_tools/lua_bridge.vim` - Lua integration
 
 **Root Cause Analysis:**
+- Snippet list floating window lacks selection/confirmation mechanism
 - Snippet insertion likely bypassing luasnip expansion
 - Autocomplete system not configured to include snippets
 - Possible Lua bridge integration issue with luasnip
@@ -94,16 +104,22 @@ None currently available. Users must manually expand snippets or use alternative
 snippets_enabled: 1
 snippets_directory: './snippets'
 autocomplete_include_snippets: 1  " May need to be added
+snippet_expansion_mode: 'luasnip'
+snippet_list_selectable: 1        " New option needed
 ```
 
 **Investigation Needed:**
-1. Review snippet insertion mechanism in `snippets.vim`
-2. Check luasnip integration in `lua_bridge.vim`
-3. Verify autocomplete menu configuration in `complete.vim`
-4. Test snippet expansion with luasnip directly
-5. Check if snippet sources are registered with autocomplete
+1. Review snippet list floating window implementation
+2. Add selection/confirmation mechanism to snippet list
+3. Review snippet insertion mechanism in `snippets.vim`
+4. Check luasnip integration in `lua_bridge.vim`
+5. Verify autocomplete menu configuration in `complete.vim`
+6. Test snippet expansion with luasnip directly
+7. Check if snippet sources are registered with autocomplete
 
 **Testing Checklist:**
+- [ ] Snippet list is selectable (keyboard and mouse)
+- [ ] Selecting snippet inserts it properly
 - [ ] Snippet expansion works with luasnip
 - [ ] Placeholder navigation functional
 - [ ] Snippets appear in autocomplete menu
@@ -117,6 +133,7 @@ autocomplete_include_snippets: 1  " May need to be added
 - Requires coordination between snippets, autocomplete, and Lua bridge modules
 - May require new configuration options
 - Consider creating new phase for snippet system improvements
+- Snippet list selection is critical for usability
 
 ---
 
