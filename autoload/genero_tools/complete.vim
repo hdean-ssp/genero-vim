@@ -40,6 +40,12 @@ function! genero_tools#complete#get_completions(base) abort
     
     let completions = []
     
+    " Add snippets to completions if enabled
+    if genero_tools#config#get('autocomplete_include_snippets')
+      let snippet_completions = genero_tools#complete#get_snippet_completions(a:base)
+      let completions = extend(completions, snippet_completions)
+    endif
+    
     " Get functions from current file
     let current_file = expand('%:p')
     let file_path = genero_tools#normalize_file_path(current_file)
@@ -97,6 +103,49 @@ function! genero_tools#complete#get_completions(base) abort
       let external = genero_tools#complete#get_external_completions(a:base)
       let completions = external
     endif
+    
+    return completions
+  catch
+    return []
+  endtry
+endfunction
+
+" Get snippet completions for autocomplete menu
+function! genero_tools#complete#get_snippet_completions(base) abort
+  if !has('nvim') || !genero_tools#lua_bridge#available()
+    return []
+  endif
+  
+  try
+    if !genero_tools#config#get('snippets_enabled')
+      return []
+    endif
+    
+    " Get all snippets from Lua
+    let snippets = luaeval('require("genero_tools.snippets").get_all_snippets()')
+    
+    if empty(snippets) || type(snippets) != type([])
+      return []
+    endif
+    
+    let completions = []
+    
+    " Filter snippets matching the base
+    for snippet in snippets
+      let trigger = get(snippet, 'trigger', '')
+      let description = get(snippet, 'description', '')
+      
+      if !empty(trigger) && trigger =~? '^' . a:base
+        call add(completions, {
+          \ 'word': trigger,
+          \ 'abbr': trigger,
+          \ 'menu': '[snippet] ' . description,
+          \ 'kind': 's',
+          \ 'icase': 1,
+          \ 'dup': 0
+          \ })
+      endif
+    endfor
     
     return completions
   catch
@@ -324,4 +373,25 @@ function! s:close_completion() abort
   if pumvisible()
     call feedkeys("\<C-e>", 'n')
   endif
+endfunction
+
+" Handle snippet selection from autocomplete menu
+function! genero_tools#complete#on_snippet_selected(snippet_trigger) abort
+  if !has('nvim') || !genero_tools#lua_bridge#available()
+    return
+  endif
+  
+  try
+    " Close the completion menu
+    call feedkeys("\<C-e>", 'n')
+    
+    " Delete the trigger text that was inserted
+    let trigger_len = len(a:snippet_trigger)
+    call feedkeys("\<C-w>", 'n')
+    
+    " Expand the snippet using luasnip
+    call genero_tools#snippets#expand(a:snippet_trigger)
+  catch
+    call genero_tools#error#error('Snippets', 'Error selecting snippet: ' . v:exception)
+  endtry
 endfunction

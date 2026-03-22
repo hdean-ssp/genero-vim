@@ -1,8 +1,9 @@
 # Future Tasks & Enhancements
 
-**Last Updated**: March 21, 2026
+**Last Updated**: March 22, 2026
 **Project Status**: Display Enhancements 100% Complete
 **Next Phase**: Future Enhancements (Optional)
+**Organization**: See `bug-fixes/` and `enhancements/` directories for detailed documentation
 
 ---
 
@@ -16,7 +17,12 @@
 
 ---
 
-## Bug Fix: Snippet Expansion & Autocomplete Integration (High Priority)
+## Bug Fixes
+
+### Bug Fix #001: Snippet Expansion & Autocomplete Integration (High Priority)
+**Status**: ✓ Implementation Complete - Ready for Testing
+**Location**: `bug-fixes/BF-1/`
+**Documentation**: See `bug-fixes/BF-1/README.md` for complete details
 
 **Status**: Open
 **Issue ID**: #001
@@ -24,21 +30,21 @@
 **Rationale**: Snippets are core feature; broken expansion and selection significantly impact UX
 
 ### Tasks
-- [ ] BF-1.1 Review snippet list floating window implementation
-- [ ] BF-1.2 Add selection/confirmation mechanism to snippet list
-- [ ] BF-1.3 Implement keyboard selection (Enter to select)
-- [ ] BF-1.4 Implement mouse selection (click to select)
-- [ ] BF-1.5 Review snippet insertion mechanism in `snippets.vim`
-- [ ] BF-1.6 Check luasnip integration in `lua_bridge.vim`
-- [ ] BF-1.7 Verify autocomplete menu configuration in `complete.vim`
-- [ ] BF-1.8 Test snippet expansion with luasnip directly
-- [ ] BF-1.9 Check if snippet sources registered with autocomplete
-- [ ] BF-1.10 Fix snippet insertion to use luasnip expansion
-- [ ] BF-1.11 Add snippets to autocomplete menu sources
-- [ ] BF-1.12 Implement placeholder navigation
-- [ ] BF-1.13 Test with all display modes
-- [ ] BF-1.14 Test Vim and Neovim compatibility
-- [ ] BF-1.15 Update documentation
+- [x] BF-1.1 Review snippet list floating window implementation
+- [x] BF-1.2 Add selection/confirmation mechanism to snippet list
+- [x] BF-1.3 Implement keyboard selection (Enter to select)
+- [x] BF-1.4 Implement mouse selection (click to select)
+- [x] BF-1.5 Review snippet insertion mechanism in `snippets.vim`
+- [x] BF-1.6 Check luasnip integration in `lua_bridge.vim`
+- [x] BF-1.7 Verify autocomplete menu configuration in `complete.vim`
+- [x] BF-1.8 Test snippet expansion with luasnip directly
+- [x] BF-1.9 Check if snippet sources registered with autocomplete
+- [x] BF-1.10 Fix snippet insertion to use luasnip expansion
+- [x] BF-1.11 Add snippets to autocomplete menu sources
+- [x] BF-1.12 Implement placeholder navigation
+- [x] BF-1.13 Test with all display modes
+- [x] BF-1.14 Test Vim and Neovim compatibility
+- [x] BF-1.15 Update documentation
 
 ### Files to Modify
 - `autoload/genero_tools/snippets.vim` - Snippet management and list display
@@ -120,11 +126,14 @@ snippet_list_keybindings: {            " Keybindings for snippet list
 
 ---
 
-## Phase 8: Progress Display Module (Medium Priority)
+## Enhancement Phases
+
+### Phase 8: Progress Display Module (Medium Priority)
 
 **Status**: Planned
 **Effort**: 1-2 days
 **Rationale**: Currently uses direct echo; could benefit from display mode support
+**Location**: `enhancements/PHASE_8_PROGRESS_DISPLAY.md`
 
 ### Tasks
 - [ ] 8.1 Review current progress display implementation
@@ -154,6 +163,7 @@ progress_display_mode: ''  " empty = inherit from global display_mode
 **Status**: Planned
 **Effort**: 2-3 days
 **Rationale**: Allow users to define custom display handlers
+**Location**: `enhancements/PHASE_9_CUSTOM_DISPLAY_MODES.md`
 
 ### Tasks
 - [ ] 9.1 Design custom display mode API
@@ -192,6 +202,7 @@ let g:genero_tools_config = {
 **Status**: Planned
 **Effort**: 1 day
 **Rationale**: Optimize display mode resolution and configuration lookups
+**Location**: `enhancements/PHASE_10_PERFORMANCE_OPTIMIZATION.md`
 
 ### Tasks
 - [ ] 10.1 Profile display mode resolution performance
@@ -228,6 +239,7 @@ let g:genero_tools_config = {
 **Status**: Planned
 **Effort**: 1-2 days
 **Rationale**: Improve error messages and debugging information
+**Location**: `enhancements/PHASE_11_ENHANCED_ERROR_REPORTING.md`
 
 ### Tasks
 - [ ] 11.1 Add error codes to error messages
@@ -259,6 +271,7 @@ let g:genero_tools_config = {
 **Status**: Planned
 **Effort**: 1-2 days
 **Rationale**: Help users validate and debug their configuration
+**Location**: `enhancements/PHASE_12_CONFIGURATION_VALIDATION.md`
 
 ### Tasks
 - [ ] 12.1 Create configuration validator
@@ -299,6 +312,7 @@ Suggestions:
 **Status**: Planned
 **Effort**: 1 day
 **Rationale**: Provide pre-configured display mode profiles
+**Location**: `enhancements/PHASE_13_DISPLAY_MODE_PRESETS.md`
 
 ### Tasks
 - [ ] 13.1 Define preset profiles

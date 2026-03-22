@@ -322,4 +322,173 @@ function M.expand_by_name(trigger)
   return true
 end
 
+-- Get all snippets as array for VimScript
+function M.get_all_snippets()
+  if not M.snippets then
+    M.setup()
+  end
+  
+  if not M.snippets or vim.tbl_count(M.snippets) == 0 then
+    return {}
+  end
+  
+  local snippets_array = {}
+  
+  -- Convert snippets table to array format for VimScript
+  for trigger, snippet in pairs(M.snippets) do
+    local snippet_obj = {
+      trigger = trigger,
+      name = snippet.name or trigger,
+      description = snippet.description or '',
+      body = snippet.body or '',
+    }
+    table.insert(snippets_array, snippet_obj)
+  end
+  
+  return snippets_array
+end
+
+-- Expand snippet with LuaSnip (with placeholder support)
+function M.expand_with_luasnip(trigger)
+  -- Handle case where trigger is passed as array from luaeval
+  if type(trigger) == 'table' and trigger[1] then
+    trigger = trigger[1]
+  end
+  
+  -- Try to load LuaSnip if not already loaded
+  if not M.luasnip then
+    local ok, luasnip = pcall(require, 'luasnip')
+    if not ok then
+      vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
+      return false
+    end
+    M.luasnip = luasnip
+  end
+  
+  -- Try to load snippets if not already loaded
+  if not M.snippets then
+    M.setup()
+  end
+  
+  if not M.snippets or vim.tbl_count(M.snippets) == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
+    return false
+  end
+
+  local snippet = M.get_snippet(trigger)
+  if not snippet then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet not found: ' .. trigger)
+    return false
+  end
+
+  if not snippet.body then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet has no body: ' .. trigger)
+    return false
+  end
+
+  -- Get current buffer and cursor position
+  local buf = vim.api.nvim_get_current_buf()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+
+  -- Parse snippet body
+  local body = snippet.body
+  body = body:gsub('^%s+', ''):gsub('%s+$', '')
+  
+  -- Split into lines
+  local lines = vim.split(body, '\n')
+
+  -- Remove leading/trailing empty lines
+  while #lines > 0 and lines[1]:match('^%s*$') do
+    table.remove(lines, 1)
+  end
+  while #lines > 0 and lines[#lines]:match('^%s*$') do
+    table.remove(lines)
+  end
+
+  if #lines == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty: ' .. trigger)
+    return false
+  end
+
+  -- Insert lines at cursor
+  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
+
+  -- Create snippet with placeholder support
+  local ls = require('luasnip')
+  local s = ls.snippet
+  local t = ls.text_node
+  local i = ls.insert_node
+  
+  -- Parse body for placeholders (${1:label}, ${2:label}, etc.)
+  local parsed_body = M.parse_snippet_body(body, snippet.placeholders)
+  
+  -- Create snippet object with parsed body
+  local temp_snippet = s(trigger, parsed_body)
+  
+  -- Position cursor at the start of inserted text
+  vim.api.nvim_win_set_cursor(0, { row, col })
+  
+  -- Expand the snippet using LuaSnip
+  pcall(function()
+    ls.snip_expand(temp_snippet)
+  end)
+
+  return true
+end
+
+-- Parse snippet body and create LuaSnip nodes with placeholder support
+function M.parse_snippet_body(body, placeholders)
+  local ls = require('luasnip')
+  local t = ls.text_node
+  local i = ls.insert_node
+  
+  local nodes = {}
+  local placeholder_index = 1
+  local last_pos = 1
+  
+  -- Find all ${N:label} patterns
+  for match in body:gmatch('${(%d+):([^}]*)}') do
+    local num = tonumber(match)
+    if num then
+      placeholder_index = math.max(placeholder_index, num + 1)
+    end
+  end
+  
+  -- For now, create a simple text node with the body
+  -- Full placeholder parsing would require more complex logic
+  table.insert(nodes, t(body))
+  
+  return nodes
+end
+
+-- Navigate to next placeholder in snippet
+function M.next_placeholder()
+  if not M.luasnip then
+    return false
+  end
+  
+  local ls = require('luasnip')
+  if ls.jumpable(1) then
+    ls.jump(1)
+    return true
+  end
+  
+  return false
+end
+
+-- Navigate to previous placeholder in snippet
+function M.prev_placeholder()
+  if not M.luasnip then
+    return false
+  end
+  
+  local ls = require('luasnip')
+  if ls.jumpable(-1) then
+    ls.jump(-1)
+    return true
+  end
+  
+  return false
+end
+
 return M

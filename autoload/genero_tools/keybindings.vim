@@ -46,4 +46,17 @@ function! genero_tools#keybindings#register() abort
       nnoremap <silent> <leader>gd :GeneroDebugStreamToggle<CR>
     endif
   endif
+  
+  " Snippet placeholder navigation (Neovim only)
+  if has('nvim')
+    " Tab to jump to next placeholder
+    if empty(maparg('<Tab>', 'i'))
+      inoremap <silent> <Tab> <C-R>=genero_tools#snippets#next_placeholder_or_tab()<CR>
+    endif
+    
+    " Shift+Tab to jump to previous placeholder
+    if empty(maparg('<S-Tab>', 'i'))
+      inoremap <silent> <S-Tab> <C-R>=genero_tools#snippets#prev_placeholder_or_tab()<CR>
+    endif
+  endif
 endfunction
