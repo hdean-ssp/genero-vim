@@ -1,11 +1,31 @@
 " Genero-Tools Plugin - Display Modes
 
+" Check if formatted content has meaningful data (not just whitespace)
+function! genero_tools#display#has_content(formatted) abort
+  if empty(a:formatted)
+    return 0
+  endif
+  
+  for line in a:formatted
+    if line !~# '^\s*$'
+      return 1
+    endif
+  endfor
+  
+  return 0
+endfunction
+
 " Main display dispatcher
 function! genero_tools#display#result(result, display_mode) abort
   if a:result.success
     let formatted = genero_tools#display#format_success(a:result.data)
   else
     let formatted = genero_tools#display#format_error(a:result.error)
+  endif
+  
+  " Don't display if there's no meaningful content
+  if !genero_tools#display#has_content(formatted)
+    return
   endif
   
   " Check result size and enable pagination if needed (Requirement 17.1)
@@ -62,6 +82,24 @@ endfunction
 function! genero_tools#display#popup(formatted) abort
   if !has('nvim')
     call genero_tools#display#echo(join(a:formatted, "\n"))
+    return
+  endif
+  
+  " Don't display if there's no content
+  if empty(a:formatted)
+    return
+  endif
+  
+  " Check if all lines are just whitespace
+  let has_content = 0
+  for line in a:formatted
+    if line !~# '^\s*$'
+      let has_content = 1
+      break
+    endif
+  endfor
+  
+  if !has_content
     return
   endif
   
@@ -242,6 +280,19 @@ endfunction
 function! genero_tools#display#inline(formatted) abort
   " Don't display if there's no content
   if empty(a:formatted)
+    return
+  endif
+  
+  " Check if all lines are just whitespace
+  let has_content = 0
+  for line in a:formatted
+    if line !~# '^\s*$'
+      let has_content = 1
+      break
+    endif
+  endfor
+  
+  if !has_content
     return
   endif
   

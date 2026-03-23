@@ -52,14 +52,16 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
   if display_mode == 'quickfix'
     call setqflist(qf_list)
   else
-    " For other display modes, use the display module
-    " Format results for display module
-    let formatted_result = {
-      \ 'success': 1,
-      \ 'data': qf_list,
-      \ 'error': ''
-      \ }
-    call genero_tools#display#result(formatted_result, display_mode)
+    " For other display modes, only display if there are results
+    if !empty(qf_list)
+      " Format results for display module
+      let formatted_result = {
+        \ 'success': 1,
+        \ 'data': qf_list,
+        \ 'error': ''
+        \ }
+      call genero_tools#display#result(formatted_result, display_mode)
+    endif
   endif
   
   return {
