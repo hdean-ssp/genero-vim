@@ -1,7 +1,7 @@
 # Known Bugs & Issues
 
-**Last Updated**: March 22, 2026
-**Status**: 1 high-priority bug (implementation complete, ready for testing)
+**Last Updated**: March 23, 2026
+**Status**: Multiple bugs fixed, 1 new bug identified (quickfix list empty)
 **Severity Levels**: Critical | High | Medium | Low
 **Bug Tracking**: See `bug-fixes/` directory for detailed bug fix documentation
 
@@ -9,9 +9,165 @@
 
 ## Current Known Issues
 
-### None Identified ✓
+### Issue #006: Empty Quickfix List on F5 Compile (NEW)
+**Severity**: High
+**Status**: In Progress - Debug Output Added
+**Date Reported**: March 23, 2026
+**Date Started**: March 23, 2026
 
-All reported bugs have been fixed and are ready for testing.
+**Description:**
+When pressing F5 to compile, the quickfix list opens but is empty despite there being errors/warnings from the compiler.
+
+**Expected Behavior:**
+- F5 compile should populate quickfix list with all errors and warnings
+- Quickfix window should display compilation results
+- Users should be able to navigate errors with Ctrl+. and Ctrl+,
+
+**Current Behavior:**
+- Quickfix window opens but is empty
+- Errors and warnings are not displayed
+- No way to navigate to error locations
+
+**Steps to Reproduce:**
+1. Open a Genero file with compilation errors
+2. Press F5 to compile
+3. Observe quickfix window opens but is empty
+4. Check that compiler actually found errors (check compiler output)
+
+**Affected Files:**
+- `autoload/genero_tools/compiler/quickfix.vim` - Quickfix population
+- `autoload/genero_tools/compiler.vim` - Compiler execution and parsing
+- `autoload/genero_tools/compiler/commands.vim` - Compile command
+
+**Root Cause Analysis:**
+- Possible issue: Errors/warnings not being parsed from compiler output
+- Possible issue: Quickfix list not being populated even when errors exist
+- Possible issue: Display mode configuration preventing quickfix population
+- Debug output added to diagnose the issue
+
+**Current Fixes Applied:**
+1. ✓ Removed early return check in populate() that was blocking error display
+2. ✓ Changed populate() to always call setqflist() regardless of display mode
+3. ✓ Added debug output to log compiler output and parsing results
+
+**Next Steps:**
+1. Run F5 compile and check debug messages in Vim message area
+2. Verify compiler output is being captured correctly
+3. Verify parsing is extracting errors/warnings correctly
+4. Verify setqflist() is being called with correct data
+5. Remove debug output once issue is resolved
+
+**Related Configuration:**
+```vim
+compiler_enabled: 1
+compiler_command: 'fglcomp'
+display_mode: 'quickfix'  (or other modes)
+```
+
+---
+
+## Recently Fixed Issues
+
+### Issue #001: Snippet Expansion Not Working with Luasnip
+**Severity**: High
+**Status**: FIXED - Partial Implementation
+**Date Reported**: March 22, 2026
+**Date Fixed**: March 23, 2026
+**Commits**: acd70e6, 9c59be7, d79a696, c39ebdc, caf05c7, a6a073e
+
+**What Was Fixed:**
+1. ✓ Snippet list is now selectable with keyboard (j/k, arrows) and mouse
+2. ✓ Snippets can be selected from the list and expanded
+3. ✓ Snippets appear in autocomplete menu
+4. ✓ Snippets can be selected from autocomplete menu
+5. ✓ Multi-line snippets now insert all lines (not just first line)
+6. ✓ Snippet text is clean (no LuaSnip syntax visible)
+
+**Current Limitations:**
+- Placeholder navigation (Tab/Shift+Tab) not working
+- Placeholders are not navigable - users must manually edit them
+- Trade-off: Full multi-line blocks insert cleanly without placeholder syntax
+
+**How It Works Now:**
+1. Snippets are registered with LuaSnip on startup
+2. Snippet body is parsed to extract text without `${N:label}` syntax
+3. All lines of the snippet are inserted into the buffer
+4. Placeholder labels serve as helpful hints for what needs to be changed
+5. Users can manually edit the inserted text
+
+**Files Modified:**
+- `lua/genero_tools/snippets/init.lua` - Snippet expansion and parsing
+- `lua/genero_tools/snippets/manager.lua` - Snippet registration with LuaSnip
+- `autoload/genero_tools/complete.vim` - Completion handler for snippets
+- `autoload/genero_tools/snippets.vim` - Snippet list selection and expansion
+
+**Testing Status:**
+- [x] Snippet list is selectable (keyboard and mouse)
+- [x] Selecting snippet inserts it properly
+- [x] Multi-line snippets insert all lines
+- [x] Snippets appear in autocomplete menu
+- [x] Snippet selection from autocomplete works
+- [ ] Placeholder navigation functional (not implemented)
+- [x] Works in Neovim
+- [x] Backward compatibility maintained
+
+**Notes:**
+- Placeholder navigation would require more complex LuaSnip integration
+- Current implementation prioritizes usability (full blocks) over placeholder navigation
+- Users can use Ctrl+H to replace text or manually edit placeholders
+- Future enhancement: Add Ctrl+Arrow keys for placeholder navigation
+
+---
+
+### Issue #002: Snippets Cannot Be Selected from Autocomplete Menu
+**Severity**: High
+**Status**: FIXED
+**Date Reported**: March 23, 2026
+**Date Fixed**: March 23, 2026
+
+**What Was Fixed:**
+- Added CompleteDone autocommand handler to detect snippet selection
+- Implemented snippet expansion trigger when snippet is selected from autocomplete
+- Snippets now properly expand when selected from the menu
+
+---
+
+### Issue #003: Debug Stream Selection Window Too Small and Not Navigable
+**Severity**: High
+**Status**: FIXED (in earlier session)
+**Date Reported**: March 23, 2026
+
+**What Was Fixed:**
+- Debug stream window now displays properly sized
+- Navigation with up/down arrows works
+- Selection with Enter key works
+- Files can be opened in split from the list
+
+---
+
+### Issue #004: Empty Floating Window on Buffer Load Disappears After 5 Seconds
+**Severity**: Medium
+**Status**: FIXED (in earlier session)
+**Date Reported**: March 23, 2026
+
+**What Was Fixed:**
+- Added `has_content()` helper function to check for meaningful content
+- Enhanced `popup()` and `inline()` functions to validate content before creating windows
+- Fixed `compiler#quickfix#populate()` to not display empty results
+- Empty windows no longer appear on buffer load
+
+---
+
+### Issue #005: Messages Display in Floating Window (e.g., Hint List)
+**Severity**: Medium
+**Status**: FIXED (in earlier session)
+**Date Reported**: March 23, 2026
+
+**What Was Fixed:**
+- Display mode routing now correctly handles different message types
+- Messages display in appropriate mode based on configuration
+- Floating window is reserved for specific content (hints, debug stream, etc.)
+- No more message conflicts with other display elements
 
 ---
 
@@ -44,334 +200,6 @@ All reported bugs have been fixed and are ready for testing.
 **Description**: Invalid display mode values silently fall back to default. Users may not realize misconfiguration.
 **Mitigation**: Already implemented - `compat#validate_display_mode()` provides validation
 **Action**: Consider adding warning messages for invalid configs
-
----
-
-## Reported Issues
-
-### Issue #001: Snippet Expansion Not Working with Luasnip
-**Severity**: High
-**Status**: Implementation Complete - Ready for Testing
-**Date Reported**: March 22, 2026
-**Work Started**: March 22, 2026
-**Implementation Completed**: March 22, 2026
-**Location**: `bug-fixes/BF-1/` - See detailed documentation there
-
-**Description:**
-Snippets system has multiple issues:
-1. Snippets are not inserting raw text instead or properly expanding through luasnip
-2. Snippet placeholders and navigation are not working
-4. Snippet list floating window is not selectable - users cannot select items to insert
-
-**Expected Behavior:**
-1. Snippets should expand through luasnip with proper placeholder handling
-2. Users should be able to navigate between snippet placeholders
-3. Snippets should appear in autocomplete menu suggestions
-4. Snippet list should be selectable with keyboard/mouse to insert snippets
-5. Snippet expansion should work seamlessly with existing autocomplete system
-
-**Current Behavior:**
-1. Snippets are not selectable from the autocomplete menu
-2. Placeholder navigation not functional
-4. Snippet list floating window is navigable but not selectable
-5. No way to insert snippets from the floating window list
-
-**Steps to Reproduce:**
-1. Trigger snippet list display (shows floating window)
-2. Observe that window is navigable but items cannot be selected
-3. Try to insert a snippet from the list (fails - no selection mechanism)
-4. Trigger snippet insertion (method varies by configuration)
-5. Observe that raw text is inserted instead of expanded snippet
-6. Try to navigate placeholders (fails)
-7. Trigger autocomplete menu
-8. Observe that snippets are not listed in suggestions
-
-**Affected Files:**
-- `autoload/genero_tools/snippets.vim` - Snippet management and list display
-- `autoload/genero_tools/complete.vim` - Autocomplete system
-- `autoload/genero_tools/lua_bridge.vim` - Lua integration
-
-**Root Cause Analysis:**
-- Snippet list floating window lacks selection/confirmation mechanism
-- Snippet insertion likely bypassing luasnip expansion
-- Autocomplete system not configured to include snippets
-- Possible Lua bridge integration issue with luasnip
-
-**Workaround:**
-None currently available. Users must manually expand snippets or use alternative snippet plugins.
-
-**Related Configuration:**
-```vim
-" Snippet-related config
-snippets_enabled: 1
-snippets_directory: './snippets'
-autocomplete_include_snippets: 1  " May need to be added
-snippet_expansion_mode: 'luasnip'
-snippet_list_selectable: 1        " New option needed
-```
-
-**Investigation Needed:**
-1. Review snippet list floating window implementation
-2. Add selection/confirmation mechanism to snippet list
-3. Review snippet insertion mechanism in `snippets.vim`
-4. Check luasnip integration in `lua_bridge.vim`
-5. Verify autocomplete menu configuration in `complete.vim`
-6. Test snippet expansion with luasnip directly
-7. Check if snippet sources are registered with autocomplete
-
-**Implementation Status:**
-✓ COMPLETE - All 6 parts implemented and ready for testing
-
-**What Was Implemented:**
-1. ✓ Part 1: Snippet list selection (keyboard and mouse)
-2. ✓ Part 2: Snippet expansion with luasnip
-3. ✓ Part 3: Autocomplete integration
-4. ✓ Part 4: Placeholder navigation
-5. ✓ Part 5: Comprehensive testing guide
-6. ✓ Part 6: Complete documentation
-
-**Files Modified:**
-- `autoload/genero_tools/config.vim` - 3 new config options
-- `autoload/genero_tools/snippets.vim` - 12 new functions
-- `autoload/genero_tools/complete.vim` - 2 new functions
-- `autoload/genero_tools/keybindings.vim` - 2 new keybindings
-- `lua/genero_tools/snippets/init.lua` - 4 new functions
-
-**Documentation Created:**
-- `docs/SNIPPET_CONFIGURATION.md` - User configuration guide
-- `docs/SNIPPET_ARCHITECTURE.md` - Developer architecture guide
-- `docs/SNIPPET_TESTING_GUIDE.md` - Comprehensive testing procedures
-- `.kiro/BF-1_IMPLEMENTATION_PROGRESS.md` - Implementation progress tracking
-
-**Testing Checklist:**
-- [ ] Snippet list is selectable (keyboard and mouse)
-- [ ] Selecting snippet inserts it properly
-- [ ] Snippet expansion works with luasnip
-- [ ] Placeholder navigation functional
-- [ ] Snippets appear in autocomplete menu
-- [ ] Snippet selection from autocomplete works
-- [ ] Snippet expansion works with all display modes
-- [ ] No conflicts with existing autocomplete
-- [ ] Works in both Vim and Neovim
-- [ ] Backward compatibility maintained
-
-**Next Steps:**
-1. Follow testing procedures in `docs/SNIPPET_TESTING_GUIDE.md`
-2. Execute all 30+ test cases
-3. Document results using test summary template
-4. Fix any issues found during testing
-5. Commit and push changes
-
-**Testing Checklist:**
-- [ ] Snippet list is selectable (keyboard and mouse)
-- [ ] Selecting snippet inserts it properly
-- [ ] Snippet expansion works with luasnip
-- [ ] Placeholder navigation functional
-- [ ] Snippets appear in autocomplete menu
-- [ ] Snippet expansion works with all display modes
-- [ ] No conflicts with existing autocomplete
-- [ ] Works in both Vim and Neovim
-- [ ] Backward compatibility maintained
-
-**Notes:**
-- This is a high-priority bug affecting user experience
-- Requires coordination between snippets, autocomplete, and Lua bridge modules
-- May require new configuration options
-- Consider creating new phase for snippet system improvements
-- Snippet list selection is critical for usability
-
----
-
-### Issue #002: Snippets Cannot Be Selected from Autocomplete Menu
-**Severity**: High
-**Status**: Open
-**Date Reported**: March 23, 2026
-
-**Description:**
-Snippets cannot be selected from the autocomplete menu using standard selection keys (Ctrl+N, Tab, Enter). When a snippet appears in the autocomplete menu, users cannot select it to insert the snippet body.
-
-**Expected Behavior:**
-- Snippets should be selectable from autocomplete menu
-- Ctrl+N, Tab, or Enter should select and insert the snippet
-- Snippet body should be properly expanded
-
-**Current Behavior:**
-- Snippets appear in autocomplete menu but cannot be selected
-- Selection keys (Ctrl+N, Tab, Enter) do not work for snippets
-- No way to insert snippet from autocomplete menu
-
-**Steps to Reproduce:**
-1. Trigger autocomplete menu
-2. Observe snippet appears in suggestions
-3. Try to select snippet with Ctrl+N, Tab, or Enter
-4. Observe selection fails
-
-**Affected Files:**
-- `autoload/genero_tools/complete.vim` - Autocomplete system
-- `autoload/genero_tools/snippets.vim` - Snippet integration
-
-**Root Cause Analysis:**
-- Snippet sources may not be properly registered with autocomplete
-- Selection handlers may not be configured for snippet items
-- Autocomplete menu may not recognize snippet items as selectable
-
-**Workaround:**
-Use snippet list floating window instead (if selectable)
-
-**Related Configuration:**
-```vim
-autocomplete_include_snippets: 1
-snippet_expansion_mode: 'luasnip'
-```
-
----
-
-### Issue #003: Debug Stream Selection Window Too Small and Not Navigable
-**Severity**: High
-**Status**: Open
-**Date Reported**: March 23, 2026
-
-**Description:**
-The debug stream selection window is too small, only showing 2 documents in the list and is not properly navigable. Previously this was a large floating window where users could navigate up/down the list. Users want that functionality restored with the ability to press Enter on a file to select it for opening in a split.
-
-**Expected Behavior:**
-- Debug stream selection window should be large enough to show multiple files
-- Window should be navigable with up/down arrow keys
-- Pressing Enter should select the file and open it in a split
-- Window should display all available debug stream files
-
-**Current Behavior:**
-- Window is too small (only shows 2 docs)
-- Navigation is limited or not working
-- No way to select a file and open it in split
-- Window doesn't show all available files
-
-**Steps to Reproduce:**
-1. Trigger debug stream selection
-2. Observe window size is too small
-3. Try to navigate the list
-4. Try to select a file with Enter
-
-**Affected Files:**
-- `autoload/genero_tools/debug_stream.vim` - Debug stream window management
-- `autoload/genero_tools/display.vim` - Display mode handling
-
-**Root Cause Analysis:**
-- Floating window size calculation may be incorrect
-- Navigation handlers may not be properly configured
-- Selection/confirmation mechanism may be missing
-
-**Workaround:**
-None currently available
-
-**Related Configuration:**
-```vim
-debug_stream_window_height: (needs adjustment)
-debug_stream_window_width: (needs adjustment)
-```
-
----
-
-### Issue #004: Empty Floating Window on Buffer Load Disappears After 5 Seconds
-**Severity**: Medium
-**Status**: Open
-**Date Reported**: March 23, 2026
-
-**Description:**
-An empty floating window appears on buffer load and disappears after approximately 5 seconds. This occurs with the default supplied configuration. The issue may be related to signs updating on buffer change and save, or could be compiler output related since it also happens on save.
-
-**Expected Behavior:**
-- No empty floating windows should appear on buffer load
-- If a floating window is needed, it should display relevant content
-- Windows should not disappear unexpectedly
-
-**Current Behavior:**
-- Empty floating window appears on buffer load
-- Window disappears after ~5 seconds
-- Occurs with default configuration
-- Happens on buffer change and save
-
-**Steps to Reproduce:**
-1. Use default supplied configuration
-2. Load a buffer
-3. Observe empty floating window appears
-4. Wait ~5 seconds
-5. Observe window disappears
-
-**Affected Files:**
-- `autoload/genero_tools/display.vim` - Display mode handling
-- `autoload/genero_tools/compiler/signs.vim` - Sign updates
-- `autoload/genero_tools/compiler.vim` - Compiler output
-
-**Root Cause Analysis:**
-- May be related to signs updating on buffer change/save
-- Could be compiler output trying to display in floating window
-- Possible timer or auto-close mechanism triggering unexpectedly
-- May be related to display mode initialization
-
-**Workaround:**
-None currently available
-
-**Related Configuration:**
-- Check display mode settings
-- Check sign update configuration
-- Check compiler output settings
-
----
-
-### Issue #005: Messages Display in Floating Window (e.g., Hint List)
-**Severity**: Medium
-**Status**: Open
-**Date Reported**: March 23, 2026
-
-**Description:**
-Messages are displaying in the floating window (e.g., hint list) when they should display in other modes or be handled differently. This may be causing display conflicts or unexpected behavior.
-
-**Expected Behavior:**
-- Messages should display in appropriate mode (echo, quickfix, split, etc.)
-- Floating window should be reserved for specific content (hints, debug stream, etc.)
-- No message conflicts with other display elements
-
-**Current Behavior:**
-- Messages appear in floating window
-- May conflict with other floating window content
-- Display mode handling may be incorrect
-
-**Steps to Reproduce:**
-1. Trigger hint list display
-2. Observe messages in floating window
-3. Note any display conflicts
-
-**Affected Files:**
-- `autoload/genero_tools/display.vim` - Display mode routing
-- `autoload/genero_tools/hints.vim` - Hint display
-- `autoload/genero_tools/hints/display.vim` - Hint display implementation
-
-**Root Cause Analysis:**
-- Display mode routing may be sending messages to floating window
-- Floating window may be default display mode when it shouldn't be
-- Message type detection may be incorrect
-
-**Workaround:**
-Change display mode configuration to use different mode (echo, split, etc.)
-
-**Related Configuration:**
-```vim
-display_mode: 'floating_window'  (may need to be changed)
-hint_display_mode: (may need explicit configuration)
-```
-
----
-
-### None Other Currently
-
-If additional issues are reported, they will be documented here with:
-- Issue ID
-- Severity level
-- Description
-- Steps to reproduce
-- Workaround (if available)
-- Status (Open/In Progress/Resolved)
 
 ---
 
@@ -459,4 +287,3 @@ For bug reports or issues:
 2. Review [.kiro/AGENT_CONTEXT.md](.kiro/AGENT_CONTEXT.md) for project overview
 3. Check [.kiro/specs/display-enhancements/](.kiro/specs/display-enhancements/) for detailed documentation
 4. Create new issue entry in this file with all details
-
