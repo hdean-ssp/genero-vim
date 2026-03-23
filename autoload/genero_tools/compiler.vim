@@ -147,6 +147,9 @@ function! genero_tools#compiler#execute(source_path) abort
     " Store raw output
     let result.output = output
     
+    " Debug: log the raw output
+    echom 'Compiler output: ' . output
+    
     " Parse output based on file type and compiler version
     let compiler_ver = genero_tools#compiler#get_version()
     let parsed = genero_tools#compiler#parse_output(output, compiler_ver, file_type)
@@ -156,8 +159,10 @@ function! genero_tools#compiler#execute(source_path) abort
       let result.errors = parsed.errors
       let result.warnings = parsed.warnings
       let result.info = parsed.info
+      echom 'Parsed: ' . len(parsed.errors) . ' errors, ' . len(parsed.warnings) . ' warnings'
     else
       let result.error = parsed.error
+      echom 'Parse error: ' . parsed.error
     endif
     
   catch

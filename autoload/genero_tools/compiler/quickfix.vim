@@ -37,6 +37,9 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
     endfor
   endif
   
+  " Debug: log the number of items being added
+  echom 'Quickfix: Adding ' . len(qf_list) . ' items (errors: ' . len(get(a:result, 'errors', [])) . ', warnings: ' . len(get(a:result, 'warnings', [])) . ')'
+  
   " Get effective display mode for compiler (respects compiler_display_mode override)
   let display_mode = genero_tools#display#get_mode('compiler')
   
