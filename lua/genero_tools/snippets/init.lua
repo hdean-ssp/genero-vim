@@ -410,55 +410,19 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Insert lines at cursor
-  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
-
-  -- Create snippet with placeholder support
+  -- Use LuaSnip to expand the snippet properly
   local ls = require('luasnip')
   local s = ls.snippet
   local t = ls.text_node
-  local i = ls.insert_node
   
-  -- Parse body for placeholders (${1:label}, ${2:label}, etc.)
-  local parsed_body = M.parse_snippet_body(body, snippet.placeholders)
+  -- Create a snippet object with the body
+  -- LuaSnip will handle the ${} placeholders automatically
+  local temp_snippet = s(trigger, t(body))
   
-  -- Create snippet object with parsed body
-  local temp_snippet = s(trigger, parsed_body)
-  
-  -- Position cursor at the start of inserted text
-  vim.api.nvim_win_set_cursor(0, { row, col })
-  
-  -- Expand the snippet using LuaSnip
-  pcall(function()
-    ls.snip_expand(temp_snippet)
-  end)
+  -- Set the snippet to be expanded
+  ls.snip_expand(temp_snippet)
 
   return true
-end
-
--- Parse snippet body and create LuaSnip nodes with placeholder support
-function M.parse_snippet_body(body, placeholders)
-  local ls = require('luasnip')
-  local t = ls.text_node
-  local i = ls.insert_node
-  
-  local nodes = {}
-  local placeholder_index = 1
-  local last_pos = 1
-  
-  -- Find all ${N:label} patterns
-  for match in body:gmatch('${(%d+):([^}]*)}') do
-    local num = tonumber(match)
-    if num then
-      placeholder_index = math.max(placeholder_index, num + 1)
-    end
-  end
-  
-  -- For now, create a simple text node with the body
-  -- Full placeholder parsing would require more complex logic
-  table.insert(nodes, t(body))
-  
-  return nodes
 end
 
 -- Navigate to next placeholder in snippet

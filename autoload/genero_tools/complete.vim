@@ -436,11 +436,28 @@ function! genero_tools#complete#handle_completion_done() abort
       if get(data, 'type', '') == 'snippet'
         let trigger = get(data, 'trigger', '')
         if !empty(trigger)
-          " Delete the inserted trigger text
-          let trigger_len = len(trigger)
-          call feedkeys("\<C-w>", 'n')
+          " Get current position
+          let row = line('.')
+          let col = col('.')
           
-          " Expand the snippet
+          " Get the line content
+          let line = getline('.')
+          
+          " Find the start of the completed word
+          let word_start = col - 1
+          while word_start > 0 && line[word_start - 1] =~# '[a-zA-Z0-9_.]'
+            let word_start -= 1
+          endwhile
+          
+          " Delete the inserted trigger text by selecting and deleting it
+          " Position cursor at start of trigger
+          call cursor(row, word_start + 1)
+          
+          " Select the trigger text
+          let trigger_len = len(trigger)
+          execute 'normal! ' . trigger_len . 'x'
+          
+          " Now expand the snippet at the correct position
           call genero_tools#snippets#expand(trigger)
         endif
       endif

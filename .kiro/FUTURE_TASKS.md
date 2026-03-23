@@ -128,19 +128,131 @@ snippet_list_keybindings: {            " Keybindings for snippet list
 
 ## Enhancement Phases
 
-### Phase 8: Progress Display Module (Medium Priority)
+### Phase 8: Display Mode Simplification (High Priority)
+
+**Status**: Planned
+**Effort**: 2-3 days
+**Rationale**: Current display modes are confusing and overlapping. Simplify to 3 core modes.
+**Location**: `enhancements/PHASE_8_DISPLAY_MODE_SIMPLIFICATION.md`
+
+### Problem Statement
+Current implementation has 5 display modes with unclear distinctions:
+- `echo` - Command line output
+- `quickfix` - Quickfix list
+- `popup` - Floating window (Neovim)
+- `inline` - Inline display (Neovim)
+- `split` - Split window
+
+**Issues**:
+1. **Confusing Distinction**: `popup` vs `inline` vs `split` have negligible differences
+2. **Overlapping Functionality**: Multiple modes do similar things
+3. **Configuration Complexity**: Users unsure which mode to choose
+4. **Implementation Overhead**: Maintaining 5 modes increases code complexity
+5. **Inconsistent Behavior**: Different modes have different capabilities
+
+### Proposed Solution
+Simplify to 3 core display modes:
+
+1. **`echo`** - Command line (status line)
+   - Pops up in status line
+   - Requires Enter to dismiss
+   - Best for: Quick notifications, brief messages
+   - Vim & Neovim compatible
+
+2. **`floating`** - Floating window
+   - Floating window with border
+   - Configurable size and position
+   - Supports scrolling for large content
+   - Best for: Detailed results, code listings
+   - Neovim only (fallback to echo in Vim)
+
+3. **`quickfix`** - Quickfix list
+   - Standard Vim quickfix window
+   - Navigable list of results
+   - Integrates with error navigation
+   - Best for: Error lists, search results
+   - Vim & Neovim compatible
+
+### Tasks
+- [ ] 8.1 Audit current display mode usage
+- [ ] 8.2 Design migration strategy
+- [ ] 8.3 Consolidate popup/inline/split into floating
+- [ ] 8.4 Update configuration system
+- [ ] 8.5 Update all display calls
+- [ ] 8.6 Add backward compatibility layer
+- [ ] 8.7 Update documentation
+- [ ] 8.8 Test all features with new modes
+- [ ] 8.9 Update configuration examples
+
+### Files to Modify
+- `autoload/genero_tools/display.vim` - Core display logic
+- `autoload/genero_tools/config.vim` - Configuration validation
+- `autoload/genero_tools/compat.vim` - Compatibility layer
+- `docs/CONFIGURATION.md` - User documentation
+- All feature modules using display modes
+
+### Configuration Changes
+```vim
+" Old (5 modes)
+display_mode: 'quickfix|popup|inline|split|echo'
+
+" New (3 modes)
+display_mode: 'echo|floating|quickfix'
+
+" Feature-specific overrides (simplified)
+compiler_display_mode: ''      " empty = inherit from global
+hints_display_mode: ''
+signatures_display_mode: ''
+progress_display_mode: ''
+debug_display_mode: ''
+error_display_mode: ''
+```
+
+### Migration Path
+1. **Phase 1**: Add new 3-mode system alongside existing 5-mode system
+2. **Phase 2**: Map old modes to new modes (popup→floating, inline→floating, split→floating)
+3. **Phase 3**: Deprecate old modes with warnings
+4. **Phase 4**: Remove old modes in next major version
+
+### Backward Compatibility
+```vim
+" Old mode → New mode mapping
+popup → floating
+inline → floating
+split → floating
+echo → echo
+quickfix → quickfix
+```
+
+### Benefits
+- **Simpler Configuration**: Users choose between 3 clear options
+- **Reduced Complexity**: Less code to maintain
+- **Better UX**: Clear purpose for each mode
+- **Easier Documentation**: Fewer options to explain
+- **Consistent Behavior**: Each mode has well-defined behavior
+
+### Notes
+- High priority - improves user experience significantly
+- Requires careful migration to maintain backward compatibility
+- Consider deprecation warnings in intermediate version
+- Update all documentation and examples
+- Test thoroughly with all features
+
+---
+
+## Phase 9: Progress Display Module (Medium Priority)
 
 **Status**: Planned
 **Effort**: 1-2 days
 **Rationale**: Currently uses direct echo; could benefit from display mode support
-**Location**: `enhancements/PHASE_8_PROGRESS_DISPLAY.md`
+**Location**: `enhancements/PHASE_9_PROGRESS_DISPLAY.md`
 
 ### Tasks
-- [ ] 8.1 Review current progress display implementation
-- [ ] 8.2 Add display mode support to progress messages
-- [ ] 8.3 Implement `progress_display_mode` configuration
-- [ ] 8.4 Test with all display modes
-- [ ] 8.5 Update documentation
+- [ ] 9.1 Review current progress display implementation
+- [ ] 9.2 Add display mode support to progress messages
+- [ ] 9.3 Implement `progress_display_mode` configuration
+- [ ] 9.4 Test with all display modes
+- [ ] 9.5 Update documentation
 
 ### Files to Modify
 - `autoload/genero_tools/progress.vim`
@@ -158,7 +270,7 @@ progress_display_mode: ''  " empty = inherit from global display_mode
 
 ---
 
-## Phase 9: Custom Display Modes (Low Priority)
+## Phase 10: Custom Display Modes (Low Priority)
 
 **Status**: Planned
 **Effort**: 2-3 days
@@ -166,11 +278,11 @@ progress_display_mode: ''  " empty = inherit from global display_mode
 **Location**: `enhancements/PHASE_9_CUSTOM_DISPLAY_MODES.md`
 
 ### Tasks
-- [ ] 9.1 Design custom display mode API
-- [ ] 9.2 Implement display mode registration system
-- [ ] 9.3 Add documentation and examples
-- [ ] 9.4 Test with custom handlers
-- [ ] 9.5 Update configuration system
+- [ ] 10.1 Design custom display mode API
+- [ ] 10.2 Implement display mode registration system
+- [ ] 10.3 Add documentation and examples
+- [ ] 10.4 Test with custom handlers
+- [ ] 10.5 Update configuration system
 
 ### Files to Modify
 - `autoload/genero_tools/display.vim`
@@ -191,13 +303,13 @@ let g:genero_tools_config = {
 ```
 
 ### Notes
-- Low priority - current 5 modes cover all use cases
+- Low priority - current 3 modes cover all use cases
 - Only implement if users request custom display handlers
 - Requires careful API design for extensibility
 
 ---
 
-## Phase 10: Performance Optimization (Low Priority)
+## Phase 11: Performance Optimization (Low Priority)
 
 **Status**: Planned
 **Effort**: 1 day
@@ -205,11 +317,11 @@ let g:genero_tools_config = {
 **Location**: `enhancements/PHASE_10_PERFORMANCE_OPTIMIZATION.md`
 
 ### Tasks
-- [ ] 10.1 Profile display mode resolution performance
-- [ ] 10.2 Implement caching for display mode per feature
-- [ ] 10.3 Optimize configuration lookup
-- [ ] 10.4 Benchmark improvements
-- [ ] 10.5 Document performance characteristics
+- [ ] 11.1 Profile display mode resolution performance
+- [ ] 11.2 Implement caching for display mode per feature
+- [ ] 11.3 Optimize configuration lookup
+- [ ] 11.4 Benchmark improvements
+- [ ] 11.5 Document performance characteristics
 
 ### Optimization Opportunities
 1. **Display Mode Caching**
@@ -234,7 +346,7 @@ let g:genero_tools_config = {
 
 ---
 
-## Phase 11: Enhanced Error Reporting (Medium Priority)
+## Phase 12: Enhanced Error Reporting (Medium Priority)
 
 **Status**: Planned
 **Effort**: 1-2 days
@@ -242,11 +354,11 @@ let g:genero_tools_config = {
 **Location**: `enhancements/PHASE_11_ENHANCED_ERROR_REPORTING.md`
 
 ### Tasks
-- [ ] 11.1 Add error codes to error messages
-- [ ] 11.2 Implement error context tracking
-- [ ] 11.3 Add debug logging for errors
-- [ ] 11.4 Create error reference documentation
-- [ ] 11.5 Test error reporting
+- [ ] 12.1 Add error codes to error messages
+- [ ] 12.2 Implement error context tracking
+- [ ] 12.3 Add debug logging for errors
+- [ ] 12.4 Create error reference documentation
+- [ ] 12.5 Test error reporting
 
 ### Files to Modify
 - `autoload/genero_tools/error.vim`
@@ -266,7 +378,7 @@ let g:genero_tools_config = {
 
 ---
 
-## Phase 12: Configuration Validation UI (Low Priority)
+## Phase 13: Configuration Validation UI (Low Priority)
 
 **Status**: Planned
 **Effort**: 1-2 days
@@ -274,11 +386,11 @@ let g:genero_tools_config = {
 **Location**: `enhancements/PHASE_12_CONFIGURATION_VALIDATION.md`
 
 ### Tasks
-- [ ] 12.1 Create configuration validator
-- [ ] 12.2 Implement validation command
-- [ ] 12.3 Add configuration suggestions
-- [ ] 12.4 Create validation report
-- [ ] 12.5 Document validation process
+- [ ] 13.1 Create configuration validator
+- [ ] 13.2 Implement validation command
+- [ ] 13.3 Add configuration suggestions
+- [ ] 13.4 Create validation report
+- [ ] 13.5 Document validation process
 
 ### Example Command
 ```vim
@@ -290,7 +402,7 @@ let g:genero_tools_config = {
 Configuration Validation Report
 ================================
 
-✓ display_mode: 'popup' (valid)
+✓ display_mode: 'floating' (valid)
 ✓ compiler_display_mode: '' (inherits from global)
 ⚠ floating_window_width: 200 (exceeds screen width)
 ✗ unknown_option: 'value' (not recognized)
@@ -307,7 +419,7 @@ Suggestions:
 
 ---
 
-## Phase 13: Display Mode Presets (Low Priority)
+## Phase 14: Display Mode Presets (Low Priority)
 
 **Status**: Planned
 **Effort**: 1 day
@@ -315,11 +427,11 @@ Suggestions:
 **Location**: `enhancements/PHASE_13_DISPLAY_MODE_PRESETS.md`
 
 ### Tasks
-- [ ] 13.1 Define preset profiles
-- [ ] 13.2 Implement preset loading
-- [ ] 13.3 Add preset selection command
-- [ ] 13.4 Document presets
-- [ ] 13.5 Test preset switching
+- [ ] 14.1 Define preset profiles
+- [ ] 14.2 Implement preset loading
+- [ ] 14.3 Add preset selection command
+- [ ] 14.4 Document presets
+- [ ] 14.5 Test preset switching
 
 ### Example Presets
 ```vim
@@ -328,17 +440,17 @@ let g:genero_tools_presets.minimal = {
   \ 'display_mode': 'quickfix',
   \ }
 
-" Popup-heavy - floating windows for everything
-let g:genero_tools_presets.popup = {
-  \ 'display_mode': 'popup',
-  \ 'compiler_display_mode': 'popup',
-  \ 'hints_display_mode': 'popup',
+" Floating-heavy - floating windows for everything
+let g:genero_tools_presets.floating = {
+  \ 'display_mode': 'floating',
+  \ 'compiler_display_mode': 'floating',
+  \ 'hints_display_mode': 'floating',
   \ }
 
-" Split-friendly - split windows for detailed content
-let g:genero_tools_presets.split = {
-  \ 'display_mode': 'split',
-  \ 'compiler_display_mode': 'split',
+" Echo-friendly - command line for quick feedback
+let g:genero_tools_presets.echo = {
+  \ 'display_mode': 'echo',
+  \ 'compiler_display_mode': 'echo',
   \ }
 ```
 
