@@ -443,15 +443,19 @@ function! genero_tools#complete#handle_completion_done() abort
           " Get the line content
           let line = getline('.')
           
-          " Find the start of the completed word (the trigger that was just inserted)
-          let word_end = col - 1
-          let word_start = word_end - len(trigger)
+          " The trigger was just inserted, so it ends at col-1
+          " We need to delete it and then expand the snippet
+          let trigger_len = len(trigger)
+          let word_start = col - trigger_len - 1
           
-          " Validate that we found the trigger
-          if word_start >= 0 && line[word_start:word_end-1] == trigger
-            " Delete the trigger text
+          " Validate position
+          if word_start >= 0 && word_start + trigger_len <= len(line)
+            " Delete the trigger text by selecting it and deleting
             call cursor(row, word_start + 1)
-            execute 'normal! ' . len(trigger) . 'x'
+            " Use 'x' command to delete characters
+            for i in range(trigger_len)
+              execute 'normal! x'
+            endfor
             
             " Now expand the snippet at the correct position
             call genero_tools#snippets#expand(trigger)

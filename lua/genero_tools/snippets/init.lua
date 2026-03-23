@@ -274,43 +274,21 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Get current buffer and cursor position
-  local buf = vim.api.nvim_get_current_buf()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-  -- Parse snippet body
-  local body = snippet.body
-  body = body:gsub('^%s+', ''):gsub('%s+$', '')
+  -- Parse snippet body to create LuaSnip nodes with proper placeholder handling
+  local nodes = M.parse_snippet_nodes(snippet.body)
   
-  -- Split into lines
-  local lines = vim.split(body, '\n')
-
-  -- Remove leading/trailing empty lines
-  while #lines > 0 and lines[1]:match('^%s*$') do
-    table.remove(lines, 1)
-  end
-  while #lines > 0 and lines[#lines]:match('^%s*$') do
-    table.remove(lines)
-  end
-
-  if #lines == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty: ' .. trigger)
+  if not nodes or #nodes == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Failed to parse snippet body: ' .. trigger)
     return false
   end
 
-  -- Insert all lines into the buffer at current cursor position
-  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
-
-  -- Now create a snippet with the full body for LuaSnip to handle placeholders
+  -- Create the snippet with parsed nodes
   local ls = require('luasnip')
   local s = ls.snippet
-  local t = ls.text_node
+  local temp_snippet = s(trigger, nodes)
   
-  -- Create a snippet with the full body (including newlines)
-  -- LuaSnip will handle placeholder parsing
-  local temp_snippet = s(trigger, t(body))
-  
-  -- Expand the snippet - this sets up placeholder navigation
+  -- Expand the snippet - snip_expand will insert it at cursor position
+  -- and set up placeholder navigation
   ls.snip_expand(temp_snippet)
 
   return true
@@ -347,7 +325,7 @@ function M.parse_snippet_nodes(body)
       table.insert(nodes, t(body:sub(pos, start - 1)))
     end
     
-    -- Add placeholder as insert node
+    -- Add placeholder as insert node with the label as default text
     local num = tonumber(num_str)
     table.insert(nodes, i(num, label))
     
