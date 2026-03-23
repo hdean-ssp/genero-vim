@@ -35,6 +35,13 @@ function M.setup()
   -- Store reference for later use
   M.luasnip = luasnip
   M.snippets = all_snippets
+  
+  -- Configure LuaSnip for snippet navigation
+  -- This ensures Tab/Shift+Tab work properly for placeholder navigation
+  luasnip.config.set_config({
+    enable_autosnippets = true,
+    store_selection_keys = '<Tab>',
+  })
 end
 
 -- Merge built-in and custom snippets
@@ -274,67 +281,24 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Parse snippet body to extract text without ${N:label} syntax
-  local text_lines = M.extract_snippet_text(snippet.body)
+  -- Parse snippet body to create LuaSnip nodes with proper placeholder handling
+  local nodes = M.parse_snippet_nodes(snippet.body)
   
-  if not text_lines or #text_lines == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Failed to extract snippet text: ' .. trigger)
+  if not nodes or #nodes == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Failed to parse snippet body: ' .. trigger)
     return false
   end
-  
-  -- Get current buffer and cursor position
-  local buf = vim.api.nvim_get_current_buf()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-  
-  -- Insert the text lines (without placeholder syntax) at cursor position
-  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, text_lines)
-  
-  -- Position cursor at the start of the inserted snippet
-  vim.api.nvim_win_set_cursor(0, { row, col })
-  
-  -- Now expand with LuaSnip to set up placeholders
+
+  -- Create the snippet with parsed nodes
   local ls = require('luasnip')
-  if ls.expand then
-    pcall(function()
-      ls.expand()
-    end)
-  end
+  local s = ls.snippet
+  local temp_snippet = s(trigger, nodes)
+  
+  -- Expand the snippet using LuaSnip's snip_expand
+  -- This will properly insert the snippet with placeholder tracking
+  ls.snip_expand(temp_snippet)
 
   return true
-end
-
--- Extract snippet text without ${N:label} syntax
-function M.extract_snippet_text(body)
-  if not body or body == '' then
-    return { '' }
-  end
-  
-  -- Split body into lines
-  local lines = vim.split(body, '\n')
-  
-  -- Remove leading/trailing empty lines
-  while #lines > 0 and lines[1]:match('^%s*$') do
-    table.remove(lines, 1)
-  end
-  while #lines > 0 and lines[#lines]:match('^%s*$') do
-    table.remove(lines)
-  end
-  
-  if #lines == 0 then
-    return { '' }
-  end
-  
-  -- Remove ${N:label} syntax from each line, keeping just the label text
-  local result_lines = {}
-  local pattern = '%$%{%d+:([^}]*)%}'
-  
-  for _, line in ipairs(lines) do
-    -- Replace ${N:label} with just the label text
-    local processed_line = line:gsub(pattern, '%1')
-    table.insert(result_lines, processed_line)
-  end
-  
-  return result_lines
 end
 
 -- Parse snippet body and create LuaSnip nodes with placeholder support
