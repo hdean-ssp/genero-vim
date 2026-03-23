@@ -274,22 +274,39 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Parse snippet body to create LuaSnip nodes with proper placeholder handling
-  local nodes = M.parse_snippet_nodes(snippet.body)
+  -- Get current buffer and cursor position
+  local buf = vim.api.nvim_get_current_buf()
+  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
   
-  if not nodes or #nodes == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Failed to parse snippet body: ' .. trigger)
+  -- Split snippet body into lines
+  local lines = vim.split(snippet.body, '\n')
+  
+  -- Remove leading/trailing empty lines
+  while #lines > 0 and lines[1]:match('^%s*$') do
+    table.remove(lines, 1)
+  end
+  while #lines > 0 and lines[#lines]:match('^%s*$') do
+    table.remove(lines)
+  end
+  
+  if #lines == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty after processing')
     return false
   end
-
-  -- Create the snippet with parsed nodes
-  local ls = require('luasnip')
-  local s = ls.snippet
-  local temp_snippet = s(trigger, nodes)
   
-  -- Expand the snippet - snip_expand will insert it at cursor position
-  -- and set up placeholder navigation
-  ls.snip_expand(temp_snippet)
+  -- Insert lines at cursor position
+  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
+  
+  -- Position cursor at the start of the inserted snippet
+  vim.api.nvim_win_set_cursor(0, { row, col })
+  
+  -- Try to expand with LuaSnip
+  local ls = require('luasnip')
+  if ls.expand then
+    pcall(function()
+      ls.expand()
+    end)
+  end
 
   return true
 end
