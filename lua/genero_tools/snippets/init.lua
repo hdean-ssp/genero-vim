@@ -38,20 +38,14 @@ function M.setup()
 end
 
 -- Merge built-in and custom snippets
--- Custom snippets take precedence over built-in
 function M.merge_snippets(builtin, custom)
   local merged = {}
-
-  -- Add all built-in snippets
   for trigger, snippet in pairs(builtin) do
     merged[trigger] = snippet
   end
-
-  -- Override with custom snippets
   for trigger, snippet in pairs(custom) do
     merged[trigger] = snippet
   end
-
   return merged
 end
 
@@ -84,7 +78,6 @@ function M.expand_snippet(trigger)
     return false
   end
 
-  -- Expand snippet using LuaSnip
   M.luasnip.snip_expand(snippet)
   return true
 end
@@ -131,20 +124,17 @@ function M.list_snippets_display()
   local lines = { 'Available Snippets:', '', 'Trigger | Name | Description' }
   table.insert(lines, string.rep('-', 80))
 
-  -- Sort snippets by trigger for consistent display
   local sorted_triggers = {}
   for trigger, _ in pairs(M.snippets) do
     table.insert(sorted_triggers, trigger)
   end
   table.sort(sorted_triggers)
 
-  -- Format each snippet
   for _, trigger in ipairs(sorted_triggers) do
     local snippet = M.snippets[trigger]
     local name = snippet.name or trigger
     local desc = snippet.description or ''
 
-    -- Truncate long descriptions
     if #desc > 50 then
       desc = desc:sub(1, 47) .. '...'
     end
@@ -156,7 +146,6 @@ function M.list_snippets_display()
   table.insert(lines, '')
   table.insert(lines, 'Use :GeneroSnippetHelp <trigger> for more details')
 
-  -- Display in floating window
   local UI = require('genero_tools.ui')
   UI.show_floating_window(lines, {
     title = 'Genero Snippets',
@@ -167,7 +156,6 @@ end
 
 -- Display help for a specific snippet
 function M.show_help(trigger)
-  -- Handle case where trigger is passed as array from luaeval
   if type(trigger) == 'table' and trigger[1] then
     trigger = trigger[1]
   end
@@ -184,23 +172,17 @@ function M.show_help(trigger)
   end
 
   local lines = {}
-
-  -- Header
   table.insert(lines, 'Snippet: ' .. (snippet.name or trigger))
   table.insert(lines, '')
-
-  -- Trigger
   table.insert(lines, 'Trigger: ' .. trigger)
   table.insert(lines, '')
 
-  -- Description
   if snippet.description then
     table.insert(lines, 'Description:')
     table.insert(lines, snippet.description)
     table.insert(lines, '')
   end
 
-  -- Body
   if snippet.body then
     table.insert(lines, 'Template:')
     table.insert(lines, '---')
@@ -211,7 +193,6 @@ function M.show_help(trigger)
     table.insert(lines, '')
   end
 
-  -- Placeholders
   if snippet.placeholders then
     table.insert(lines, 'Placeholders:')
     for i, placeholder in ipairs(snippet.placeholders) do
@@ -222,104 +203,16 @@ function M.show_help(trigger)
     table.insert(lines, '')
   end
 
-  -- Usage
   table.insert(lines, 'Usage:')
   table.insert(lines, '  Type "' .. trigger .. '" and press Tab to expand')
   table.insert(lines, '  Or use :GeneroSnippet ' .. trigger)
 
-  -- Display in floating window
   local UI = require('genero_tools.ui')
   UI.show_floating_window(lines, {
     title = 'Snippet Help: ' .. trigger,
     width = 80,
     border = 'rounded',
   })
-end
-
--- Expand a snippet by name/trigger
-function M.expand_by_name(trigger)
-  -- Handle case where trigger is passed as array from luaeval
-  if type(trigger) == 'table' and trigger[1] then
-    trigger = trigger[1]
-  end
-  
-  -- Try to load LuaSnip if not already loaded
-  if not M.luasnip then
-    local ok, luasnip = pcall(require, 'luasnip')
-    if not ok then
-      vim.api.nvim_err_writeln('Genero-Tools Snippets: LuaSnip not available. Install LuaSnip to use snippet expansion.')
-      return false
-    end
-    M.luasnip = luasnip
-  end
-  
-  -- Try to load snippets if not already loaded
-  if not M.snippets then
-    M.setup()
-  end
-  
-  if not M.snippets or vim.tbl_count(M.snippets) == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: No snippets loaded')
-    return false
-  end
-
-  local snippet = M.get_snippet(trigger)
-  if not snippet then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet not found: ' .. trigger)
-    return false
-  end
-
-  if not snippet.body then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet has no body: ' .. trigger)
-    return false
-  end
-
-  -- Get current buffer and cursor position
-  local buf = vim.api.nvim_get_current_buf()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-  -- Parse snippet body to extract placeholders
-  local body = snippet.body
-  
-  -- Remove leading/trailing whitespace from body
-  body = body:gsub('^%s+', ''):gsub('%s+$', '')
-  
-  -- Split into lines
-  local lines = vim.split(body, '\n')
-
-  -- Remove leading/trailing empty lines
-  while #lines > 0 and lines[1]:match('^%s*$') do
-    table.remove(lines, 1)
-  end
-  while #lines > 0 and lines[#lines]:match('^%s*$') do
-    table.remove(lines)
-  end
-
-  if #lines == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty: ' .. trigger)
-    return false
-  end
-
-  -- Insert lines at cursor
-  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
-
-  -- Create a temporary snippet with the body and expand it
-  local ls = require('luasnip')
-  local s = ls.snippet
-  local t = ls.text_node
-  
-  -- Create snippet object with the body
-  local temp_snippet = s(trigger, t(body))
-  
-  -- Position cursor at the start of inserted text
-  vim.api.nvim_win_set_cursor(0, { row, col })
-  
-  -- Expand the snippet using LuaSnip
-  pcall(function()
-    ls.snip_expand(temp_snippet)
-  end)
-
-  return true
 end
 
 -- Get all snippets as array for VimScript
@@ -333,8 +226,6 @@ function M.get_all_snippets()
   end
   
   local snippets_array = {}
-  
-  -- Convert snippets table to array format for VimScript
   for trigger, snippet in pairs(M.snippets) do
     local snippet_obj = {
       trigger = trigger,
@@ -350,12 +241,10 @@ end
 
 -- Expand snippet with LuaSnip (with placeholder support)
 function M.expand_with_luasnip(trigger)
-  -- Handle case where trigger is passed as array from luaeval
   if type(trigger) == 'table' and trigger[1] then
     trigger = trigger[1]
   end
   
-  -- Try to load LuaSnip if not already loaded
   if not M.luasnip then
     local ok, luasnip = pcall(require, 'luasnip')
     if not ok then
@@ -365,7 +254,6 @@ function M.expand_with_luasnip(trigger)
     M.luasnip = luasnip
   end
   
-  -- Try to load snippets if not already loaded
   if not M.snippets then
     M.setup()
   end
@@ -386,43 +274,20 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Get current buffer and cursor position
-  local buf = vim.api.nvim_get_current_buf()
-  local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-
-  -- Parse snippet body
-  local body = snippet.body
-  body = body:gsub('^%s+', ''):gsub('%s+$', '')
+  -- Parse snippet body to create LuaSnip nodes
+  local nodes = M.parse_snippet_nodes(snippet.body)
   
-  -- Split into lines
-  local lines = vim.split(body, '\n')
-
-  -- Remove leading/trailing empty lines
-  while #lines > 0 and lines[1]:match('^%s*$') do
-    table.remove(lines, 1)
-  end
-  while #lines > 0 and lines[#lines]:match('^%s*$') do
-    table.remove(lines)
-  end
-
-  if #lines == 0 then
-    vim.api.nvim_err_writeln('Genero-Tools Snippets: Snippet body is empty: ' .. trigger)
+  if not nodes or #nodes == 0 then
+    vim.api.nvim_err_writeln('Genero-Tools Snippets: Failed to parse snippet body: ' .. trigger)
     return false
   end
 
-  -- Use LuaSnip to create and expand the snippet properly
+  -- Create and expand the snippet
   local ls = require('luasnip')
-  
-  -- Parse the snippet body to create proper LuaSnip nodes
-  -- This will handle ${1:label}, ${2:label}, etc.
-  local nodes = M.parse_snippet_nodes(body)
-  
-  -- Create a snippet with the parsed nodes
   local s = ls.snippet
   local temp_snippet = s(trigger, nodes)
   
   -- Expand the snippet using LuaSnip
-  -- This will insert the snippet and set up placeholder navigation
   ls.snip_expand(temp_snippet)
 
   return true
@@ -434,31 +299,16 @@ function M.parse_snippet_nodes(body)
   local t = ls.text_node
   local i = ls.insert_node
   
+  if not body or body == '' then
+    return { t('') }
+  end
+
   local nodes = {}
-  local last_pos = 1
-  local placeholder_map = {}
-  
-  -- Find all ${N:label} patterns and their positions
+  local pos = 1
   local pattern = '%$%{(%d+):([^}]*)%}'
-  for num_str, label in body:gmatch(pattern) do
-    local num = tonumber(num_str)
-    if num then
-      placeholder_map[num] = label
-    end
-  end
-  
-  -- If no placeholders found, just return the body as text
-  if not next(placeholder_map) then
-    table.insert(nodes, t(body))
-    return nodes
-  end
   
   -- Parse the body and create nodes for text and placeholders
-  local pos = 1
-  local placeholder_num = 1
-  
   while pos <= #body do
-    -- Find next placeholder
     local start, finish, num_str, label = body:find(pattern, pos)
     
     if not start then
@@ -480,6 +330,11 @@ function M.parse_snippet_nodes(body)
     
     -- Move position past this placeholder
     pos = finish + 1
+  end
+  
+  -- If no nodes were created, return the body as a single text node
+  if #nodes == 0 then
+    table.insert(nodes, t(body))
   end
   
   return nodes
