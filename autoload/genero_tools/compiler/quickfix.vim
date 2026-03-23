@@ -40,10 +40,11 @@ function! genero_tools#compiler#quickfix#populate(result, filter) abort
   " Get effective display mode for compiler (respects compiler_display_mode override)
   let display_mode = genero_tools#display#get_mode('compiler')
   
-  " For quickfix mode, populate the quickfix list directly
-  if display_mode == 'quickfix'
-    call setqflist(qf_list)
-  else
+  " Always populate the quickfix list with results
+  call setqflist(qf_list)
+  
+  " For non-quickfix display modes, also display using the configured mode
+  if display_mode != 'quickfix'
     " For other display modes, only display if there are results
     if !empty(qf_list)
       " Format results for display module
