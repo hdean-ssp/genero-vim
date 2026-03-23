@@ -114,10 +114,12 @@ function M.register_with_luasnip(snippets)
   -- Convert our snippets to LuaSnip format
   for trigger, snippet_data in pairs(snippets) do
     if snippet_data.body then
-      -- For now, just insert the body as text without placeholder expansion
-      -- This avoids the retrieve_all error
-      local snippet_obj = s(trigger, t(snippet_data.body))
-      table.insert(snippet_list, snippet_obj)
+      -- Parse the snippet body to create nodes with placeholder support
+      local nodes = M.parse_snippet_nodes(snippet_data.body)
+      if nodes and #nodes > 0 then
+        local snippet_obj = s(trigger, nodes)
+        table.insert(snippet_list, snippet_obj)
+      end
     end
   end
   
@@ -125,6 +127,53 @@ function M.register_with_luasnip(snippets)
   if #snippet_list > 0 then
     ls.add_snippets('genero', snippet_list)
   end
+end
+
+-- Parse snippet body and create LuaSnip nodes with placeholder support
+function M.parse_snippet_nodes(body)
+  local ls = require('luasnip')
+  local t = ls.text_node
+  local i = ls.insert_node
+  
+  if not body or body == '' then
+    return { t('') }
+  end
+
+  local nodes = {}
+  local pos = 1
+  local pattern = '%$%{(%d+):([^}]*)%}'
+  
+  -- Parse the body and create nodes for text and placeholders
+  while pos <= #body do
+    local start, finish, num_str, label = body:find(pattern, pos)
+    
+    if not start then
+      -- No more placeholders, add remaining text
+      if pos <= #body then
+        table.insert(nodes, t(body:sub(pos)))
+      end
+      break
+    end
+    
+    -- Add text before placeholder
+    if start > pos then
+      table.insert(nodes, t(body:sub(pos, start - 1)))
+    end
+    
+    -- Add placeholder as insert node with the label as default text
+    local num = tonumber(num_str)
+    table.insert(nodes, i(num, label))
+    
+    -- Move position past this placeholder
+    pos = finish + 1
+  end
+  
+  -- If no nodes were created, return the body as a single text node
+  if #nodes == 0 then
+    table.insert(nodes, t(body))
+  end
+  
+  return nodes
 end
 
 -- Watch for snippet file changes and reload
