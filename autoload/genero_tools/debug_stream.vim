@@ -260,60 +260,174 @@ function! s:sort_by_mtime(a, b) abort
   return mtime_b - mtime_a
 endfunction
 
-" Show file selector using standard display functions
+" File selector state
+let s:file_selector_state = {
+  \ 'file_paths': [],
+  \ 'file_names': [],
+  \ 'selected_index': 0,
+  \ 'buffer_id': -1,
+  \ 'window_id': -1
+  \ }
+
+" Show file selector using floating window with navigation
 function! s:show_file_selector(file_names, file_paths) abort
-  " Format file list with numbering for selection
+  " Store file paths and names
+  let s:file_selector_state.file_paths = a:file_paths
+  let s:file_selector_state.file_names = a:file_names
+  let s:file_selector_state.selected_index = 0
+  
+  " Format file list with numbering for display
   let formatted_list = []
   for idx in range(len(a:file_names))
     let line_num = idx + 1
     call add(formatted_list, printf('%2d. %s', line_num, a:file_names[idx]))
   endfor
   
-  " Store file paths in script variable for selection handler
-  let s:file_selector_state = {
-    \ 'file_paths': a:file_paths,
-    \ 'file_names': a:file_names
+  " Create buffer for file list
+  let buf = nvim_create_buf(v:false, v:true)
+  call nvim_buf_set_lines(buf, 0, -1, v:false, formatted_list)
+  
+  " Calculate window dimensions
+  let width = min([80, &columns - 4])
+  let height = min([len(formatted_list) + 2, &lines - 4])
+  let row = (&lines - height) / 2
+  let col = (&columns - width) / 2
+  
+  " Create floating window
+  let opts = {
+    \ 'relative': 'editor',
+    \ 'width': width,
+    \ 'height': height,
+    \ 'row': row,
+    \ 'col': col,
+    \ 'style': 'minimal',
+    \ 'border': 'rounded',
+    \ 'title': ' Debug Stream Files '
     \ }
   
-  " Use standard display function to show file list
-  let display_mode = genero_tools#display#get_mode('debug_stream')
-  call genero_tools#display#details('Debug Stream Files', formatted_list, display_mode)
+  let win = nvim_open_win(buf, v:true, opts)
   
-  " Prompt user for selection
-  call s:prompt_file_selection()
+  " Store window and buffer IDs
+  let s:file_selector_state.buffer_id = buf
+  let s:file_selector_state.window_id = win
+  
+  " Set buffer options
+  call nvim_buf_set_option(buf, 'modifiable', v:false)
+  call nvim_buf_set_option(buf, 'buftype', 'nofile')
+  call nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+  
+  " Setup keybindings for selection
+  call s:setup_file_selector_keybindings()
+  
+  " Highlight first item
+  call s:highlight_selected_file()
 endfunction
 
-" Prompt user to select a file
-function! s:prompt_file_selection() abort
-  if empty(s:file_selector_state.file_paths)
+" Setup keybindings for file selector
+function! s:setup_file_selector_keybindings() abort
+  " Enter to select
+  nnoremap <buffer> <CR> :call <SID>select_file()<CR>
+  
+  " Escape to cancel
+  nnoremap <buffer> <Esc> :call <SID>close_file_selector()<CR>
+  
+  " j/k or arrow keys to navigate
+  nnoremap <buffer> j :call <SID>next_file()<CR>
+  nnoremap <buffer> k :call <SID>prev_file()<CR>
+  nnoremap <buffer> <Down> :call <SID>next_file()<CR>
+  nnoremap <buffer> <Up> :call <SID>prev_file()<CR>
+  
+  " Mouse click to select
+  nnoremap <buffer> <LeftMouse> :call <SID>mouse_select_file()<CR>
+endfunction
+
+" Select current file
+function! s:select_file() abort
+  let index = s:file_selector_state.selected_index
+  let file_paths = s:file_selector_state.file_paths
+  
+  if index < 0 || index >= len(file_paths)
     return
   endif
   
-  let num_files = len(s:file_selector_state.file_paths)
-  let prompt = printf('Select file (1-%d): ', num_files)
+  let selected_file = file_paths[index]
+  
+  " Close the selector
+  call s:close_file_selector()
+  
+  " Start debug streaming with selected file
+  call genero_tools#debug_stream#start(selected_file)
+endfunction
+
+" Navigate to next file in list
+function! s:next_file() abort
+  let max_index = len(s:file_selector_state.file_paths) - 1
+  if s:file_selector_state.selected_index < max_index
+    let s:file_selector_state.selected_index += 1
+    call s:highlight_selected_file()
+  endif
+endfunction
+
+" Navigate to previous file in list
+function! s:prev_file() abort
+  if s:file_selector_state.selected_index > 0
+    let s:file_selector_state.selected_index -= 1
+    call s:highlight_selected_file()
+  endif
+endfunction
+
+" Handle mouse click selection
+function! s:mouse_select_file() abort
+  let line = line('.') - 1
+  if line >= 0 && line < len(s:file_selector_state.file_paths)
+    let s:file_selector_state.selected_index = line
+    call s:select_file()
+  endif
+endfunction
+
+" Highlight the currently selected file
+function! s:highlight_selected_file() abort
+  if s:file_selector_state.window_id == -1
+    return
+  endif
   
   try
-    let choice = input(prompt)
+    " Clear previous highlights
+    call nvim_buf_clear_namespace(s:file_selector_state.buffer_id, -1, 0, -1)
     
-    if !empty(choice) && choice =~ '^\d\+$'
-      let file_idx = str2nr(choice) - 1
-      
-      if file_idx >= 0 && file_idx < num_files
-        let selected_file = s:file_selector_state.file_paths[file_idx]
-        call genero_tools#debug_stream#start(selected_file)
-      else
-        call genero_tools#display#echo('Invalid selection')
-      endif
-    else
-      call genero_tools#display#echo('Selection cancelled')
-    endif
+    " Highlight current line
+    let line = s:file_selector_state.selected_index
+    call nvim_buf_add_highlight(
+      \ s:file_selector_state.buffer_id,
+      \ -1,
+      \ 'CursorLine',
+      \ line,
+      \ 0,
+      \ -1
+      \ )
+    
+    " Move cursor to selected line
+    call nvim_win_set_cursor(s:file_selector_state.window_id, [line + 1, 0])
   catch
-    call genero_tools#display#echo('Selection cancelled')
-  finally
-    " Clear state
-    let s:file_selector_state = {}
+    " Silently handle highlight errors
   endtry
 endfunction
 
-" File selector state
-let s:file_selector_state = {}
+" Close file selector
+function! s:close_file_selector() abort
+  if s:file_selector_state.window_id != -1
+    try
+      call nvim_win_close(s:file_selector_state.window_id, v:true)
+    catch
+      " Window already closed
+    endtry
+    let s:file_selector_state.window_id = -1
+    let s:file_selector_state.buffer_id = -1
+  endif
+endfunction
+
+" Prompt user to select a file (legacy - kept for compatibility)
+function! s:prompt_file_selection() abort
+  " This function is no longer used - file selection is now done via floating window
+  " Kept for backward compatibility
+endfunction

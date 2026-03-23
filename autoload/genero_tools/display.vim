@@ -240,6 +240,11 @@ endfunction
 
 " Display inline popup above cursor (works in both vim and neovim)
 function! genero_tools#display#inline(formatted) abort
+  " Don't display if there's no content
+  if empty(a:formatted)
+    return
+  endif
+  
   " Limit to first few lines for inline display
   let max_lines = 5
   let display_lines = a:formatted[0:max_lines-1]
@@ -410,18 +415,17 @@ endfunction
 
 " Display notification/status message
 " Auto-dismisses after duration (0 = no auto-dismiss)
+" Messages always display in echo mode, not in floating windows
 function! genero_tools#display#notify(message, duration) abort
   if !genero_tools#config#get('notify_enabled')
     return
   endif
   
-  let duration = a:duration > 0 ? a:duration : genero_tools#config#get('notify_duration')
+  " Always use echo for notifications, not floating windows
+  call genero_tools#display#echo(a:message)
   
-  if genero_tools#compat#is_neovim()
-    call genero_tools#display#notify_neovim(a:message, duration)
-  else
-    call genero_tools#display#notify_vim(a:message, duration)
-  endif
+  " Auto-dismiss is not applicable for echo mode
+  " (echo messages disappear when user presses a key or after a short time naturally)
 endfunction
 
 " Neovim notification using floating window

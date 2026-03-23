@@ -142,7 +142,8 @@ function! genero_tools#complete#get_snippet_completions(base) abort
           \ 'menu': '[snippet] ' . description,
           \ 'kind': 's',
           \ 'icase': 1,
-          \ 'dup': 0
+          \ 'dup': 0,
+          \ 'user_data': json_encode({'type': 'snippet', 'trigger': trigger})
           \ })
       endif
     endfor
@@ -393,5 +394,60 @@ function! genero_tools#complete#on_snippet_selected(snippet_trigger) abort
     call genero_tools#snippets#expand(a:snippet_trigger)
   catch
     call genero_tools#error#error('Snippets', 'Error selecting snippet: ' . v:exception)
+  endtry
+endfunction
+
+" Setup completion callback for snippet expansion
+function! genero_tools#complete#setup_completion_callback() abort
+  if !has('nvim')
+    return
+  endif
+  
+  " Setup CompleteDone autocommand to handle snippet expansion
+  augroup GeneroSnippetCompletion
+    autocmd!
+    autocmd CompleteDone * call genero_tools#complete#handle_completion_done()
+  augroup END
+endfunction
+
+" Handle completion done event - expand snippets if selected
+function! genero_tools#complete#handle_completion_done() abort
+  if !has('nvim') || !genero_tools#lua_bridge#available()
+    return
+  endif
+  
+  try
+    " Get the completed item info
+    let completed_item = v:completed_item
+    
+    if empty(completed_item)
+      return
+    endif
+    
+    " Check if this is a snippet completion
+    let user_data = get(completed_item, 'user_data', '')
+    if empty(user_data)
+      return
+    endif
+    
+    " Parse user_data to check if it's a snippet
+    try
+      let data = json_decode(user_data)
+      if get(data, 'type', '') == 'snippet'
+        let trigger = get(data, 'trigger', '')
+        if !empty(trigger)
+          " Delete the inserted trigger text
+          let trigger_len = len(trigger)
+          call feedkeys("\<C-w>", 'n')
+          
+          " Expand the snippet
+          call genero_tools#snippets#expand(trigger)
+        endif
+      endif
+    catch
+      " Silently ignore JSON parse errors
+    endtry
+  catch
+    " Silently handle errors
   endtry
 endfunction

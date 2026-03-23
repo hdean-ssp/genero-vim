@@ -11,7 +11,7 @@
 
 ### None Identified ✓
 
-The Display Enhancements project has been thoroughly tested and verified. All marked tasks have corresponding working functions with 0 syntax errors.
+All reported bugs have been fixed and are ready for testing.
 
 ---
 
@@ -59,9 +59,8 @@ The Display Enhancements project has been thoroughly tested and verified. All ma
 
 **Description:**
 Snippets system has multiple issues:
-1. Snippets are inserting raw text instead of properly expanding through luasnip
+1. Snippets are not inserting raw text instead or properly expanding through luasnip
 2. Snippet placeholders and navigation are not working
-3. Snippets do not appear in the autocomplete menu when autocomplete is triggered
 4. Snippet list floating window is not selectable - users cannot select items to insert
 
 **Expected Behavior:**
@@ -72,9 +71,8 @@ Snippets system has multiple issues:
 5. Snippet expansion should work seamlessly with existing autocomplete system
 
 **Current Behavior:**
-1. Snippets insert as raw text without luasnip expansion
+1. Snippets are not selectable from the autocomplete menu
 2. Placeholder navigation not functional
-3. Snippets missing from autocomplete menu
 4. Snippet list floating window is navigable but not selectable
 5. No way to insert snippets from the floating window list
 
@@ -181,6 +179,187 @@ snippet_list_selectable: 1        " New option needed
 - May require new configuration options
 - Consider creating new phase for snippet system improvements
 - Snippet list selection is critical for usability
+
+---
+
+### Issue #002: Snippets Cannot Be Selected from Autocomplete Menu
+**Severity**: High
+**Status**: Open
+**Date Reported**: March 23, 2026
+
+**Description:**
+Snippets cannot be selected from the autocomplete menu using standard selection keys (Ctrl+N, Tab, Enter). When a snippet appears in the autocomplete menu, users cannot select it to insert the snippet body.
+
+**Expected Behavior:**
+- Snippets should be selectable from autocomplete menu
+- Ctrl+N, Tab, or Enter should select and insert the snippet
+- Snippet body should be properly expanded
+
+**Current Behavior:**
+- Snippets appear in autocomplete menu but cannot be selected
+- Selection keys (Ctrl+N, Tab, Enter) do not work for snippets
+- No way to insert snippet from autocomplete menu
+
+**Steps to Reproduce:**
+1. Trigger autocomplete menu
+2. Observe snippet appears in suggestions
+3. Try to select snippet with Ctrl+N, Tab, or Enter
+4. Observe selection fails
+
+**Affected Files:**
+- `autoload/genero_tools/complete.vim` - Autocomplete system
+- `autoload/genero_tools/snippets.vim` - Snippet integration
+
+**Root Cause Analysis:**
+- Snippet sources may not be properly registered with autocomplete
+- Selection handlers may not be configured for snippet items
+- Autocomplete menu may not recognize snippet items as selectable
+
+**Workaround:**
+Use snippet list floating window instead (if selectable)
+
+**Related Configuration:**
+```vim
+autocomplete_include_snippets: 1
+snippet_expansion_mode: 'luasnip'
+```
+
+---
+
+### Issue #003: Debug Stream Selection Window Too Small and Not Navigable
+**Severity**: High
+**Status**: Open
+**Date Reported**: March 23, 2026
+
+**Description:**
+The debug stream selection window is too small, only showing 2 documents in the list and is not properly navigable. Previously this was a large floating window where users could navigate up/down the list. Users want that functionality restored with the ability to press Enter on a file to select it for opening in a split.
+
+**Expected Behavior:**
+- Debug stream selection window should be large enough to show multiple files
+- Window should be navigable with up/down arrow keys
+- Pressing Enter should select the file and open it in a split
+- Window should display all available debug stream files
+
+**Current Behavior:**
+- Window is too small (only shows 2 docs)
+- Navigation is limited or not working
+- No way to select a file and open it in split
+- Window doesn't show all available files
+
+**Steps to Reproduce:**
+1. Trigger debug stream selection
+2. Observe window size is too small
+3. Try to navigate the list
+4. Try to select a file with Enter
+
+**Affected Files:**
+- `autoload/genero_tools/debug_stream.vim` - Debug stream window management
+- `autoload/genero_tools/display.vim` - Display mode handling
+
+**Root Cause Analysis:**
+- Floating window size calculation may be incorrect
+- Navigation handlers may not be properly configured
+- Selection/confirmation mechanism may be missing
+
+**Workaround:**
+None currently available
+
+**Related Configuration:**
+```vim
+debug_stream_window_height: (needs adjustment)
+debug_stream_window_width: (needs adjustment)
+```
+
+---
+
+### Issue #004: Empty Floating Window on Buffer Load Disappears After 5 Seconds
+**Severity**: Medium
+**Status**: Open
+**Date Reported**: March 23, 2026
+
+**Description:**
+An empty floating window appears on buffer load and disappears after approximately 5 seconds. This occurs with the default supplied configuration. The issue may be related to signs updating on buffer change and save, or could be compiler output related since it also happens on save.
+
+**Expected Behavior:**
+- No empty floating windows should appear on buffer load
+- If a floating window is needed, it should display relevant content
+- Windows should not disappear unexpectedly
+
+**Current Behavior:**
+- Empty floating window appears on buffer load
+- Window disappears after ~5 seconds
+- Occurs with default configuration
+- Happens on buffer change and save
+
+**Steps to Reproduce:**
+1. Use default supplied configuration
+2. Load a buffer
+3. Observe empty floating window appears
+4. Wait ~5 seconds
+5. Observe window disappears
+
+**Affected Files:**
+- `autoload/genero_tools/display.vim` - Display mode handling
+- `autoload/genero_tools/compiler/signs.vim` - Sign updates
+- `autoload/genero_tools/compiler.vim` - Compiler output
+
+**Root Cause Analysis:**
+- May be related to signs updating on buffer change/save
+- Could be compiler output trying to display in floating window
+- Possible timer or auto-close mechanism triggering unexpectedly
+- May be related to display mode initialization
+
+**Workaround:**
+None currently available
+
+**Related Configuration:**
+- Check display mode settings
+- Check sign update configuration
+- Check compiler output settings
+
+---
+
+### Issue #005: Messages Display in Floating Window (e.g., Hint List)
+**Severity**: Medium
+**Status**: Open
+**Date Reported**: March 23, 2026
+
+**Description:**
+Messages are displaying in the floating window (e.g., hint list) when they should display in other modes or be handled differently. This may be causing display conflicts or unexpected behavior.
+
+**Expected Behavior:**
+- Messages should display in appropriate mode (echo, quickfix, split, etc.)
+- Floating window should be reserved for specific content (hints, debug stream, etc.)
+- No message conflicts with other display elements
+
+**Current Behavior:**
+- Messages appear in floating window
+- May conflict with other floating window content
+- Display mode handling may be incorrect
+
+**Steps to Reproduce:**
+1. Trigger hint list display
+2. Observe messages in floating window
+3. Note any display conflicts
+
+**Affected Files:**
+- `autoload/genero_tools/display.vim` - Display mode routing
+- `autoload/genero_tools/hints.vim` - Hint display
+- `autoload/genero_tools/hints/display.vim` - Hint display implementation
+
+**Root Cause Analysis:**
+- Display mode routing may be sending messages to floating window
+- Floating window may be default display mode when it shouldn't be
+- Message type detection may be incorrect
+
+**Workaround:**
+Change display mode configuration to use different mode (echo, split, etc.)
+
+**Related Configuration:**
+```vim
+display_mode: 'floating_window'  (may need to be changed)
+hint_display_mode: (may need explicit configuration)
+```
 
 ---
 

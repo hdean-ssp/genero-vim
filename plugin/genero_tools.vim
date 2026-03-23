@@ -95,5 +95,8 @@ call genero_tools#which_key#init()
 " Initialize debug streaming if available
 if has('nvim')
   call genero_tools#debug_stream#init()
+  
+  " Setup completion callback for snippet expansion
+  call genero_tools#complete#setup_completion_callback()
 endif
 
