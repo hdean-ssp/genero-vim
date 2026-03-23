@@ -410,23 +410,79 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Insert the snippet lines into the buffer at current cursor position
-  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
-
-  -- Use LuaSnip to expand the snippet with placeholder support
+  -- Use LuaSnip to create and expand the snippet properly
   local ls = require('luasnip')
-  local s = ls.snippet
-  local t = ls.text_node
   
-  -- Create a snippet object with the body
-  -- LuaSnip will handle the ${} placeholders automatically
-  local temp_snippet = s(trigger, t(body))
+  -- Parse the snippet body to create proper LuaSnip nodes
+  -- This will handle ${1:label}, ${2:label}, etc.
+  local nodes = M.parse_snippet_nodes(body)
+  
+  -- Create a snippet with the parsed nodes
+  local s = ls.snippet
+  local temp_snippet = s(trigger, nodes)
   
   -- Expand the snippet using LuaSnip
-  -- This will process placeholders and set up navigation
+  -- This will insert the snippet and set up placeholder navigation
   ls.snip_expand(temp_snippet)
 
   return true
+end
+
+-- Parse snippet body and create LuaSnip nodes with placeholder support
+function M.parse_snippet_nodes(body)
+  local ls = require('luasnip')
+  local t = ls.text_node
+  local i = ls.insert_node
+  
+  local nodes = {}
+  local last_pos = 1
+  local placeholder_map = {}
+  
+  -- Find all ${N:label} patterns and their positions
+  local pattern = '%$%{(%d+):([^}]*)%}'
+  for num_str, label in body:gmatch(pattern) do
+    local num = tonumber(num_str)
+    if num then
+      placeholder_map[num] = label
+    end
+  end
+  
+  -- If no placeholders found, just return the body as text
+  if not next(placeholder_map) then
+    table.insert(nodes, t(body))
+    return nodes
+  end
+  
+  -- Parse the body and create nodes for text and placeholders
+  local pos = 1
+  local placeholder_num = 1
+  
+  while pos <= #body do
+    -- Find next placeholder
+    local start, finish, num_str, label = body:find(pattern, pos)
+    
+    if not start then
+      -- No more placeholders, add remaining text
+      if pos <= #body then
+        table.insert(nodes, t(body:sub(pos)))
+      end
+      break
+    end
+    
+    -- Add text before placeholder
+    if start > pos then
+      table.insert(nodes, t(body:sub(pos, start - 1)))
+    end
+    
+    -- Add placeholder as insert node
+    local num = tonumber(num_str)
+    table.insert(nodes, i(num, label))
+    
+    -- Move position past this placeholder
+    pos = finish + 1
+  end
+  
+  return nodes
 end
 
 -- Navigate to next placeholder in snippet
