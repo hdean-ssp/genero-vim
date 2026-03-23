@@ -9,7 +9,7 @@
 
 ## Current Known Issues
 
-### Issue #006: Empty Quickfix List on F5 Compile (NEW)
+### Issue #006: Empty Quickfix List on F5 Compile
 **Severity**: High
 **Status**: In Progress - Debug Output Added
 **Date Reported**: March 23, 2026
@@ -63,6 +63,62 @@ compiler_enabled: 1
 compiler_command: 'fglcomp'
 display_mode: 'quickfix'  (or other modes)
 ```
+
+---
+
+### Issue #007: Ctrl+. and Ctrl+, Not Navigating to Errors/Warnings (NEW)
+**Severity**: High
+**Status**: Open
+**Date Reported**: March 23, 2026
+
+**Description:**
+The keyboard shortcuts Ctrl+. (next error) and Ctrl+, (previous error) are not navigating to the previous/next error, warning, or diagnostic in the quickfix list.
+
+**Expected Behavior:**
+- Ctrl+. should jump to the next error/warning/diagnostic
+- Ctrl+, should jump to the previous error/warning/diagnostic
+- Cursor should move to the file and line of the error
+- Error location should be highlighted or visible
+
+**Current Behavior:**
+- Ctrl+. and Ctrl+, do not navigate to errors
+- Quickfix list may not be populated (related to Issue #006)
+- No feedback when trying to navigate
+- Cursor does not move to error locations
+
+**Steps to Reproduce:**
+1. Open a Genero file with compilation errors
+2. Press F5 to compile
+3. Try pressing Ctrl+. to go to next error
+4. Observe cursor does not move to error location
+5. Try pressing Ctrl+, to go to previous error
+6. Observe cursor does not move
+
+**Affected Files:**
+- `autoload/genero_tools/keybindings.vim` - Keybinding registration
+- `autoload/genero_tools/compiler/quickfix.vim` - Quickfix navigation
+- `autoload/genero_tools/compiler/commands.vim` - Error navigation commands
+
+**Root Cause Analysis:**
+- Keybindings may not be registered correctly
+- Quickfix list may be empty (related to Issue #006)
+- Navigation functions may not be working properly
+- Possible issue with quickfix list not being populated before navigation
+
+**Workaround:**
+- Use `:cnext` and `:cprevious` commands manually
+- Use quickfix window navigation (copen, then j/k to navigate)
+
+**Related Configuration:**
+```vim
+compiler_enabled: 1
+compiler_show_errors: 1
+compiler_show_warnings: 1
+```
+
+**Dependencies:**
+- This issue is dependent on Issue #006 (Empty Quickfix List)
+- Must fix Issue #006 first to properly test error navigation
 
 ---
 
