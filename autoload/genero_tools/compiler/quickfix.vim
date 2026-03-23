@@ -16,14 +16,6 @@ endfunction
 function! genero_tools#compiler#quickfix#populate(result, filter) abort
   let qf_list = []
   
-  if !a:result.success
-    return {
-      \ 'success': 0,
-      \ 'count': 0,
-      \ 'error': 'Compilation failed'
-      \ }
-  endif
-  
   " Add errors if filter includes them
   if a:filter == 'all' || a:filter == 'errors'
     for error in get(a:result, 'errors', [])
