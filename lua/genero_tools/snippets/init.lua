@@ -410,7 +410,10 @@ function M.expand_with_luasnip(trigger)
     return false
   end
 
-  -- Use LuaSnip to expand the snippet properly
+  -- Insert the snippet lines into the buffer at current cursor position
+  vim.api.nvim_buf_set_lines(buf, row - 1, row - 1, false, lines)
+
+  -- Use LuaSnip to expand the snippet with placeholder support
   local ls = require('luasnip')
   local s = ls.snippet
   local t = ls.text_node
@@ -419,7 +422,8 @@ function M.expand_with_luasnip(trigger)
   -- LuaSnip will handle the ${} placeholders automatically
   local temp_snippet = s(trigger, t(body))
   
-  -- Set the snippet to be expanded
+  -- Expand the snippet using LuaSnip
+  -- This will process placeholders and set up navigation
   ls.snip_expand(temp_snippet)
 
   return true
