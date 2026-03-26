@@ -164,6 +164,14 @@ let g:genero_tools_config = {
   \ 'autocomplete_delay': 500,
   \ 'debug_mode': 0,
   \ 'lua_enabled': has('nvim'),
+  \ 'format_hover_enabled': 1,
+  \ 'format_completion_enabled': 1,
+  \ 'format_concise_enabled': 1,
+  \ 'format_cache_enabled': 1,
+  \ 'format_cache_ttl': 3600,
+  \ 'statusline_show_function': 1,
+  \ 'statusline_function_max_length': 50,
+  \ 'statusline_show_diagnostics': 1,
   \ }
 
 " Uncomment and adjust if your query.sh is in a custom location
@@ -183,6 +191,9 @@ if has('nvim')
 
   " Lualine configuration
   lua << EOF
+local lualine_genero = require('genero_tools.lualine')
+lualine_genero.setup()
+
 require('lualine').setup({
   options = {
     theme = 'tokyonight',
@@ -193,7 +204,7 @@ require('lualine').setup({
   sections = {
     lualine_a = { 'mode' },
     lualine_b = { 'filename', 'modified' },
-    lualine_c = { 'diagnostics' },
+    lualine_c = { 'diagnostics', lualine_genero.diagnostics, lualine_genero.function_signature },
     lualine_x = { 'encoding', 'fileformat', 'filetype' },
     lualine_y = { 'progress' },
     lualine_z = { 'location' },

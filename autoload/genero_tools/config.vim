@@ -77,6 +77,18 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('debug_mode', 0)
   call genero_tools#config#init_key('lua_enabled', has('nvim'))
   
+  " Format flag integration options (Vim Output Format Integration)
+  call genero_tools#config#init_key('format_hover_enabled', 1)
+  call genero_tools#config#init_key('format_completion_enabled', 1)
+  call genero_tools#config#init_key('format_concise_enabled', 1)
+  call genero_tools#config#init_key('format_cache_enabled', 1)
+  call genero_tools#config#init_key('format_cache_ttl', 3600)
+  
+  " Statusline configuration options (Neovim only)
+  call genero_tools#config#init_key('statusline_show_function', 1)
+  call genero_tools#config#init_key('statusline_function_max_length', 50)
+  call genero_tools#config#init_key('statusline_show_diagnostics', 1)
+  
   " Validate configuration after initialization
   call genero_tools#config#validate()
 endfunction
@@ -231,6 +243,22 @@ function! genero_tools#config#get(key) abort
   elseif a:key == 'notify_duration'
     return 3000
   elseif a:key == 'error_show_details'
+    return 1
+  elseif a:key == 'format_hover_enabled'
+    return 1
+  elseif a:key == 'format_completion_enabled'
+    return 1
+  elseif a:key == 'format_concise_enabled'
+    return 1
+  elseif a:key == 'format_cache_enabled'
+    return 1
+  elseif a:key == 'format_cache_ttl'
+    return 3600
+  elseif a:key == 'statusline_show_function'
+    return 1
+  elseif a:key == 'statusline_function_max_length'
+    return 50
+  elseif a:key == 'statusline_show_diagnostics'
     return 1
   else
     return ''

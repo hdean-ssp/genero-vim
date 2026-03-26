@@ -25,8 +25,7 @@ function! genero_tools#lookup_function(function_name) abort
   
   if result.success
     " Check if result is empty
-    if (type(result.data) == type([]) && empty(result.data)) || 
-       (type(result.data) == type({}) && empty(result.data))
+    if (type(result.data) == type([]) && empty(result.data)) || (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('Lookup', 'Function not found: ' . function_name)
     else
       call genero_tools#cache#set(cache_key, result)
@@ -61,8 +60,8 @@ function! genero_tools#list_module_files(module_name) abort
   
   if result.success
     " Check if result is empty
-    if (type(result.data) == type([]) && empty(result.data)) || 
-       (type(result.data) == type({}) && empty(result.data))
+    if (type(result.data) == type([]) && empty(result.data)) ||
+       \ (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('Module', 'No files found in module: ' . module_name)
     else
       call genero_tools#cache#set(cache_key, result)
@@ -100,8 +99,7 @@ function! genero_tools#list_functions_in_file(file_path) abort
   
   if result.success
     " Check if result is empty
-    if (type(result.data) == type([]) && empty(result.data)) || 
-       (type(result.data) == type({}) && empty(result.data))
+    if (type(result.data) == type([]) && empty(result.data)) || (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('File', 'No functions found in file: ' . file_path)
     else
       call genero_tools#cache#set(cache_key, result)
@@ -136,8 +134,7 @@ function! genero_tools#get_function_signature(function_name) abort
   
   if result.success
     " Check if result is empty
-    if (type(result.data) == type([]) && empty(result.data)) || 
-       (type(result.data) == type({}) && empty(result.data))
+    if (type(result.data) == type([]) && empty(result.data)) || (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('Signature', 'Function not found: ' . function_name)
     else
       call genero_tools#cache#set(cache_key, result)
@@ -145,6 +142,41 @@ function! genero_tools#get_function_signature(function_name) abort
   endif
   
   call genero_tools#display_result(result)
+  return result
+endfunction
+
+" Get function hover information with formatted output
+" Returns three-line format: signature, file location, complexity metrics
+function! genero_tools#get_function_hover(function_name) abort
+  if empty(a:function_name)
+    let function_name = expand('<cword>')
+  else
+    let function_name = a:function_name
+  endif
+  
+  if empty(function_name)
+    call genero_tools#error#error('Hover', 'No function name provided')
+    return {}
+  endif
+  
+  let cache_key = 'find-function-hover:' . function_name
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached)
+    return cached
+  endif
+  
+  let format = genero_tools#format#get_hover_format()
+  let result = genero_tools#format#execute_with_format('find-function', [function_name], format)
+  
+  if result.success
+    " Check if result is empty
+    if (type(result.data) == type('') && empty(result.data))
+      call genero_tools#error#warn('Hover', 'Function not found: ' . function_name)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
+  endif
+  
   return result
 endfunction
 
@@ -175,8 +207,7 @@ function! genero_tools#get_file_metadata(file_path) abort
   
   if result.success
     " Check if result is empty
-    if (type(result.data) == type([]) && empty(result.data)) || 
-       (type(result.data) == type({}) && empty(result.data))
+    if (type(result.data) == type([]) && empty(result.data)) || (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('Metadata', 'No metadata found for file: ' . file_path)
     else
       call genero_tools#cache#set(cache_key, result)
@@ -184,6 +215,41 @@ function! genero_tools#get_file_metadata(file_path) abort
   endif
   
   call genero_tools#display_result(result)
+  return result
+endfunction
+
+" Get function signature in concise format
+" Returns single-line format: function_name(params) -> return_type
+function! genero_tools#get_function_concise(function_name) abort
+  if empty(a:function_name)
+    let function_name = expand('<cword>')
+  else
+    let function_name = a:function_name
+  endif
+  
+  if empty(function_name)
+    call genero_tools#error#error('Concise', 'No function name provided')
+    return {}
+  endif
+  
+  let cache_key = 'find-function-concise:' . function_name
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached)
+    return cached
+  endif
+  
+  let format = genero_tools#format#get_concise_format()
+  let result = genero_tools#format#execute_with_format('find-function', [function_name], format)
+  
+  if result.success
+    " Check if result is empty
+    if (type(result.data) == type('') && empty(result.data))
+      call genero_tools#error#warn('Concise', 'Function not found: ' . function_name)
+    else
+      call genero_tools#cache#set(cache_key, result)
+    endif
+  endif
+  
   return result
 endfunction
 

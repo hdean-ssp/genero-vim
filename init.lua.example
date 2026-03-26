@@ -139,6 +139,18 @@ vim.g.genero_tools_config = {
   autocomplete_on_pause = true,      -- Auto-trigger completion on pause (default: true)
   autocomplete_delay = 500,          -- Delay in ms before triggering (default: 500)
   
+  -- Format flag configuration (for optimized output from genero-tools)
+  format_hover_enabled = true,       -- Enable hover format (--format=vim-hover) for detailed display
+  format_completion_enabled = true,  -- Enable completion format (--format=vim-completion) for autocomplete
+  format_concise_enabled = true,     -- Enable concise format (--format=vim) for hints and statusline
+  format_cache_enabled = true,       -- Enable caching of formatted results
+  format_cache_ttl = 3600,           -- Format cache time-to-live in seconds (default: 1 hour)
+  
+  -- Statusline configuration
+  statusline_show_function = true,   -- Show current function signature in statusline
+  statusline_function_max_length = 50, -- Maximum length of function signature in statusline
+  statusline_show_diagnostics = true, -- Show error/warning counts in statusline
+  
   -- Floating window configuration
   floating_window_border = "rounded",
   floating_window_width = 80,
@@ -271,7 +283,7 @@ local plugins = {
         sections = {
           lualine_a = { "mode" },
           lualine_b = { "filename", "modified" },
-          lualine_c = { "diagnostics", lualine_genero.diagnostics },
+          lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.function_signature },
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },

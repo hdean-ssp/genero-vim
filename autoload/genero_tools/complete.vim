@@ -164,54 +164,59 @@ function! genero_tools#complete#get_external_completions(base) abort
     let completions = []
     let current_file = expand('%:p')
     
-    " Search project-wide functions using query.sh
-    let result = genero_tools#command#execute_shell('search-functions', [a:base])
+    " Search project-wide functions using query.sh with completion format
+    let format = genero_tools#format#get_completion_format()
+    let result = genero_tools#format#execute_with_format('search-functions', [a:base], format)
     
     if !result.success
       return []
     endif
     
-    let search_results = result.data
+    " Result data is now a formatted string with tab-separated values
+    let output = result.data
     
-    if type(search_results) != type([])
+    if type(output) != type('')
       return []
     endif
     
-    " Filter results: only include functions from other files that match the base
+    " Parse tab-separated completion format
     let matches = []
-    for func in search_results
-      if type(func) == type({}) && has_key(func, 'name')
-        let func_file = get(func, 'file', '')
-        " Include functions from other files that start with the base
-        if func_file != current_file && func.name =~? '^' . a:base
-          call add(matches, func)
-        endif
+    for line in split(output, "\n")
+      if empty(line)
+        continue
       endif
+      
+      let parts = split(line, "\t")
+      if len(parts) < 3
+        continue
+      endif
+      
+      let word = parts[0]
+      let menu = parts[1]
+      let info = parts[2]
+      
+      " Only include functions matching the base
+      if word !~? '^' . a:base
+        continue
+      endif
+      
+      call add(matches, {
+        \ 'word': word,
+        \ 'menu': menu,
+        \ 'info': info
+      \ })
     endfor
     
     " Limit to 20 results
     let limited_matches = matches[0:19]
     
-    " Format completions
-    for func in limited_matches
-      let complete_info = genero_tools#signature#format_complete_info(func)
-      let param_count = genero_tools#signature#param_count(func)
-      let return_count = genero_tools#signature#return_count(func)
-      
-      " Format menu label with parameter count only (no duplicate function name)
-      let menu_label = '(' . param_count . ' params)'
-      if return_count > 0
-        let menu_label .= ' -> ' . return_count . ' return'
-        if return_count != 1
-          let menu_label .= 's'
-        endif
-      endif
-      
+    " Format completions for Vim
+    for item in limited_matches
       call add(completions, {
-        \ 'word': func.name,
-        \ 'abbr': func.name,
-        \ 'menu': menu_label,
-        \ 'info': complete_info,
+        \ 'word': item.word,
+        \ 'abbr': item.word,
+        \ 'menu': item.menu,
+        \ 'info': item.info,
         \ 'kind': 'f',
         \ 'icase': 1,
         \ 'dup': 1
