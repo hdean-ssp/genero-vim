@@ -79,6 +79,7 @@ vim.g.genero_tools_config = {
   hints_cache_enabled = true,           -- Enable hint caching
   hints_cache_ttl = 300,                -- Cache TTL in seconds
   hints_delay = 500,                    -- Debounce delay in milliseconds
+  hints_current_line_only = true,       -- Only show virtual text hint on cursor line (less noisy)
   auto_fix_enabled = true,              -- Enable auto-fix suggestions
   
   -- Individual hint checks (true = enabled, false = disabled)

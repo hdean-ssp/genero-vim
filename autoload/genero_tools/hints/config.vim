@@ -17,6 +17,7 @@ function! genero_tools#hints#config#init() abort
   call genero_tools#hints#config#init_key('hints_cache_ttl', 300)
   call genero_tools#hints#config#init_key('auto_fix_enabled', 1)
   call genero_tools#hints#config#init_key('hints_delay', 500)
+  call genero_tools#hints#config#init_key('hints_current_line_only', 0)
   
   " Individual hint checks (1 = enabled, 0 = disabled)
   call genero_tools#hints#config#init_key('trailing_whitespace', 1)
@@ -74,6 +75,7 @@ function! genero_tools#hints#config#get_default(key) abort
     \ 'hints_cache_ttl': 300,
     \ 'auto_fix_enabled': 1,
     \ 'hints_delay': 500,
+    \ 'hints_current_line_only': 0,
     \ 'trailing_whitespace': 1,
     \ 'mixed_indentation': 0,
     \ 'indentation_consistency': 1,

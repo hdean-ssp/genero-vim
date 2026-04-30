@@ -271,6 +271,7 @@ let g:genero_tools_config = {
   \ 'hints_cache_enabled': 1,
   \ 'hints_cache_ttl': 300,
   \ 'hints_delay': 500,
+  \ 'hints_current_line_only': 0,
   \ 'auto_fix_enabled': 1,
   \ 'trailing_whitespace': 1,
   \ 'mixed_indentation': 1,
@@ -469,6 +470,7 @@ let g:genero_tools_config.hints_realtime = 1                     " Enable real-t
 let g:genero_tools_config.hints_cache_enabled = 1                " Enable hint caching
 let g:genero_tools_config.hints_cache_ttl = 300                  " Cache TTL in seconds
 let g:genero_tools_config.hints_delay = 500                      " Debounce delay in milliseconds
+let g:genero_tools_config.hints_current_line_only = 0            " Only show virtual text on cursor line
 let g:genero_tools_config.auto_fix_enabled = 1                   " Enable auto-fix suggestions
 
 " Individual hint checks (1 = enabled, 0 = disabled)

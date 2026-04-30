@@ -3,7 +3,7 @@
 
 " Initialize display system
 function! genero_tools#hints#display#init() abort
-  " Define hint signs
+  " Define hint signs — small diamond, unobtrusive
   call sign_define('GeneroHintInfo', {
     \ 'text': '◆',
     \ 'texthl': 'GeneroHintInfo'
@@ -19,35 +19,35 @@ function! genero_tools#hints#display#init() abort
     \ 'texthl': 'GeneroHintStyle'
     \ })
   
-  " Define highlight groups with subtle styling for hints
-  " Hints are recommendations, so they should be less prominent than errors
+  " Sign column highlight groups (just the diamond icon color, no background)
   if !hlexists('GeneroHintInfo')
-    " Info hints: subtle blue with light background
-    highlight GeneroHintInfo ctermfg=Blue ctermbg=NONE guifg=#0087FF guibg=NONE
+    highlight GeneroHintInfo ctermfg=Blue ctermbg=NONE guifg=#5c7aaa guibg=NONE
   endif
   
   if !hlexists('GeneroHintWarning')
-    " Warning hints: subtle yellow/orange with light background
-    highlight GeneroHintWarning ctermfg=Yellow ctermbg=NONE guifg=#FFB000 guibg=NONE
+    highlight GeneroHintWarning ctermfg=Yellow ctermbg=NONE guifg=#a08050 guibg=NONE
   endif
   
   if !hlexists('GeneroHintStyle')
-    " Style hints: subtle cyan/gray with light background
-    highlight GeneroHintStyle ctermfg=Gray ctermbg=NONE guifg=#808080 guibg=NONE
+    highlight GeneroHintStyle ctermfg=Gray ctermbg=NONE guifg=#555555 guibg=NONE
   endif
   
-  " Virtual text highlight groups - more subtle with background color
+  " Virtual text highlight groups — subtle, dim text that blends with the editor
+  " These should look like faded comments, not bright blocks
   if !hlexists('GeneroHintInfoVirtual')
-    highlight GeneroHintInfoVirtual ctermfg=Blue ctermbg=NONE guifg=#0087FF guibg=#F0F8FF
+    highlight GeneroHintInfoVirtual ctermfg=DarkBlue ctermbg=NONE guifg=#4a6a8a guibg=NONE gui=italic
   endif
   
   if !hlexists('GeneroHintWarningVirtual')
-    highlight GeneroHintWarningVirtual ctermfg=Yellow ctermbg=NONE guifg=#FFB000 guibg=#FFFACD
+    highlight GeneroHintWarningVirtual ctermfg=DarkYellow ctermbg=NONE guifg=#8a7a50 guibg=NONE gui=italic
   endif
   
   if !hlexists('GeneroHintStyleVirtual')
-    highlight GeneroHintStyleVirtual ctermfg=Gray ctermbg=NONE guifg=#808080 guibg=#F5F5F5
+    highlight GeneroHintStyleVirtual ctermfg=DarkGray ctermbg=NONE guifg=#555555 guibg=NONE gui=italic
   endif
+  
+  " Set up CursorMoved autocommand for current-line-only mode
+  call genero_tools#hints#display#setup_cursor_autocmd()
 endfunction
 
 " Display hints for a buffer
@@ -63,14 +63,20 @@ function! genero_tools#hints#display#show(bufnr, hints) abort
   
   let display_mode = genero_tools#hints#config#get('hints_display')
   
-  " Display hints based on configured mode
+  " Signs always show for all lines (they're small and unobtrusive)
   if display_mode == 'signs' || display_mode == 'both'
     call genero_tools#hints#display#show_signs(bufnr, a:hints)
   endif
   
+  " Virtual text: respect current-line-only setting
   if display_mode == 'virtual_text' || display_mode == 'both'
     if has('nvim')
-      call genero_tools#hints#display#show_virtual_text(bufnr, a:hints)
+      if genero_tools#hints#config#get('hints_current_line_only')
+        " Only show virtual text for the current cursor line
+        call genero_tools#hints#display#show_virtual_text_for_line(bufnr, a:hints, line('.'))
+      else
+        call genero_tools#hints#display#show_virtual_text(bufnr, a:hints)
+      endif
     endif
   endif
 endfunction
@@ -132,12 +138,11 @@ function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
   let ns_id = nvim_create_namespace('genero_hints')
   
   for hint in a:hints
-    " Use virtual text highlight group (more subtle)
     let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
     
     try
       call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-        \ 'virt_text': [[' ◆ ' . hint.message, hl_group]],
+        \ 'virt_text': [['  ▸ ' . hint.message, hl_group]],
         \ 'virt_text_pos': 'eol',
         \ 'priority': 50
         \ })
@@ -145,6 +150,66 @@ function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
       " Silently ignore extmark errors
     endtry
   endfor
+endfunction
+
+" Display virtual text for a single line only (current-line-only mode)
+function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, current_line) abort
+  if !has('nvim')
+    return
+  endif
+  
+  let ns_id = nvim_create_namespace('genero_hints')
+  
+  " Clear existing virtual text (but not signs)
+  call nvim_buf_clear_namespace(a:bufnr, ns_id, 0, -1)
+  
+  " Only place virtual text for hints on the current line
+  for hint in a:hints
+    if hint.line == a:current_line
+      let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
+      
+      try
+        call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
+          \ 'virt_text': [['  ▸ ' . hint.message, hl_group]],
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 50
+          \ })
+      catch
+      endtry
+    endif
+  endfor
+endfunction
+
+" Setup CursorMoved autocommand for current-line-only virtual text
+function! genero_tools#hints#display#setup_cursor_autocmd() abort
+  augroup GeneroHintsCursorLine
+    autocmd!
+    autocmd CursorMoved,CursorMovedI *.4gl,*.m3,*.m4,*.per call genero_tools#hints#display#on_cursor_moved()
+  augroup END
+endfunction
+
+" Handler for CursorMoved — update virtual text if in current-line-only mode
+function! genero_tools#hints#display#on_cursor_moved() abort
+  if !has('nvim')
+    return
+  endif
+  
+  let display_mode = genero_tools#hints#config#get('hints_display')
+  if display_mode != 'virtual_text' && display_mode != 'both'
+    return
+  endif
+  
+  if !genero_tools#hints#config#get('hints_current_line_only')
+    return
+  endif
+  
+  let bufnr = bufnr('%')
+  let hints = genero_tools#hints#get_hints(bufnr)
+  if empty(hints)
+    return
+  endif
+  
+  call genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, line('.'))
 endfunction
 
 " Clear all hints for a buffer
