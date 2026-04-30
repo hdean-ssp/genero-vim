@@ -375,7 +375,9 @@ function! s:collect_define_statement(lines, start_idx) abort
 endfunction
 
 " Parse a DEFINE statement text to find a specific variable and its type
+" Parse a DEFINE statement text to find a specific variable and its type
 " Handles: DEFINE var1 TYPE, var2 TYPE, var3 LIKE table.column
+" Strips inline comments (#SR-1234, -- comment, etc.)
 " Returns: {'type': 'INTEGER', 'line': N} or {}
 function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
   let text = a:define_text
@@ -384,8 +386,6 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
   let text = substitute(text, '\c^\s*DEFINE\s\+', '', '')
 
   " Split by comma to get individual variable declarations
-  " But be careful: commas inside RECORD...END RECORD shouldn't split
-  " Simple approach: split by comma and try to match each chunk
   let chunks = split(text, ',')
 
   for chunk in chunks
@@ -394,11 +394,17 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
     " Check if this chunk contains our variable
     if chunk =~? a:var_pattern
       " Extract the type — everything after the variable name
-      " Pattern: variable_name TYPE_DEFINITION
       let type_match = matchstr(chunk, '\c\<' . '\S\+' . '\>\s\+\zs.*')
       if !empty(type_match)
-        " Clean up the type string
-        let type_str = substitute(type_match, '^\s*\|\s*$', '', 'g')
+        " Strip inline comments: # or -- to end of string
+        let type_str = substitute(type_match, '\s*[#].*$', '', '')
+        let type_str = substitute(type_str, '\s*--.*$', '', '')
+        " Strip curly-brace comments: { ... }
+        let type_str = substitute(type_str, '\s*{[^}]*}.*$', '', '')
+        " Clean up whitespace
+        let type_str = substitute(type_str, '^\s*\|\s*$', '', 'g')
+        " Collapse internal whitespace runs
+        let type_str = substitute(type_str, '\s\+', ' ', 'g')
         " Remove trailing comma if present
         let type_str = substitute(type_str, ',\s*$', '', '')
         if !empty(type_str)
