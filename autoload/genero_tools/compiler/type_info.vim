@@ -34,12 +34,12 @@ function! genero_tools#compiler#type_info#init() abort
     autocmd!
     autocmd CursorHold *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#on_cursor_hold()
     autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#on_cursor_moved()
-    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear()
-    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear()
+    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear_extmarks()
+    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear_extmarks()
   augroup END
 endfunction
 
-" Called on CursorMoved — just clear stale virtual text if we moved to a different line/word
+" Called on CursorMoved — clear virtual text if we moved to a different word/line
 function! genero_tools#compiler#type_info#on_cursor_moved() abort
   if !has('nvim')
     return
@@ -54,12 +54,16 @@ function! genero_tools#compiler#type_info#on_cursor_moved() abort
   let current_line = line('.')
 
   " If we're still on the same word on the same line, keep the virtual text
-  if word == s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
+  if word ==# s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
     return
   endif
 
-  " Clear — CursorHold will re-show if appropriate
-  call genero_tools#compiler#type_info#clear()
+  " Moved to a different word/line — clear the extmarks but don't reset tracking
+  " (CursorHold will do the new lookup)
+  call genero_tools#compiler#type_info#clear_extmarks()
+  let s:last_word = ''
+  let s:last_bufnr = -1
+  let s:last_line = -1
 endfunction
 
 " Called on CursorHold — look up the word under cursor
@@ -72,26 +76,32 @@ function! genero_tools#compiler#type_info#on_cursor_hold() abort
     return
   endif
 
+  call genero_tools#compiler#type_info#show_for_cursor()
+endfunction
+
+" Core lookup logic — also used by the manual :GeneroTypeInfo command
+function! genero_tools#compiler#type_info#show_for_cursor() abort
   let word = expand('<cword>')
   if empty(word)
     return
   endif
 
-  " Skip very short words (likely keywords or operators)
+  " Skip very short words
   if len(word) < 3
     return
   endif
 
-  " Skip if word looks like a Genero keyword (all caps, common keywords)
-  if word =~# '^\(DEFINE\|FUNCTION\|END\|IF\|THEN\|ELSE\|FOR\|WHILE\|RETURN\|CALL\|LET\|DISPLAY\|INPUT\|CASE\|WHEN\|MAIN\|REPORT\|SELECT\|INSERT\|UPDATE\|DELETE\|FROM\|WHERE\|INTO\|VALUES\|SET\|AND\|OR\|NOT\|NULL\|TRUE\|FALSE\|INTEGER\|STRING\|SMALLINT\|FLOAT\|DECIMAL\|DATE\|CHAR\|VARCHAR\|BOOLEAN\|RECORD\|ARRAY\|LIKE\|TYPE\|CONSTANT\|GLOBALS\|MODULE\|IMPORT\|OPEN\|CLOSE\|FETCH\|FOREACH\|PREPARE\|EXECUTE\|FREE\|DECLARE\|CURSOR\|DATABASE\|CONNECT\|DISCONNECT\|BEGIN\|WORK\|COMMIT\|ROLLBACK\|OUTPUT\|TO\|MENU\|COMMAND\|DIALOG\|CONSTRUCT\|ON\|BEFORE\|AFTER\|CONTINUE\|EXIT\|SLEEP\|ERROR\|STATUS\|SQLCA\|WHENEVER\|GOTO\|LABEL\|INITIALIZE\|VALIDATE\|LOCATE\|ALLOCATE\|REALLOCATE\|DEFER\|OPTIONS\|PROMPT\|MESSAGE\|ATTRIBUTE\|ATTRIBUTES\|WINDOW\|SCREEN\|FORM\|CLEAR\|SCROLL\|NEXT\|PREVIOUS\|ACCEPT\|CANCEL\|IDLE\|ACTION\|STEP\|SKIP\|PRINT\|NEED\|HEADER\|TRAILER\|PAGE\|FIRST\|LAST\|CURRENT\|OUTER\|GROUP\|ORDER\|BY\|HAVING\|UNION\|BETWEEN\|EXISTS\|IN\|ANY\|ALL\|SOME\|ASC\|DESC\|DISTINCT\|UNIQUE\|COUNT\|SUM\|AVG\|MIN\|MAX\|CLIPPED\|USING\|SPACES\|COLUMN\|TODAY\|YEAR\|MONTH\|DAY\|HOUR\|MINUTE\|SECOND\|FRACTION\|INTERVAL\|UNITS\|EXTEND\|MATCHES\|THRU\|THROUGH\|WITH\|RESUME\|RETURNING\|RETURNS\|PRIVATE\|PUBLIC\|STATIC\|DYNAMIC\)$'
+  " Skip Genero keywords (case-insensitive check)
+  let upper = toupper(word)
+  if upper =~# '^\(DEFINE\|FUNCTION\|END\|IF\|THEN\|ELSE\|FOR\|WHILE\|RETURN\|CALL\|LET\|DISPLAY\|INPUT\|CASE\|WHEN\|MAIN\|REPORT\|SELECT\|INSERT\|UPDATE\|DELETE\|FROM\|WHERE\|INTO\|VALUES\|SET\|AND\|OR\|NOT\|NULL\|TRUE\|FALSE\|INTEGER\|STRING\|SMALLINT\|FLOAT\|DECIMAL\|DATE\|CHAR\|VARCHAR\|BOOLEAN\|RECORD\|ARRAY\|LIKE\|TYPE\|CONSTANT\|GLOBALS\|MODULE\|IMPORT\|OPEN\|CLOSE\|FETCH\|FOREACH\|PREPARE\|EXECUTE\|FREE\|DECLARE\|CURSOR\|DATABASE\|CONNECT\|DISCONNECT\|BEGIN\|WORK\|COMMIT\|ROLLBACK\|OUTPUT\|TO\|MENU\|COMMAND\|DIALOG\|CONSTRUCT\|ON\|BEFORE\|AFTER\|CONTINUE\|EXIT\|SLEEP\|ERROR\|STATUS\|SQLCA\|WHENEVER\|GOTO\|LABEL\|INITIALIZE\|VALIDATE\|LOCATE\|ALLOCATE\|REALLOCATE\|DEFER\|OPTIONS\|PROMPT\|MESSAGE\|ATTRIBUTE\|ATTRIBUTES\|WINDOW\|SCREEN\|FORM\|CLEAR\|SCROLL\|NEXT\|PREVIOUS\|ACCEPT\|CANCEL\|IDLE\|ACTION\|STEP\|SKIP\|PRINT\|NEED\|HEADER\|TRAILER\|PAGE\|FIRST\|LAST\|CURRENT\|OUTER\|GROUP\|ORDER\|BY\|HAVING\|UNION\|BETWEEN\|EXISTS\|IN\|ANY\|ALL\|SOME\|ASC\|DESC\|DISTINCT\|UNIQUE\|COUNT\|SUM\|AVG\|MIN\|MAX\|CLIPPED\|USING\|SPACES\|COLUMN\|TODAY\|YEAR\|MONTH\|DAY\|HOUR\|MINUTE\|SECOND\|FRACTION\|INTERVAL\|UNITS\|EXTEND\|MATCHES\|THRU\|THROUGH\|WITH\|RESUME\|RETURNING\|RETURNS\|PRIVATE\|PUBLIC\|STATIC\|DYNAMIC\)$'
     return
   endif
 
   let bufnr = bufnr('%')
   let current_line = line('.')
 
-  " Skip if same word on same line (already showing or already failed)
-  if word == s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
+  " Skip if same word on same line (already showing)
+  if word ==# s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
     return
   endif
 
@@ -99,8 +109,12 @@ function! genero_tools#compiler#type_info#on_cursor_hold() abort
   let cache_key = 'find-function:' . word
   let cached = genero_tools#cache#get(cache_key)
 
-  if !empty(cached) && cached.success
-    call s:show_signature(bufnr, current_line, word, cached.data)
+  if !empty(cached)
+    if has_key(cached, 'success') && cached.success
+      call s:show_signature(bufnr, current_line, word, cached.data)
+    elseif has_key(cached, 'data')
+      call s:show_signature(bufnr, current_line, word, cached.data)
+    endif
     let s:last_word = word
     let s:last_bufnr = bufnr
     let s:last_line = current_line
@@ -111,8 +125,12 @@ function! genero_tools#compiler#type_info#on_cursor_hold() abort
   let concise_key = 'find-function-concise:' . word
   let concise_cached = genero_tools#cache#get(concise_key)
 
-  if !empty(concise_cached) && concise_cached.success
-    call s:show_concise(bufnr, current_line, concise_cached.data)
+  if !empty(concise_cached)
+    if has_key(concise_cached, 'success') && concise_cached.success
+      call s:show_concise(bufnr, current_line, concise_cached.data)
+    elseif has_key(concise_cached, 'data')
+      call s:show_concise(bufnr, current_line, concise_cached.data)
+    endif
     let s:last_word = word
     let s:last_bufnr = bufnr
     let s:last_line = current_line
@@ -122,18 +140,50 @@ function! genero_tools#compiler#type_info#on_cursor_hold() abort
   " Nothing in cache — do a lookup (this calls query.sh, but only on CursorHold)
   let result = genero_tools#command#execute_shell('find-function', [word])
 
-  if result.success
+  if result.success && !empty(result.data)
     " Cache it for future use
     call genero_tools#cache#set(cache_key, result)
     call s:show_signature(bufnr, current_line, word, result.data)
+  endif
+
+  " Record word so we don't retry on next CursorHold
+  let s:last_word = word
+  let s:last_bufnr = bufnr
+  let s:last_line = current_line
+endfunction
+
+" Manual trigger command — useful for testing
+function! genero_tools#compiler#type_info#manual() abort
+  if !has('nvim')
+    echom '[type_info] Neovim required for virtual text'
+    return
+  endif
+
+  let word = expand('<cword>')
+  if empty(word)
+    echom '[type_info] No word under cursor'
+    return
+  endif
+
+  echom '[type_info] Looking up: ' . word
+
+  " Force a fresh lookup (bypass same-word check)
+  let s:last_word = ''
+  let s:last_bufnr = -1
+  let s:last_line = -1
+
+  let result = genero_tools#command#execute_shell('find-function', [word])
+
+  if result.success && !empty(result.data)
+    echom '[type_info] Found function, showing signature'
+    let cache_key = 'find-function:' . word
+    call genero_tools#cache#set(cache_key, result)
+    call s:show_signature(bufnr('%'), line('.'), word, result.data)
     let s:last_word = word
-    let s:last_bufnr = bufnr
-    let s:last_line = current_line
+    let s:last_bufnr = bufnr('%')
+    let s:last_line = line('.')
   else
-    " Not a known function — record so we don't retry
-    let s:last_word = word
-    let s:last_bufnr = bufnr
-    let s:last_line = current_line
+    echom '[type_info] Function not found: ' . word . ' (error: ' . result.error . ')'
   endif
 endfunction
 
@@ -144,13 +194,13 @@ function! s:show_signature(bufnr, line, word, data) abort
   if type(a:data) == type([]) && !empty(a:data)
     " Find exact match by name
     for item in a:data
-      if type(item) == type({}) && get(item, 'name', '') ==# a:word
+      if type(item) == type({}) && get(item, 'name', '') ==? a:word
         let func = item
         break
       endif
     endfor
-    " Fall back to first result
-    if empty(func)
+    " Fall back to first result if it's a dict
+    if empty(func) && type(a:data[0]) == type({})
       let func = a:data[0]
     endif
   elseif type(a:data) == type({})
@@ -201,7 +251,7 @@ function! s:show_signature(bufnr, line, word, data) abort
 
   let display_text = join(sig_parts, ' ')
 
-  call genero_tools#compiler#type_info#clear()
+  call genero_tools#compiler#type_info#clear_extmarks()
 
   try
     let virt_text = [['  ' . display_text, 'GeneroTypeInfo']]
@@ -233,7 +283,7 @@ function! s:show_concise(bufnr, line, data) abort
     return
   endif
 
-  call genero_tools#compiler#type_info#clear()
+  call genero_tools#compiler#type_info#clear_extmarks()
 
   try
     let virt_text = [['  ' . text, 'GeneroTypeInfo']]
@@ -246,8 +296,8 @@ function! s:show_concise(bufnr, line, data) abort
   endtry
 endfunction
 
-" Clear all type info virtual text
-function! genero_tools#compiler#type_info#clear() abort
+" Clear extmarks only (not tracking state)
+function! genero_tools#compiler#type_info#clear_extmarks() abort
   if !has('nvim')
     return
   endif
@@ -256,12 +306,16 @@ function! genero_tools#compiler#type_info#clear() abort
     return
   endif
 
-  let s:last_word = ''
-  let s:last_bufnr = -1
-  let s:last_line = -1
-
   try
     call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)
   catch
   endtry
+endfunction
+
+" Full clear — extmarks and tracking state
+function! genero_tools#compiler#type_info#clear() abort
+  call genero_tools#compiler#type_info#clear_extmarks()
+  let s:last_word = ''
+  let s:last_bufnr = -1
+  let s:last_line = -1
 endfunction

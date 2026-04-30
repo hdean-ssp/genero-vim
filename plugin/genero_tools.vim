@@ -56,6 +56,9 @@ command! GeneroFilterErrors call genero_tools#compiler#commands#filter_errors()
 command! GeneroFilterWarnings call genero_tools#compiler#commands#filter_warnings()
 command! GeneroFilterAll call genero_tools#compiler#commands#filter_all()
 
+" Type info command (manual trigger for testing/debugging)
+command! GeneroTypeInfo call genero_tools#compiler#type_info#manual()
+
 " Register snippet commands (Neovim only)
 if has('nvim')
   command! GeneroSnippetList call genero_tools#snippets#list()
