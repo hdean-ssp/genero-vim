@@ -264,6 +264,7 @@ let g:genero_tools_config = {
   \ 'compiler_sign_column': 1,
   \ 'compiler_autocompile': 0,
   \ 'compiler_autocompile_delay': 1000,
+  \ 'compiler_inline_diagnostics': 1,
   \ 'hints_enabled': 1,
   \ 'hints_display': 'signs',
   \ 'hints_severity': 'warning',
@@ -388,6 +389,7 @@ let g:genero_tools_config.compiler_highlight_unused = 1          " Highlight unu
 let g:genero_tools_config.compiler_sign_column = 1               " Show signs in sign column
 let g:genero_tools_config.compiler_autocompile = 1               " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
+let g:genero_tools_config.compiler_inline_diagnostics = 1        " Show error/warning on cursor line (Neovim)
 ```
 
 **Supported File Types:**

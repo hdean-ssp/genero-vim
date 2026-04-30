@@ -52,6 +52,7 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   
   " Store result for later filtering
   let g:genero_tools_last_compile_result = result
+  call genero_tools#compiler#store_buffer_result(bufnr('%'), result)
   
   " Populate quickfix with results (respects compiler_show_errors/warnings config)
   let qf_result = genero_tools#compiler#quickfix#populate(result, 'all')
@@ -79,6 +80,9 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   
   " Apply error/warning highlighting
   call genero_tools#compiler#highlight#apply(result.errors, result.warnings)
+  
+  " Update inline diagnostics virtual text
+  call genero_tools#compiler#inline_diagnostics#update()
 endfunction
 
 " GeneroClearErrors command - clear error markers
@@ -88,6 +92,12 @@ function! genero_tools#compiler#commands#clear_errors() abort
   
   " Clear signs
   call genero_tools#compiler#signs#clear()
+  
+  " Clear inline diagnostics virtual text
+  call genero_tools#compiler#inline_diagnostics#clear()
+  
+  " Clear stored buffer result
+  call genero_tools#compiler#clear_buffer_result(bufnr('%'))
   
   echom 'Compiler errors and warnings cleared'
 endfunction

@@ -13,6 +13,11 @@ call genero_tools#config#init()
 " Initialize compiler autocompile if enabled
 call genero_tools#compiler#autocompile#init()
 
+" Initialize inline diagnostics (Neovim only)
+if has('nvim')
+  call genero_tools#compiler#inline_diagnostics#init()
+endif
+
 " Initialize hint system
 call genero_tools#hints#init()
 

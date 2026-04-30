@@ -116,6 +116,10 @@ function! genero_tools#compiler#autocompile#compile_silent(file) abort
     let result = genero_tools#compiler#execute(a:file)
     
     if result.success
+      " Store result for inline diagnostics and filtering
+      let g:genero_tools_last_compile_result = result
+      call genero_tools#compiler#store_buffer_result(bufnr('%'), result)
+      
       " Update signs if enabled
       if genero_tools#config#get('compiler_sign_column')
         call genero_tools#compiler#signs#update(result)
@@ -130,6 +134,9 @@ function! genero_tools#compiler#autocompile#compile_silent(file) abort
       if genero_tools#config#get('compiler_highlight_unused')
         call genero_tools#compiler#highlight#unused_vars(result.warnings)
       endif
+      
+      " Update inline diagnostics virtual text
+      call genero_tools#compiler#inline_diagnostics#update()
       
       " Update quickfix if there are errors/warnings
       let error_count = len(result.errors)

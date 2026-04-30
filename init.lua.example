@@ -59,6 +59,7 @@ vim.g.genero_tools_config = {
   compiler_enabled = true,
   compiler_autocompile = true,
   compiler_autocompile_delay = 500,
+  compiler_inline_diagnostics = true,    -- Show error/warning text on cursor line (Neovim only)
   compiler_sign_column = true,
   compiler_sign_column_always_visible = true,  -- Keep sign column visible
   compiler_highlight_unused = true,

@@ -288,3 +288,25 @@ function! genero_tools#compiler#parse_v320(output, file_type) abort
   " This can be updated when 3.20 format is known
   return genero_tools#compiler#parse_v310(a:output, a:file_type)
 endfunction
+
+" Per-buffer compile result storage for inline diagnostics
+if !exists('g:genero_tools_buffer_compile_results')
+  let g:genero_tools_buffer_compile_results = {}
+endif
+
+" Store compile result for a buffer
+function! genero_tools#compiler#store_buffer_result(bufnr, result) abort
+  let g:genero_tools_buffer_compile_results[a:bufnr] = a:result
+endfunction
+
+" Get compile result for a buffer
+function! genero_tools#compiler#get_buffer_result(bufnr) abort
+  return get(g:genero_tools_buffer_compile_results, a:bufnr, {})
+endfunction
+
+" Clear compile result for a buffer
+function! genero_tools#compiler#clear_buffer_result(bufnr) abort
+  if has_key(g:genero_tools_buffer_compile_results, a:bufnr)
+    call remove(g:genero_tools_buffer_compile_results, a:bufnr)
+  endif
+endfunction
