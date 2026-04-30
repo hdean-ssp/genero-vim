@@ -1,6 +1,6 @@
 # Genero-Tools Project Index
 
-**Last Updated**: March 22, 2026
+**Last Updated**: April 1, 2026
 **Status**: ✓ Consolidated and Organized
 
 ---
@@ -11,43 +11,65 @@
 
 **Returning agent?** → Check [AGENT_CONTEXT.md](AGENT_CONTEXT.md) for quick reference
 
+**Need to find something?** → Read [DOCUMENTATION_ORGANIZATION.md](DOCUMENTATION_ORGANIZATION.md)
+
 ---
 
-## Core Files
+## Core Entry Points
 
 ### START_HERE.md
 **Purpose**: Main entry point for new agents
 **Read Time**: 5 minutes
-**Contains**:
-- What is this project?
-- Current status
-- Quick navigation
-- Architecture overview
-- Setup guide
-- Configuration
-- Vim vs Neovim compatibility
+**Contains**: Project overview, status, architecture, setup, configuration
 
 ### AGENT_CONTEXT.md
 **Purpose**: Quick reference for returning agents
 **Read Time**: 2 minutes
-**Contains**:
-- Project summary
-- Current work
-- Key files table
-- Quick navigation
-- Essential commands
+**Contains**: Project summary, current work, key files, essential commands
+
+### DOCUMENTATION_ORGANIZATION.md
+**Purpose**: Guide to finding documentation
+**Read Time**: 3 minutes
+**Contains**: Where to find user docs, agent docs, and how to organize new docs
 
 ### PROJECT_HANDOFF.md
 **Purpose**: Project summary and handoff guide
 **Read Time**: 5 minutes
-**Contains**:
-- What was delivered
-- Key design principles
-- Files modified
-- Quality assurance
-- Next steps
+**Contains**: What was delivered, design principles, files modified, next steps
+
+---
+
+## Project Tracking
 
 ### FUTURE_BUGS.md
+**Purpose**: Known bugs and issues to fix
+**Contains**: Bug list with priority and status
+
+### FUTURE_TASKS.md
+**Purpose**: Enhancement roadmap
+**Contains**: Planned features and enhancements
+
+### BUG_TRACKING.md (Consolidated)
+**Purpose**: Master bug tracking file
+**Contains**: All bug fixes, implementation details, testing procedures
+**Replaces**: BUG_FIXES_INDEX.md, BUG_FIXES_SUMMARY.md, BUGS_FIXED.md
+
+### PROJECT_STATUS.md (Consolidated)
+**Purpose**: Master project status file
+**Contains**: Overall status, achievements, deployment readiness
+**Replaces**: IMPLEMENTATION_COMPLETE.md, CONSOLIDATION_SUMMARY.md
+
+### CLEANUP_SUMMARY.md
+**Purpose**: Documentation cleanup status and recommendations
+**Contains**: What was cleaned up, current state, recommendations for Phase 2
+
+### CLEANUP_COMPLETE.md
+**Purpose**: Documentation cleanup completion summary
+**Contains**: What was done, current organization, next steps
+
+### DOCUMENTATION_ORGANIZATION.md
+**Purpose**: Guide to finding documentation
+**Contains**: Where all documentation lives, organization rules, quick reference
 **Purpose**: Bug tracking and reporting
 **Contains**:
 - Known issues

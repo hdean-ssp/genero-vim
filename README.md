@@ -607,6 +607,8 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 - **[Unified Sign Column](docs/UNIFIED_SIGN_COLUMN.md)** - Sign column system for compiler and SVN markers
 - **[SVN Diff Markers](docs/SVN_DIFF_MARKERS.md)** - SVN integration and diff markers
 - **[Snippets](docs/SNIPPETS.md)** - Code snippets documentation
+- **[Code Hints](docs/HINTS.md)** - Code quality hints and auto-fix
+- **[Error Handling](docs/ERROR_HANDLING.md)** - Error handling and troubleshooting
 
 ## Requirements
 
