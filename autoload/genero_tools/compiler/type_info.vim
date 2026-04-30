@@ -254,7 +254,12 @@ function! s:show_signature(bufnr, line, word, data) abort
     return
   endif
 
-  " Build parameter string
+  " Build virtual text lines — one chunk per logical section
+  " Line 1 (eol): parameters
+  " Line 2 (below, if needed): returns + file
+  let virt_lines = []
+
+  " Parameters
   let params = get(func, 'parameters', [])
   let param_str = ''
   if !empty(params)
@@ -269,7 +274,7 @@ function! s:show_signature(bufnr, line, word, data) abort
     let param_str = '()'
   endif
 
-  " Build return string
+  " Return types
   let ret_str = ''
   let returns = get(func, 'returns', [])
   if !empty(returns)
@@ -282,53 +287,69 @@ function! s:show_signature(bufnr, line, word, data) abort
     let ret_str = '→ ' . join(ret_strs, ', ')
   endif
 
-  " Build file string
+  " File location
   let file_str = ''
   let file = get(func, 'file', '')
   if !empty(file)
     let file_str = fnamemodify(file, ':t')
   endif
 
-  " Calculate available space: window width minus current line length minus padding
+  " Calculate available space on the current line
   let line_text = getline(a:line)
   let line_len = strdisplaywidth(line_text)
   let win_width = winwidth(0)
-  let available = win_width - line_len - 4  " 4 = leading spaces + margin
+  let available = win_width - line_len - 4
 
-  " Build display text, truncating intelligently if needed
-  if available < 20
-    " Not enough room for anything useful
-    return
-  endif
-
-  let display_text = param_str
+  " Build the full single-line text
+  let full_text = param_str
   if !empty(ret_str)
-    let display_text .= ' ' . ret_str
+    let full_text .= ' ' . ret_str
   endif
   if !empty(file_str)
-    let display_text .= '  ' . file_str
-  endif
-
-  " Truncate if too long — drop file first, then truncate params
-  if len(display_text) > available && !empty(file_str)
-    " Try without file location
-    let display_text = param_str
-    if !empty(ret_str)
-      let display_text .= ' ' . ret_str
-    endif
-  endif
-
-  if len(display_text) > available
-    " Still too long — truncate with ellipsis
-    let display_text = display_text[0:available - 4] . '...'
+    let full_text .= '  ' . file_str
   endif
 
   call genero_tools#compiler#type_info#clear_extmarks()
 
+  " If it fits on one line, use simple eol virtual text
+  if len(full_text) <= available && available >= 20
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ' . full_text, 'GeneroTypeInfo']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+    return
+  endif
+
+  " Doesn't fit — use virt_lines below the current line
+  " Split into: params on first line, returns + file on second line
+  let virt_lines = []
+
+  " Params line — indent to align with code
+  let indent = matchstr(line_text, '^\s*')
+  let pad = indent . repeat(' ', 4)
+
+  call add(virt_lines, [[pad . param_str, 'GeneroTypeInfo']])
+
+  " Returns + file on a second line (if present)
+  if !empty(ret_str) || !empty(file_str)
+    let second = pad
+    if !empty(ret_str)
+      let second .= ret_str
+    endif
+    if !empty(file_str)
+      let second .= '  ' . file_str
+    endif
+    call add(virt_lines, [[second, 'GeneroTypeInfo']])
+  endif
+
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-      \ 'virt_text': [['  ' . display_text, 'GeneroTypeInfo']],
-      \ 'virt_text_pos': 'eol',
+      \ 'virt_lines': virt_lines,
+      \ 'virt_lines_above': v:false,
       \ 'priority': 30
       \ })
   catch
