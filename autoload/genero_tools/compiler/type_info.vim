@@ -177,7 +177,10 @@ function! s:lookup_variable(word, bufnr, line) abort
 endfunction
 
 " Search for a DEFINE statement for the given variable name
-" Strategy: search upward from cursor line, then check module-level defines at top of file
+" Strategy:
+"   1. If cursor is on a FUNCTION definition line, search downward (params are defined below)
+"   2. Otherwise search upward from cursor line, stop at FUNCTION boundary
+"   3. Fall back to module-level defines at top of file
 " Returns: {'type': 'INTEGER', 'line': 42, 'scope': 'local'} or {}
 function! s:find_define(word, bufnr, cursor_line) abort
   let lines = getbufline(a:bufnr, 1, '$')
@@ -187,6 +190,18 @@ function! s:find_define(word, bufnr, cursor_line) abort
 
   " Build a case-insensitive pattern for the variable name
   let var_pattern = '\c\<' . escape(a:word, '\') . '\>'
+
+  " Check if cursor is on a FUNCTION definition line
+  let current_line_text = get(lines, a:cursor_line - 1, '')
+  let upper_current = toupper(substitute(current_line_text, '^\s*', '', ''))
+  if upper_current =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+    " Cursor is on the function signature — search downward for DEFINE
+    let found = s:search_define_downward(lines, var_pattern, a:cursor_line)
+    if !empty(found)
+      let found.scope = 'param'
+      return found
+    endif
+  endif
 
   " Phase 1: Search upward from cursor line for a local DEFINE
   " Stop at the enclosing FUNCTION line (don't cross function boundaries)
@@ -238,6 +253,50 @@ function! s:search_define_upward(lines, var_pattern, cursor_line) abort
     endif
 
     let i -= 1
+  endwhile
+
+  return {}
+endfunction
+
+" Search downward from a FUNCTION line for DEFINE statements
+" Used when cursor is on the function signature (params are defined below)
+" Stops at the next FUNCTION or END FUNCTION
+function! s:search_define_downward(lines, var_pattern, func_line) abort
+  let i = a:func_line  " Start from the line after the FUNCTION line (0-indexed = func_line)
+  let total = len(a:lines)
+
+  while i < total
+    let line = a:lines[i]
+    let trimmed = substitute(line, '^\s*', '', '')
+    let upper_trimmed = toupper(trimmed)
+
+    " Stop at END FUNCTION or next FUNCTION definition
+    if upper_trimmed =~# '^\(END\s\+FUNCTION\|END\s\+MAIN\|END\s\+REPORT\)\>'
+      break
+    endif
+    " Stop if we hit another FUNCTION (shouldn't happen, but safety)
+    if i > a:func_line && upper_trimmed =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+      break
+    endif
+
+    " Stop once we pass the DEFINE section (first non-DEFINE, non-blank, non-comment line)
+    if !empty(trimmed) && upper_trimmed !~# '^\(DEFINE\>\|--\|#\|{\)' && upper_trimmed !~# '^\s*$'
+      " Check if this looks like a continuation of a DEFINE (type name, comma, etc.)
+      " If not, we've passed the DEFINE block
+      if upper_trimmed !~# '^\w' || upper_trimmed =~# '^\(LET\|CALL\|IF\|FOR\|WHILE\|RETURN\|DISPLAY\|INPUT\|CASE\|SELECT\|OPEN\|CLOSE\|WHENEVER\|INITIALIZE\|PREPARE\|DECLARE\)\>'
+        break
+      endif
+    endif
+
+    if upper_trimmed =~# '^DEFINE\>'
+      let define_text = s:collect_define_statement(a:lines, i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      if !empty(result)
+        return result
+      endif
+    endif
+
+    let i += 1
   endwhile
 
   return {}
@@ -480,6 +539,8 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
   let display = type_str
   if scope == 'module'
     let display .= '  (module)'
+  elseif scope == 'param'
+    let display .= '  (param)'
   endif
 
   call genero_tools#compiler#type_info#clear_extmarks()
