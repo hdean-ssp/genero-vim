@@ -40,15 +40,11 @@ function! genero_tools#display#result(result, display_mode) abort
   " Validate and fallback display mode if needed
   let display_mode = genero_tools#compat#validate_display_mode(a:display_mode)
   
-  " Route to appropriate display mode
+  " Route to appropriate display mode (3 canonical modes)
   if display_mode == 'quickfix'
     call genero_tools#display#quickfix(formatted, a:result)
-  elseif display_mode == 'popup'
+  elseif display_mode == 'floating'
     call genero_tools#display#popup(formatted)
-  elseif display_mode == 'inline'
-    call genero_tools#display#inline(formatted)
-  elseif display_mode == 'split'
-    call genero_tools#display#split(formatted)
   else
     call genero_tools#display#echo(join(formatted, "\n"))
   endif

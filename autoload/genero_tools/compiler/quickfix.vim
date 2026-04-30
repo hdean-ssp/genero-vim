@@ -12,57 +12,50 @@ function! genero_tools#compiler#quickfix#format_entry(entry, type) abort
 endfunction
 
 " Populate quickfix list with compiler results
-" This function now respects display_mode configuration
+" Supports filtering: 'all', 'errors', 'warnings', 'info'
 function! genero_tools#compiler#quickfix#populate(result, filter) abort
   let qf_list = []
   
   " Add errors if filter includes them
-  if a:filter == 'all' || a:filter == 'errors'
+  if (a:filter == 'all' || a:filter == 'errors') && genero_tools#config#get('compiler_show_errors')
     for error in get(a:result, 'errors', [])
       call add(qf_list, genero_tools#compiler#quickfix#format_entry(error, 'E'))
     endfor
   endif
   
   " Add warnings if filter includes them
-  if a:filter == 'all' || a:filter == 'warnings'
+  if (a:filter == 'all' || a:filter == 'warnings') && genero_tools#config#get('compiler_show_warnings')
     for warning in get(a:result, 'warnings', [])
       call add(qf_list, genero_tools#compiler#quickfix#format_entry(warning, 'W'))
     endfor
   endif
   
   " Add info if filter includes them
-  if a:filter == 'all'
+  if a:filter == 'all' || a:filter == 'info'
     for info_item in get(a:result, 'info', [])
       call add(qf_list, genero_tools#compiler#quickfix#format_entry(info_item, 'I'))
     endfor
   endif
   
-  " Debug: log the number of items being added
-  echom 'Quickfix: Adding ' . len(qf_list) . ' items (errors: ' . len(get(a:result, 'errors', [])) . ', warnings: ' . len(get(a:result, 'warnings', [])) . ')'
-  
-  " Get effective display mode for compiler (respects compiler_display_mode override)
-  let display_mode = genero_tools#display#get_mode('compiler')
-  
-  " Always populate the quickfix list with results
+  " Always populate the quickfix list (even if empty, to clear stale results)
   call setqflist(qf_list)
   
   " For non-quickfix display modes, also display using the configured mode
-  if display_mode != 'quickfix'
-    " For other display modes, only display if there are results
-    if !empty(qf_list)
-      " Format results for display module
-      let formatted_result = {
-        \ 'success': 1,
-        \ 'data': qf_list,
-        \ 'error': ''
-        \ }
-      call genero_tools#display#result(formatted_result, display_mode)
-    endif
+  let display_mode = genero_tools#display#get_mode('compiler')
+  if display_mode != 'quickfix' && !empty(qf_list)
+    let formatted_result = {
+      \ 'success': 1,
+      \ 'data': qf_list,
+      \ 'error': ''
+      \ }
+    call genero_tools#display#result(formatted_result, display_mode)
   endif
   
   return {
     \ 'success': 1,
     \ 'count': len(qf_list),
+    \ 'errors': len(get(a:result, 'errors', [])),
+    \ 'warnings': len(get(a:result, 'warnings', [])),
     \ 'error': ''
     \ }
 endfunction
@@ -122,10 +115,25 @@ function! genero_tools#compiler#quickfix#next() abort
       \ 'error': ''
       \ }
   catch /E553/
-    " E553: No more items
+    " E553: No more items — wrap to first
+    try
+      cfirst
+      echom 'Error 1 of ' . len(qf_list) . ' (wrapped)'
+      return {
+        \ 'success': 1,
+        \ 'error': ''
+        \ }
+    catch
+      return {
+        \ 'success': 0,
+        \ 'error': 'Navigation failed: ' . v:exception
+        \ }
+    endtry
+  catch /E42/
+    " E42: No errors
     return {
       \ 'success': 0,
-      \ 'error': 'No next error (at end of list)'
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
       \ }
   catch
     return {
@@ -158,10 +166,25 @@ function! genero_tools#compiler#quickfix#prev() abort
       \ 'error': ''
       \ }
   catch /E553/
-    " E553: No more items
+    " E553: No more items — wrap to last
+    try
+      clast
+      echom 'Error ' . len(qf_list) . ' of ' . len(qf_list) . ' (wrapped)'
+      return {
+        \ 'success': 1,
+        \ 'error': ''
+        \ }
+    catch
+      return {
+        \ 'success': 0,
+        \ 'error': 'Navigation failed: ' . v:exception
+        \ }
+    endtry
+  catch /E42/
+    " E42: No errors
     return {
       \ 'success': 0,
-      \ 'error': 'No previous error (at start of list)'
+      \ 'error': 'No errors to navigate. Run :GeneroCompile first.'
       \ }
   catch
     return {

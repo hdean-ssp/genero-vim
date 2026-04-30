@@ -11,114 +11,51 @@
 
 ### Issue #006: Empty Quickfix List on F5 Compile
 **Severity**: High
-**Status**: In Progress - Debug Output Added
+**Status**: ✅ FIXED - April 30, 2026
 **Date Reported**: March 23, 2026
-**Date Started**: March 23, 2026
+**Date Fixed**: April 30, 2026
 
 **Description:**
 When pressing F5 to compile, the quickfix list opens but is empty despite there being errors/warnings from the compiler.
 
-**Expected Behavior:**
-- F5 compile should populate quickfix list with all errors and warnings
-- Quickfix window should display compilation results
-- Users should be able to navigate errors with Ctrl+. and Ctrl+,
+**Root Cause:**
+- `compiler#execute()` could return `success: 0` when the parser failed to match output format, even though the compiler produced valid error output
+- `commands#compile()` returned early on `!result.success` without populating quickfix
+- Raw compiler output was lost when parsing failed
 
-**Current Behavior:**
-- Quickfix window opens but is empty
-- Errors and warnings are not displayed
-- No way to navigate to error locations
+**Fix Applied:**
+1. `compiler#execute()` now falls back to treating raw output lines as errors when the parser fails but the compiler produced output
+2. `commands#compile()` now populates quickfix with raw output even on execution failure, so users always see compiler messages
+3. Both changes ensure the quickfix list is never empty when the compiler produces output
 
-**Steps to Reproduce:**
-1. Open a Genero file with compilation errors
-2. Press F5 to compile
-3. Observe quickfix window opens but is empty
-4. Check that compiler actually found errors (check compiler output)
-
-**Affected Files:**
-- `autoload/genero_tools/compiler/quickfix.vim` - Quickfix population
-- `autoload/genero_tools/compiler.vim` - Compiler execution and parsing
-- `autoload/genero_tools/compiler/commands.vim` - Compile command
-
-**Root Cause Analysis:**
-- Possible issue: Errors/warnings not being parsed from compiler output
-- Possible issue: Quickfix list not being populated even when errors exist
-- Possible issue: Display mode configuration preventing quickfix population
-- Debug output added to diagnose the issue
-
-**Current Fixes Applied:**
-1. ✓ Removed early return check in populate() that was blocking error display
-2. ✓ Changed populate() to always call setqflist() regardless of display mode
-3. ✓ Added debug output to log compiler output and parsing results
-
-**Next Steps:**
-1. Run F5 compile and check debug messages in Vim message area
-2. Verify compiler output is being captured correctly
-3. Verify parsing is extracting errors/warnings correctly
-4. Verify setqflist() is being called with correct data
-5. Remove debug output once issue is resolved
-
-**Related Configuration:**
-```vim
-compiler_enabled: 1
-compiler_command: 'fglcomp'
-display_mode: 'quickfix'  (or other modes)
-```
+**Files Modified:**
+- `autoload/genero_tools/compiler.vim` - Added raw output fallback in execute()
+- `autoload/genero_tools/compiler/commands.vim` - Added raw output display on failure path
 
 ---
 
-### Issue #007: Ctrl+. and Ctrl+, Not Navigating to Errors/Warnings (NEW)
+### Issue #007: Ctrl+. and Ctrl+, Not Navigating to Errors/Warnings
 **Severity**: High
-**Status**: Open
+**Status**: ✅ FIXED - April 30, 2026
 **Date Reported**: March 23, 2026
+**Date Fixed**: April 30, 2026
 
 **Description:**
-The keyboard shortcuts Ctrl+. (next error) and Ctrl+, (previous error) are not navigating to the previous/next error, warning, or diagnostic in the quickfix list.
+The keyboard shortcuts Ctrl+. (next error) and Ctrl+, (previous error) are not navigating to errors.
 
-**Expected Behavior:**
-- Ctrl+. should jump to the next error/warning/diagnostic
-- Ctrl+, should jump to the previous error/warning/diagnostic
-- Cursor should move to the file and line of the error
-- Error location should be highlighted or visible
+**Root Cause:**
+- Primary cause was Issue #006 (empty quickfix list) — no errors to navigate
+- Secondary: navigation didn't handle E42 (no errors) gracefully
+- Navigation stopped at list boundaries instead of wrapping
 
-**Current Behavior:**
-- Ctrl+. and Ctrl+, do not navigate to errors
-- Quickfix list may not be populated (related to Issue #006)
-- No feedback when trying to navigate
-- Cursor does not move to error locations
+**Fix Applied:**
+1. Fixed #006 so quickfix is always populated with compiler output
+2. Added E42 error handling in next/prev navigation
+3. Added wrap-around behavior: next at end wraps to first, prev at start wraps to last
+4. Better error messages for empty quickfix state
 
-**Steps to Reproduce:**
-1. Open a Genero file with compilation errors
-2. Press F5 to compile
-3. Try pressing Ctrl+. to go to next error
-4. Observe cursor does not move to error location
-5. Try pressing Ctrl+, to go to previous error
-6. Observe cursor does not move
-
-**Affected Files:**
-- `autoload/genero_tools/keybindings.vim` - Keybinding registration
-- `autoload/genero_tools/compiler/quickfix.vim` - Quickfix navigation
-- `autoload/genero_tools/compiler/commands.vim` - Error navigation commands
-
-**Root Cause Analysis:**
-- Keybindings may not be registered correctly
-- Quickfix list may be empty (related to Issue #006)
-- Navigation functions may not be working properly
-- Possible issue with quickfix list not being populated before navigation
-
-**Workaround:**
-- Use `:cnext` and `:cprevious` commands manually
-- Use quickfix window navigation (copen, then j/k to navigate)
-
-**Related Configuration:**
-```vim
-compiler_enabled: 1
-compiler_show_errors: 1
-compiler_show_warnings: 1
-```
-
-**Dependencies:**
-- This issue is dependent on Issue #006 (Empty Quickfix List)
-- Must fix Issue #006 first to properly test error navigation
+**Files Modified:**
+- `autoload/genero_tools/compiler/quickfix.vim` - Added E42 handling and wrap-around
 
 ---
 

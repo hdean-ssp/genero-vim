@@ -284,7 +284,7 @@ local plugins = {
           lualine_a = { "mode" },
           lualine_b = { "filename", "modified" },
           lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.function_signature },
-          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_x = { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
         },
@@ -710,6 +710,11 @@ map("n", "<leader>cd", ":GeneroAutocompileDisable<CR>", opts)
 -- Clear errors
 map("n", "<leader>cc", ":GeneroClearErrors<CR>", opts)
 
+-- Error filtering (after compilation)
+map("n", "<leader>ce", ":GeneroFilterErrors<CR>", { noremap = true, silent = true, desc = "Show errors only" })
+map("n", "<leader>cw", ":GeneroFilterWarnings<CR>", { noremap = true, silent = true, desc = "Show warnings only" })
+map("n", "<leader>cx", ":GeneroFilterAll<CR>", { noremap = true, silent = true, desc = "Show all diagnostics" })
+
 -- Hint navigation
 map("n", "<leader>hn", ":GeneroNextHint<CR>", opts)
 map("n", "<leader>hp", ":GeneroPrevHint<CR>", opts)
@@ -847,6 +852,9 @@ wk.register({
     a = { ":GeneroAutocompileEnable<CR>", "Enable autocompile" },
     d = { ":GeneroAutocompileDisable<CR>", "Disable autocompile" },
     c = { ":GeneroClearErrors<CR>", "Clear errors" },
+    e = { "Show errors only" },
+    w = { "Show warnings only" },
+    x = { "Show all diagnostics" },
   },
   f = {
     name = "+Find/Search",
@@ -910,6 +918,9 @@ COMPILATION:
   Space+ca        - Enable autocompile on save
   Space+cd        - Disable autocompile on save
   Space+cc        - Clear error markers
+  Space+ce        - Filter: show errors only
+  Space+cw        - Filter: show warnings only
+  Space+cx        - Filter: show all diagnostics
 
 NAVIGATION:
   Ctrl+,          - Jump to previous error/warning

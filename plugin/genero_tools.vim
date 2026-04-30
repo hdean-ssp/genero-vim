@@ -29,6 +29,7 @@ command! -nargs=? GeneroListFunctions call genero_tools#list_functions_in_file(<
 command! -nargs=? GeneroFunctionSignature call genero_tools#get_function_signature(<q-args>)
 command! -nargs=? GeneroFileMetadata call genero_tools#get_file_metadata(<q-args>)
 command! GeneroClearCache call genero_tools#cache#clear()
+command! GeneroCacheStats call genero_tools#cache#show_stats()
 command! GeneroConfigShow call genero_tools#config#show()
 command! GeneroCompleteEnable call genero_tools#complete#enable()
 command! GeneroCompleteDisable call genero_tools#complete#disable()
@@ -43,6 +44,11 @@ command! GeneroLastError call genero_tools#compiler#commands#last_error()
 command! GeneroAutocompileEnable call genero_tools#compiler#commands#autocompile_enable()
 command! GeneroAutocompileDisable call genero_tools#compiler#commands#autocompile_disable()
 command! GeneroAutocompileStatus call genero_tools#compiler#commands#autocompile_status()
+
+" Error filtering commands
+command! GeneroFilterErrors call genero_tools#compiler#commands#filter_errors()
+command! GeneroFilterWarnings call genero_tools#compiler#commands#filter_warnings()
+command! GeneroFilterAll call genero_tools#compiler#commands#filter_all()
 
 " Register snippet commands (Neovim only)
 if has('nvim')

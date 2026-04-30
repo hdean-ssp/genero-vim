@@ -147,3 +147,33 @@ function! genero_tools#cache#estimate_memory() abort
   " Convert to KB (rough estimate)
   return total_size / 1024
 endfunction
+
+" Display cache statistics to the user
+function! genero_tools#cache#show_stats() abort
+  let stats = genero_tools#cache#stats()
+  let memory_kb = genero_tools#cache#estimate_memory()
+  
+  let output = []
+  call add(output, '=== Cache Statistics ===')
+  call add(output, '')
+  call add(output, 'Status:    ' . (stats.enabled ? 'Enabled' : 'Disabled'))
+  call add(output, 'Entries:   ' . stats.size . ' / ' . stats.max_size)
+  call add(output, 'TTL:       ' . stats.ttl . 's')
+  call add(output, 'Memory:    ~' . memory_kb . ' KB')
+  
+  " SVN cache stats if available
+  if exists('g:genero_tools_svn_cache_stats')
+    let svn = g:genero_tools_svn_cache_stats
+    let total = svn.total_requests
+    let hit_rate = total > 0 ? printf('%.0f%%', (svn.hits * 100.0) / total) : 'N/A'
+    call add(output, '')
+    call add(output, '--- SVN Cache ---')
+    call add(output, 'Requests:  ' . total)
+    call add(output, 'Hits:      ' . svn.hits)
+    call add(output, 'Misses:    ' . svn.misses)
+    call add(output, 'Hit rate:  ' . hit_rate)
+    call add(output, 'Evictions: ' . svn.evictions)
+  endif
+  
+  echo join(output, "\n")
+endfunction

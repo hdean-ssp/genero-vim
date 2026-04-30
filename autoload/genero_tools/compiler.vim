@@ -147,22 +147,37 @@ function! genero_tools#compiler#execute(source_path) abort
     " Store raw output
     let result.output = output
     
-    " Debug: log the raw output
-    echom 'Compiler output: ' . output
-    
     " Parse output based on file type and compiler version
     let compiler_ver = genero_tools#compiler#get_version()
     let parsed = genero_tools#compiler#parse_output(output, compiler_ver, file_type)
     
     if parsed.success
+      " Parsing succeeded — we have structured results even if compiler
+      " exited non-zero (which is normal when there are errors/warnings)
       let result.success = 1
       let result.errors = parsed.errors
       let result.warnings = parsed.warnings
       let result.info = parsed.info
-      echom 'Parsed: ' . len(parsed.errors) . ' errors, ' . len(parsed.warnings) . ' warnings'
+    elseif exit_code != 0 && !empty(output)
+      " Parser failed but compiler produced output — treat raw lines as errors
+      " so the user still sees something in quickfix
+      let result.success = 1
+      for raw_line in split(output, "\n")
+        if !empty(raw_line)
+          call add(result.errors, {
+            \ 'file': a:source_path,
+            \ 'line': 1,
+            \ 'col': 1,
+            \ 'end_line': 1,
+            \ 'end_col': 1,
+            \ 'severity': 'error',
+            \ 'message': raw_line,
+            \ 'code': ''
+            \ })
+        endif
+      endfor
     else
       let result.error = parsed.error
-      echom 'Parse error: ' . parsed.error
     endif
     
   catch
@@ -187,6 +202,7 @@ endfunction
 
 " Parse fglcomp/fglform 3.10+ output format
 " Format: filename:start_line:start_col:end_line:end_col:severity:(-code) message
+" Also handles simpler formats like: filename:line:col:severity:message
 function! genero_tools#compiler#parse_v310(output, file_type) abort
   let result = {
     \ 'success': 1,
@@ -203,23 +219,55 @@ function! genero_tools#compiler#parse_v310(output, file_type) abort
       continue
     endif
     
-    " Parse line: filename:line:col:end_line:end_col:severity:(-code) message
+    " Try full format: filename:line:col:end_line:end_col:severity:(-code) message
     let match = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):\(\d\+\):\(\d\+\):\(error\|warning\|info\):(-\d\+) \(.*\)$')
     
-    if empty(match)
-      continue
+    if !empty(match)
+      let entry = {
+        \ 'file': match[1],
+        \ 'line': str2nr(match[2]),
+        \ 'col': str2nr(match[3]),
+        \ 'end_line': str2nr(match[4]),
+        \ 'end_col': str2nr(match[5]),
+        \ 'severity': match[6],
+        \ 'message': match[7],
+        \ 'code': matchstr(line, '(-\d\+)')
+        \ }
+    else
+      " Try simpler format: filename:line:col:severity:message
+      let match = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):\(error\|warning\|info\):\s*\(.*\)$')
+      
+      if !empty(match)
+        let entry = {
+          \ 'file': match[1],
+          \ 'line': str2nr(match[2]),
+          \ 'col': str2nr(match[3]),
+          \ 'end_line': str2nr(match[2]),
+          \ 'end_col': str2nr(match[3]),
+          \ 'severity': match[4],
+          \ 'message': match[5],
+          \ 'code': ''
+          \ }
+      else
+        " Try minimal format: filename:line:message (treat as error)
+        let match = matchlist(line, '^\([^:]*\):\(\d\+\):\s*\(.*\)$')
+        
+        if !empty(match) && match[3] !~# '^\d\+:'
+          let entry = {
+            \ 'file': match[1],
+            \ 'line': str2nr(match[2]),
+            \ 'col': 1,
+            \ 'end_line': str2nr(match[2]),
+            \ 'end_col': 1,
+            \ 'severity': 'error',
+            \ 'message': match[3],
+            \ 'code': ''
+            \ }
+        else
+          continue
+        endif
+      endif
     endif
-    
-    let entry = {
-      \ 'file': match[1],
-      \ 'line': str2nr(match[2]),
-      \ 'col': str2nr(match[3]),
-      \ 'end_line': str2nr(match[4]),
-      \ 'end_col': str2nr(match[5]),
-      \ 'severity': match[6],
-      \ 'message': match[7],
-      \ 'code': matchstr(line, '(-\d\+)')
-      \ }
     
     " Categorize by severity
     if entry.severity == 'error'

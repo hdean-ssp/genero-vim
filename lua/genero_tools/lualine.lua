@@ -1,5 +1,6 @@
 -- Genero-Tools Lualine Integration
--- Provides custom statusline components for error/warning counts and function signatures
+-- Provides custom statusline components for error/warning counts,
+-- function signatures, SVN status, and cache statistics
 
 local M = {}
 
@@ -27,6 +28,39 @@ local function get_diagnostic_counts()
   end
 
   return { errors = errors, warnings = warnings }
+end
+
+-- Get SVN change counts for current buffer
+local function get_svn_counts()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local added = 0
+  local modified = 0
+  local deleted = 0
+
+  local ok, signs = pcall(vim.fn.sign_getplaced, bufnr, { group = 'genero_svn' })
+
+  if ok and signs and #signs > 0 and signs[1].signs then
+    for _, sign in ipairs(signs[1].signs) do
+      if sign.name == 'GeneroSVNAdded' then
+        added = added + 1
+      elseif sign.name == 'GeneroSVNModified' then
+        modified = modified + 1
+      elseif sign.name == 'GeneroSVNDeleted' then
+        deleted = deleted + 1
+      end
+    end
+  end
+
+  return { added = added, modified = modified, deleted = deleted }
+end
+
+-- Get cache statistics from VimScript
+local function get_cache_stats()
+  local ok, stats = pcall(vim.fn['genero_tools#cache#stats'])
+  if not ok or not stats then
+    return nil
+  end
+  return stats
 end
 
 -- Get current function signature using concise format
@@ -164,6 +198,77 @@ function M.setup_highlights()
     fg = '#90e0ef',  -- Light cyan text
     bold = true,
   })
+
+  -- SVN added highlight: green background
+  vim.api.nvim_set_hl(0, 'GeneroLualineSVNAdded', {
+    bg = '#1a4d2e',  -- Dark green
+    fg = '#a7f3d0',  -- Light green text
+    bold = true,
+  })
+
+  -- SVN modified highlight: yellow/amber background
+  vim.api.nvim_set_hl(0, 'GeneroLualineSVNModified', {
+    bg = '#78350f',  -- Dark amber
+    fg = '#fde68a',  -- Light amber text
+    bold = true,
+  })
+
+  -- SVN deleted highlight: red background
+  vim.api.nvim_set_hl(0, 'GeneroLualineSVNDeleted', {
+    bg = '#7f1d1d',  -- Dark red
+    fg = '#fca5a5',  -- Light red text
+    bold = true,
+  })
+
+  -- Cache stats highlight: gray background
+  vim.api.nvim_set_hl(0, 'GeneroLualineCache', {
+    bg = '#374151',  -- Dark gray
+    fg = '#d1d5db',  -- Light gray text
+  })
+end
+
+-- Display SVN change counts in statusline
+-- Shows +added ~modified -deleted
+function M.svn_status()
+  local counts = get_svn_counts()
+
+  if counts.added == 0 and counts.modified == 0 and counts.deleted == 0 then
+    return ''
+  end
+
+  local parts = {}
+
+  if counts.added > 0 then
+    table.insert(parts, '%#GeneroLualineSVNAdded# +' .. counts.added .. ' %*')
+  end
+
+  if counts.modified > 0 then
+    table.insert(parts, '%#GeneroLualineSVNModified# ~' .. counts.modified .. ' %*')
+  end
+
+  if counts.deleted > 0 then
+    table.insert(parts, '%#GeneroLualineSVNDeleted# -' .. counts.deleted .. ' %*')
+  end
+
+  return table.concat(parts, '')
+end
+
+-- Display cache statistics in statusline
+-- Shows cache size / max and hit rate
+function M.cache_stats()
+  local stats = get_cache_stats()
+  if not stats then
+    return ''
+  end
+
+  local size = stats.size or 0
+  local max_size = stats.max_size or 0
+
+  if size == 0 then
+    return ''
+  end
+
+  return '%#GeneroLualineCache# C:' .. size .. '/' .. max_size .. ' %*'
 end
 
 -- Clear signature cache (useful for manual refresh)

@@ -28,6 +28,19 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   let elapsed = localtime() - start_time
   
   if !result.success
+    " Even on failure, try to show any raw output in quickfix
+    if !empty(result.output)
+      let raw_entries = []
+      for raw_line in split(result.output, "\n")
+        if !empty(raw_line)
+          call add(raw_entries, {'filename': target, 'lnum': 1, 'text': raw_line, 'type': 'E'})
+        endif
+      endfor
+      if !empty(raw_entries)
+        call setqflist(raw_entries)
+        silent! copen
+      endif
+    endif
     call genero_tools#error#display('Compilation Failed', result.error)
     return
   endif
@@ -37,29 +50,27 @@ function! genero_tools#compiler#commands#compile(file_path) abort
   let warning_count = len(result.warnings)
   let info_count = len(result.info)
   
-  " Populate quickfix with all results
+  " Store result for later filtering
+  let g:genero_tools_last_compile_result = result
+  
+  " Populate quickfix with results (respects compiler_show_errors/warnings config)
   let qf_result = genero_tools#compiler#quickfix#populate(result, 'all')
   
-  if qf_result.success
-    " Open results using configured display mode
-    let display_mode = genero_tools#config#get('display_mode')
-    
-    if display_mode == 'floating' && has('nvim')
-      " Use floating window for Neovim
-      call genero_tools#compiler#quickfix#open_floating(result)
-    else
-      " Use quickfix for Vim or when floating not available
-      call genero_tools#compiler#quickfix#open()
-    endif
-    
-    " Show summary
-    echom 'Compilation complete (' . elapsed . 's): ' . 
-          \ error_count . ' errors, ' . 
-          \ warning_count . ' warnings, ' . 
-          \ info_count . ' info'
+  " Always open quickfix window so users can navigate errors
+  if qf_result.count > 0
+    call genero_tools#compiler#quickfix#open()
+    " Jump to first error
+    silent! cfirst
   else
-    call genero_tools#error#display('Quickfix Population Failed', qf_result.error)
+    " Close quickfix if no results
+    silent! cclose
   endif
+  
+  " Show summary
+  echom 'Compilation complete (' . elapsed . 's): ' . 
+        \ error_count . ' errors, ' . 
+        \ warning_count . ' warnings, ' . 
+        \ info_count . ' info'
   
   " Place signs if enabled
   if genero_tools#config#get('compiler_sign_column')
@@ -130,4 +141,55 @@ endfunction
 " GeneroAutocompileStatus command - show autocompile status
 function! genero_tools#compiler#commands#autocompile_status() abort
   call genero_tools#compiler#autocompile#status()
+endfunction
+
+" GeneroFilterErrors command - show only errors in quickfix
+function! genero_tools#compiler#commands#filter_errors() abort
+  if !exists('g:genero_tools_last_compile_result')
+    call genero_tools#error#warn('compiler', 'No compilation results. Run :GeneroCompile first.')
+    return
+  endif
+  call genero_tools#compiler#quickfix#populate(g:genero_tools_last_compile_result, 'errors')
+  let count = len(get(g:genero_tools_last_compile_result, 'errors', []))
+  if count > 0
+    call genero_tools#compiler#quickfix#open()
+    silent! cfirst
+  else
+    silent! cclose
+  endif
+  echom 'Showing ' . count . ' errors'
+endfunction
+
+" GeneroFilterWarnings command - show only warnings in quickfix
+function! genero_tools#compiler#commands#filter_warnings() abort
+  if !exists('g:genero_tools_last_compile_result')
+    call genero_tools#error#warn('compiler', 'No compilation results. Run :GeneroCompile first.')
+    return
+  endif
+  call genero_tools#compiler#quickfix#populate(g:genero_tools_last_compile_result, 'warnings')
+  let count = len(get(g:genero_tools_last_compile_result, 'warnings', []))
+  if count > 0
+    call genero_tools#compiler#quickfix#open()
+    silent! cfirst
+  else
+    silent! cclose
+  endif
+  echom 'Showing ' . count . ' warnings'
+endfunction
+
+" GeneroFilterAll command - show all errors and warnings in quickfix
+function! genero_tools#compiler#commands#filter_all() abort
+  if !exists('g:genero_tools_last_compile_result')
+    call genero_tools#error#warn('compiler', 'No compilation results. Run :GeneroCompile first.')
+    return
+  endif
+  call genero_tools#compiler#quickfix#populate(g:genero_tools_last_compile_result, 'all')
+  let count = len(getqflist())
+  if count > 0
+    call genero_tools#compiler#quickfix#open()
+    silent! cfirst
+  else
+    silent! cclose
+  endif
+  echom 'Showing all ' . count . ' diagnostics'
 endfunction
