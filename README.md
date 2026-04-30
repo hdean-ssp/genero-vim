@@ -265,6 +265,7 @@ let g:genero_tools_config = {
   \ 'compiler_autocompile': 0,
   \ 'compiler_autocompile_delay': 1000,
   \ 'compiler_inline_diagnostics': 1,
+  \ 'compiler_type_info': 1,
   \ 'hints_enabled': 1,
   \ 'hints_display': 'signs',
   \ 'hints_severity': 'warning',
@@ -390,6 +391,7 @@ let g:genero_tools_config.compiler_sign_column = 1               " Show signs in
 let g:genero_tools_config.compiler_autocompile = 1               " Autocompile on file save
 let g:genero_tools_config.compiler_autocompile_delay = 1000      " Delay before autocompile (ms)
 let g:genero_tools_config.compiler_inline_diagnostics = 1        " Show error/warning on cursor line (Neovim)
+let g:genero_tools_config.compiler_type_info = 1                 " Show function signature on hover (Neovim)
 ```
 
 **Supported File Types:**
