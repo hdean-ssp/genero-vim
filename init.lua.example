@@ -537,6 +537,147 @@ local plugins = {
       })
     end,
   },
+
+  -- Toggle terminal (in-buffer terminal with hotkey)
+  {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    config = function()
+      require("toggleterm").setup({
+        size = function(term)
+          if term.direction == "horizontal" then
+            return 15
+          elseif term.direction == "vertical" then
+            return vim.o.columns * 0.4
+          end
+        end,
+        open_mapping = [[<C-\>]],         -- Toggle terminal with Ctrl+\
+        hide_numbers = true,
+        shade_filetypes = {},
+        shade_terminals = true,
+        shading_factor = 2,
+        start_in_insert = true,
+        insert_mappings = true,            -- Ctrl+\ works in insert mode too
+        terminal_mappings = true,          -- Ctrl+\ works inside the terminal
+        persist_size = true,
+        persist_mode = true,
+        direction = "horizontal",          -- Default: horizontal split at bottom
+        close_on_exit = true,
+        shell = vim.o.shell,
+        float_opts = {
+          border = "rounded",
+          winblend = 0,
+        },
+      })
+
+      -- Terminal mode mappings (escape terminal mode easily)
+      function _G.set_terminal_keymaps()
+        local topts = { buffer = 0, noremap = true, silent = true }
+        vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], topts)
+        vim.keymap.set("t", "<C-h>", [[<C-\><C-n><C-w>h]], topts)
+        vim.keymap.set("t", "<C-j>", [[<C-\><C-n><C-w>j]], topts)
+        vim.keymap.set("t", "<C-k>", [[<C-\><C-n><C-w>k]], topts)
+        vim.keymap.set("t", "<C-l>", [[<C-\><C-n><C-w>l]], topts)
+      end
+
+      vim.cmd("autocmd! TermOpen term://* lua set_terminal_keymaps()")
+    end,
+  },
+
+  -- Telescope - Fuzzy finder for files, grep, and more
+  -- Falls back to native grep if ripgrep is not installed
+  {
+    "nvim-telescope/telescope.nvim",
+    branch = "0.1.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      local telescope = require("telescope")
+      local actions = require("telescope.actions")
+
+      -- Detect available grep tool: prefer ripgrep, fall back to grep
+      local has_rg = vim.fn.executable("rg") == 1
+      local vimgrep_arguments
+      if has_rg then
+        vimgrep_arguments = {
+          "rg", "--color=never", "--no-heading", "--with-filename",
+          "--line-number", "--column", "--smart-case", "--hidden",
+        }
+      else
+        -- Fallback: use grep (available on virtually all systems)
+        vimgrep_arguments = {
+          "grep", "-r", "-n", "--include=*.4gl", "--include=*.per",
+          "--include=*.m3", "--include=*.m4", "--include=*.lua",
+          "--include=*.vim", "--include=*.sh", "--include=*.txt",
+          "--include=*.md", "--include=*.json", "--include=*.xml",
+          "--include=*.cfg", "--include=*.conf",
+          "--exclude-dir=.git", "--exclude-dir=node_modules",
+          "-H", "-E",
+        }
+        vim.notify("ripgrep (rg) not found — Telescope grep using system grep (slower)", vim.log.levels.INFO)
+      end
+
+      telescope.setup({
+        defaults = {
+          vimgrep_arguments = vimgrep_arguments,
+          prompt_prefix = "   ",
+          selection_caret = "  ",
+          entry_prefix = "  ",
+          sorting_strategy = "ascending",
+          layout_strategy = "horizontal",
+          layout_config = {
+            horizontal = {
+              prompt_position = "top",
+              preview_width = 0.55,
+              results_width = 0.8,
+            },
+            vertical = {
+              mirror = false,
+            },
+            width = 0.87,
+            height = 0.80,
+            preview_cutoff = 120,
+          },
+          file_ignore_patterns = { "node_modules", ".git/", "%.42m", "%.42f", "%.o" },
+          path_display = { "truncate" },
+          winblend = 0,
+          border = {},
+          borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+          color_devicons = true,
+          mappings = {
+            i = {
+              ["<C-n>"] = actions.cycle_history_next,
+              ["<C-p>"] = actions.cycle_history_prev,
+              ["<C-j>"] = actions.move_selection_next,
+              ["<C-k>"] = actions.move_selection_previous,
+              ["<C-c>"] = actions.close,
+              ["<CR>"] = actions.select_default,
+              ["<C-x>"] = actions.select_horizontal,
+              ["<C-v>"] = actions.select_vertical,
+              ["<C-u>"] = actions.preview_scrolling_up,
+              ["<C-d>"] = actions.preview_scrolling_down,
+            },
+            n = {
+              ["<Esc>"] = actions.close,
+              ["q"] = actions.close,
+              ["<CR>"] = actions.select_default,
+              ["j"] = actions.move_selection_next,
+              ["k"] = actions.move_selection_previous,
+            },
+          },
+        },
+        pickers = {
+          grep_string = {
+            additional_args = has_rg and { "--hidden" } or {},
+          },
+          live_grep = {
+            additional_args = has_rg and { "--hidden" } or {},
+          },
+        },
+      })
+    end,
+  },
 }
 
 require("lazy").setup(plugins, {
@@ -608,6 +749,89 @@ map("n", "<C-Down>", ":resize -2<CR>", opts)
 map("n", "<C-Left>", ":vertical resize -2<CR>", opts)
 map("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 
+-- ============================================================================
+-- SEARCH HELPERS (Telescope with native grep/vimgrep fallback)
+-- ============================================================================
+
+-- Search word under cursor: tries Telescope grep_string, falls back to :vimgrep
+local function search_word_under_cursor()
+  local word = vim.fn.expand("<cword>")
+  if word == "" then
+    vim.notify("No word under cursor", vim.log.levels.WARN)
+    return
+  end
+  local ok, builtin = pcall(require, "telescope.builtin")
+  if ok then
+    builtin.grep_string({ word_match = "-w" })
+  else
+    -- Fallback: use :vimgrep and open quickfix
+    local escaped = vim.fn.escape(word, "/\\")
+    vim.cmd("silent! vimgrep /\\<" .. escaped .. "\\>/j **/*")
+    vim.cmd("copen")
+  end
+end
+
+-- Live grep: tries Telescope live_grep, falls back to prompted :vimgrep
+local function live_grep()
+  local ok, builtin = pcall(require, "telescope.builtin")
+  if ok then
+    builtin.live_grep()
+  else
+    -- Fallback: prompt for pattern and use :vimgrep
+    vim.ui.input({ prompt = "Grep pattern: " }, function(pattern)
+      if pattern and pattern ~= "" then
+        local escaped = vim.fn.escape(pattern, "/\\")
+        vim.cmd("silent! vimgrep /" .. escaped .. "/j **/*")
+        vim.cmd("copen")
+      end
+    end)
+  end
+end
+
+-- Find files: tries Telescope find_files, falls back to :edit with wildmenu
+local function find_files()
+  local ok, builtin = pcall(require, "telescope.builtin")
+  if ok then
+    builtin.find_files()
+  else
+    -- Fallback: use the built-in file explorer
+    vim.cmd("edit .")
+  end
+end
+
+-- Search buffers: tries Telescope buffers, falls back to :ls + :buffer
+local function search_buffers()
+  local ok, builtin = pcall(require, "telescope.builtin")
+  if ok then
+    builtin.buffers()
+  else
+    -- Fallback: list buffers and prompt for selection
+    vim.cmd("ls")
+    vim.ui.input({ prompt = "Buffer number: " }, function(input)
+      if input and input ~= "" then
+        vim.cmd("buffer " .. input)
+      end
+    end)
+  end
+end
+
+-- Telescope: search word under cursor in current directory
+map("n", "<leader>fw", search_word_under_cursor, { noremap = true, silent = true, desc = "Search word under cursor" })
+
+-- Telescope: live grep (interactive search)
+map("n", "<leader>fg", live_grep, { noremap = true, silent = true, desc = "Live grep" })
+
+-- Telescope: find files
+map("n", "<leader>ff", find_files, { noremap = true, silent = true, desc = "Find files" })
+
+-- Telescope: search buffers
+map("n", "<leader>fb", search_buffers, { noremap = true, silent = true, desc = "Search buffers" })
+
+-- Terminal toggles (Ctrl+\ is the main toggle, these are extras)
+map("n", "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", { noremap = true, silent = true, desc = "Float terminal" })
+map("n", "<leader>th", "<cmd>ToggleTerm direction=horizontal<CR>", { noremap = true, silent = true, desc = "Horizontal terminal" })
+map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { noremap = true, silent = true, desc = "Vertical terminal" })
+
 -- Clear search highlight
 map("n", "<Esc>", ":nohlsearch<CR>", opts)
 
@@ -623,6 +847,13 @@ wk.register({
     a = { ":GeneroAutocompileEnable<CR>", "Enable autocompile" },
     d = { ":GeneroAutocompileDisable<CR>", "Disable autocompile" },
     c = { ":GeneroClearErrors<CR>", "Clear errors" },
+  },
+  f = {
+    name = "+Find/Search",
+    w = { "Search word under cursor" },
+    g = { "Live grep" },
+    f = { "Find files" },
+    b = { "Search buffers" },
   },
   g = {
     name = "+Genero-Tools",
@@ -641,16 +872,19 @@ wk.register({
     f = { ":GeneroHintAutofix<CR>", "Apply auto-fix" },
   },
   s = {
-    name = "+SVN/Signs",
+    name = "+SVN/Signs/Snippets",
     v = { ":GeneroSVNToggle<CR>", "Toggle SVN markers" },
     r = { ":GeneroSVNRefresh<CR>", "Refresh SVN markers" },
     s = { ":GeneroSVNStatus<CR>", "SVN status" },
     u = { ":GeneroUnifiedSignsToggle<CR>", "Toggle unified signs" },
-  },
-  sl = {
-    name = "+Snippets",
     l = { ":GeneroSnippetList<CR>", "List snippets" },
     h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
+  },
+  t = {
+    name = "+Terminal",
+    f = { "Float terminal" },
+    h = { "Horizontal terminal" },
+    v = { "Vertical terminal" },
   },
   b = {
     name = "+Buffers",
@@ -731,6 +965,28 @@ WINDOW MANAGEMENT:
   Ctrl+Up/Down    - Resize window vertically
   Ctrl+Left/Right - Resize window horizontally
 
+TERMINAL:
+  Ctrl+\          - Toggle terminal (horizontal split)
+  Space+tf        - Open floating terminal
+  Space+th        - Open horizontal terminal
+  Space+tv        - Open vertical terminal
+  Esc             - Exit terminal mode (inside terminal)
+  Ctrl+h/j/k/l   - Navigate away from terminal
+
+SEARCH (Telescope with grep fallback):
+  Space+fw        - Search word under cursor in project
+  Space+fg        - Live grep (interactive search)
+  Space+ff        - Find files
+  Space+fb        - Search open buffers
+  In Telescope window:
+    Ctrl+j/k      - Navigate results
+    Ctrl+x        - Open in horizontal split
+    Ctrl+v        - Open in vertical split
+    Ctrl+u/d      - Scroll preview
+    Esc/q         - Close
+  Note: If ripgrep (rg) is not installed, Telescope uses system grep.
+        If Telescope itself fails, searches fall back to :vimgrep + quickfix.
+
 COMMENTING:
   gcc             - Toggle comment on current line
   gbc             - Toggle block comment
@@ -796,6 +1052,9 @@ FEATURES:
   • Automatic code snippets
   • Autocompile on save (500ms delay)
   • Autocomplete on pause (500ms delay)
+  • In-buffer terminal (toggleterm)
+  • Fuzzy search across project (Telescope)
+  • Search word under cursor across files
 
 TIPS:
   • Press Space to see available keybindings (which-key)
@@ -804,6 +1063,8 @@ TIPS:
   • Errors appear in the sign column and quickfix list
   • Debug stream shows real-time file changes
   • Floating windows can be closed with q or Esc
+  • Press Ctrl+\ to quickly open/close a terminal
+  • Cursor on a word? Press Space+fw to search the whole project for it
   ]])
 end, {})
 
