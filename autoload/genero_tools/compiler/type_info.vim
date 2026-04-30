@@ -434,7 +434,7 @@ function! s:show_function_signature(bufnr, line, word, data) abort
   if len(full_text) <= available && available >= 20
     try
       call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-        \ 'virt_text': [['  ' . full_text, 'GeneroTypeInfo']],
+        \ 'virt_text': [['  ƒ ' . full_text, 'GeneroTypeInfo']],
         \ 'virt_text_pos': 'eol',
         \ 'priority': 30
         \ })
@@ -448,7 +448,7 @@ function! s:show_function_signature(bufnr, line, word, data) abort
   let indent = matchstr(line_text, '^\s*')
   let pad = indent . repeat(' ', 4)
 
-  call add(virt_lines, [[pad . param_str, 'GeneroTypeInfo']])
+  call add(virt_lines, [[pad . 'ƒ ' . param_str, 'GeneroTypeInfo']])
 
   if !empty(ret_str) || !empty(file_str)
     let second = pad
@@ -486,7 +486,7 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
 
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-      \ 'virt_text': [['  ' . display, 'GeneroTypeInfoVar']],
+      \ 'virt_text': [['  ◇ ' . display, 'GeneroTypeInfoVar']],
       \ 'virt_text_pos': 'eol',
       \ 'priority': 30
       \ })
