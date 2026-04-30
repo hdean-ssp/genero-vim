@@ -1,6 +1,7 @@
 " Genero-Tools Plugin - Type Info Virtual Text
-" Shows function signature as virtual text when cursor is on a function name
-" Uses a debounced timer on CursorMoved instead of CursorHold for reliability
+" Shows function signatures and variable types as virtual text
+" Functions: looked up via query.sh (with cache)
+" Variables: scanned from DEFINE statements in the current buffer
 " Neovim only — silently does nothing in Vim
 
 " Namespace for type info extmarks
@@ -20,15 +21,16 @@ function! genero_tools#compiler#type_info#init() abort
     return
   endif
 
-  " Create namespace
   let s:ns_id = nvim_create_namespace('genero_type_info')
 
-  " Define subtle highlight groups
   if !hlexists('GeneroTypeInfo')
     highlight GeneroTypeInfo guifg=#6a7a8a guibg=NONE gui=italic ctermfg=DarkGray ctermbg=NONE
   endif
 
-  " Set up autocommands — use CursorMoved with debounce timer instead of CursorHold
+  if !hlexists('GeneroTypeInfoVar')
+    highlight GeneroTypeInfoVar guifg=#7a8a6a guibg=NONE gui=italic ctermfg=DarkGreen ctermbg=NONE
+  endif
+
   augroup GeneroTypeInfo
     autocmd!
     autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#on_cursor_moved()
@@ -51,21 +53,17 @@ function! genero_tools#compiler#type_info#on_cursor_moved() abort
   let bufnr = bufnr('%')
   let current_line = line('.')
 
-  " If still on the same word/line, do nothing
   if word ==# s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
     return
   endif
 
-  " Clear stale virtual text immediately
   call genero_tools#compiler#type_info#clear_extmarks()
 
-  " Cancel any pending timer
   if s:timer_id != -1
     call timer_stop(s:timer_id)
     let s:timer_id = -1
   endif
 
-  " Skip empty or short words
   if empty(word) || len(word) < 3
     let s:last_word = ''
     let s:last_bufnr = -1
@@ -73,7 +71,6 @@ function! genero_tools#compiler#type_info#on_cursor_moved() abort
     return
   endif
 
-  " Skip Genero keywords
   let upper = toupper(word)
   if s:is_keyword(upper)
     let s:last_word = word
@@ -82,26 +79,62 @@ function! genero_tools#compiler#type_info#on_cursor_moved() abort
     return
   endif
 
-  " Schedule lookup after a short delay (debounce)
   let s:timer_id = timer_start(400, function('s:debounced_lookup', [word, bufnr, current_line]))
 endfunction
 
-" Debounced callback — runs after cursor has been still for 400ms
+" Debounced callback — determine if word is a function call or variable, then look up
 function! s:debounced_lookup(word, bufnr, line, timer_id) abort
   let s:timer_id = -1
 
-  " Verify cursor is still on the same word (user might have moved)
+  " Verify cursor hasn't moved
   if expand('<cword>') !=# a:word || bufnr('%') != a:bufnr || line('.') != a:line
     return
   endif
 
-  " Check cache first (instant, no shell call)
+  " Determine if this is a function call: word followed by ( with optional whitespace
+  let is_function_call = s:word_is_function_call(a:word, a:line)
+
+  if is_function_call
+    call s:lookup_function(a:word, a:bufnr, a:line)
+  else
+    call s:lookup_variable(a:word, a:bufnr, a:line)
+  endif
+endfunction
+
+" Check if the word under cursor is followed by parentheses (function call)
+function! s:word_is_function_call(word, line_nr) abort
+  let line_text = getline(a:line_nr)
+  let col = col('.')
+
+  " Find the end of the current word from cursor position
+  " Look for the word in the line and check what follows it
+  let word_end = matchend(line_text, '\V' . escape(a:word, '\'), col - len(a:word) - 1)
+  if word_end == -1
+    " Fallback: search from beginning of line
+    let word_end = matchend(line_text, '\V' . escape(a:word, '\'))
+  endif
+
+  if word_end == -1
+    return 0
+  endif
+
+  " Check what follows the word (skip whitespace)
+  let after = strpart(line_text, word_end)
+  return after =~# '^\s*('
+endfunction
+
+" ============================================================================
+" FUNCTION LOOKUP (via query.sh)
+" ============================================================================
+
+function! s:lookup_function(word, bufnr, line) abort
+  " Check cache first
   let cache_key = 'find-function:' . a:word
   let cached = genero_tools#cache#get(cache_key)
 
   if !empty(cached)
     if has_key(cached, 'success') && cached.success && !empty(get(cached, 'data', {}))
-      call s:show_signature(a:bufnr, a:line, a:word, cached.data)
+      call s:show_function_signature(a:bufnr, a:line, a:word, cached.data)
       let s:last_word = a:word
       let s:last_bufnr = a:bufnr
       let s:last_line = a:line
@@ -109,28 +142,362 @@ function! s:debounced_lookup(word, bufnr, line, timer_id) abort
     return
   endif
 
-  " Not in cache — do a silent shell lookup
+  " Silent shell lookup
   let result = s:silent_lookup(a:word)
 
   if result.success && !empty(result.data)
     call genero_tools#cache#set(cache_key, result)
 
-    " Verify cursor hasn't moved during the shell call
     if expand('<cword>') ==# a:word && bufnr('%') == a:bufnr && line('.') == a:line
-      call s:show_signature(a:bufnr, a:line, a:word, result.data)
+      call s:show_function_signature(a:bufnr, a:line, a:word, result.data)
       let s:last_word = a:word
       let s:last_bufnr = a:bufnr
       let s:last_line = a:line
     endif
   else
-    " Not a function — record so we skip quickly next time
-    let s:last_word = a:word
-    let s:last_bufnr = a:bufnr
-    let s:last_line = a:line
+    " Not a known function — try variable lookup as fallback
+    call s:lookup_variable(a:word, a:bufnr, a:line)
   endif
 endfunction
 
-" Manual trigger command — useful for testing
+" ============================================================================
+" VARIABLE LOOKUP (buffer-local DEFINE scan)
+" ============================================================================
+
+function! s:lookup_variable(word, bufnr, line) abort
+  let define_info = s:find_define(a:word, a:bufnr, a:line)
+
+  if !empty(define_info)
+    call s:show_variable_type(a:bufnr, a:line, a:word, define_info)
+  endif
+
+  let s:last_word = a:word
+  let s:last_bufnr = a:bufnr
+  let s:last_line = a:line
+endfunction
+
+" Search for a DEFINE statement for the given variable name
+" Strategy: search upward from cursor line, then check module-level defines at top of file
+" Returns: {'type': 'INTEGER', 'line': 42, 'scope': 'local'} or {}
+function! s:find_define(word, bufnr, cursor_line) abort
+  let lines = getbufline(a:bufnr, 1, '$')
+  if empty(lines)
+    return {}
+  endif
+
+  " Build a case-insensitive pattern for the variable name
+  let var_pattern = '\c\<' . escape(a:word, '\') . '\>'
+
+  " Phase 1: Search upward from cursor line for a local DEFINE
+  " Stop at the enclosing FUNCTION line (don't cross function boundaries)
+  let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
+  if !empty(found)
+    let found.scope = 'local'
+    return found
+  endif
+
+  " Phase 2: Search module-level defines at the top of the file
+  " These are DEFINE statements before the first FUNCTION keyword
+  let found = s:search_module_defines(lines, var_pattern)
+  if !empty(found)
+    let found.scope = 'module'
+    return found
+  endif
+
+  return {}
+endfunction
+
+" Search upward from cursor_line for a DEFINE containing the variable
+" Stops at the enclosing FUNCTION line
+function! s:search_define_upward(lines, var_pattern, cursor_line) abort
+  let in_define_block = 0
+  let define_start_line = 0
+  let define_text = ''
+
+  " Walk upward from cursor line
+  let i = a:cursor_line - 1  " 0-indexed
+  while i >= 0
+    let line = a:lines[i]
+    let trimmed = substitute(line, '^\s*', '', '')
+    let upper_trimmed = toupper(trimmed)
+
+    " Stop at FUNCTION boundary (we've left the current function scope)
+    if upper_trimmed =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+      break
+    endif
+
+    " Check if this line is part of a DEFINE statement
+    " DEFINE can span multiple lines with comma continuation
+    if upper_trimmed =~# '^DEFINE\>'
+      " Found a DEFINE line — collect the full statement
+      let define_text = s:collect_define_statement(a:lines, i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      if !empty(result)
+        return result
+      endif
+    endif
+
+    let i -= 1
+  endwhile
+
+  return {}
+endfunction
+
+" Search module-level defines (before the first FUNCTION keyword)
+function! s:search_module_defines(lines, var_pattern) abort
+  let i = 0
+  let total = len(a:lines)
+
+  while i < total
+    let line = a:lines[i]
+    let trimmed = substitute(line, '^\s*', '', '')
+    let upper_trimmed = toupper(trimmed)
+
+    " Stop when we hit the first FUNCTION/MAIN/REPORT
+    if upper_trimmed =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+      break
+    endif
+
+    if upper_trimmed =~# '^DEFINE\>'
+      let define_text = s:collect_define_statement(a:lines, i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      if !empty(result)
+        return result
+      endif
+    endif
+
+    let i += 1
+  endwhile
+
+  return {}
+endfunction
+
+" Collect a full DEFINE statement that may span multiple lines
+" Lines ending with comma indicate continuation
+function! s:collect_define_statement(lines, start_idx) abort
+  let total = len(a:lines)
+  let result = ''
+  let i = a:start_idx
+
+  while i < total
+    let line = substitute(a:lines[i], '^\s*', '', '')
+    let line = substitute(line, '\s*$', '', '')
+
+    " Skip comment lines
+    if line =~# '^[#\-\-]' || line =~# '^{' || line =~# '^\s*$'
+      let i += 1
+      continue
+    endif
+
+    let result .= ' ' . line
+
+    " If line ends with comma, the DEFINE continues
+    if line =~# ',\s*$'
+      let i += 1
+      continue
+    endif
+
+    " If next line starts with a type or variable name (not a keyword that starts
+    " a new statement), it might be a continuation
+    if i + 1 < total
+      let next = substitute(a:lines[i + 1], '^\s*', '', '')
+      let upper_next = toupper(next)
+      " If next line doesn't start a new statement, it's a continuation
+      if !empty(next) && upper_next !~# '^\(DEFINE\|FUNCTION\|MAIN\|REPORT\|END\|IF\|FOR\|WHILE\|CALL\|LET\|RETURN\|DISPLAY\|INPUT\|CASE\|SELECT\|INSERT\|UPDATE\|DELETE\|OPEN\|CLOSE\|FETCH\|FOREACH\|PREPARE\|EXECUTE\|FREE\|DECLARE\|WHENEVER\|MENU\|DIALOG\|CONSTRUCT\|OUTPUT\|PRINT\|GLOBALS\|IMPORT\|DATABASE\|CONNECT\|CONSTANT\|TYPE\)\>'
+        let i += 1
+        continue
+      endif
+    endif
+
+    break
+  endwhile
+
+  return result
+endfunction
+
+" Parse a DEFINE statement text to find a specific variable and its type
+" Handles: DEFINE var1 TYPE, var2 TYPE, var3 LIKE table.column
+" Returns: {'type': 'INTEGER', 'line': N} or {}
+function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
+  let text = a:define_text
+
+  " Remove the DEFINE keyword
+  let text = substitute(text, '\c^\s*DEFINE\s\+', '', '')
+
+  " Split by comma to get individual variable declarations
+  " But be careful: commas inside RECORD...END RECORD shouldn't split
+  " Simple approach: split by comma and try to match each chunk
+  let chunks = split(text, ',')
+
+  for chunk in chunks
+    let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
+
+    " Check if this chunk contains our variable
+    if chunk =~? a:var_pattern
+      " Extract the type — everything after the variable name
+      " Pattern: variable_name TYPE_DEFINITION
+      let type_match = matchstr(chunk, '\c\<' . '\S\+' . '\>\s\+\zs.*')
+      if !empty(type_match)
+        " Clean up the type string
+        let type_str = substitute(type_match, '^\s*\|\s*$', '', 'g')
+        " Remove trailing comma if present
+        let type_str = substitute(type_str, ',\s*$', '', '')
+        if !empty(type_str)
+          return {'type': type_str, 'line': a:line_nr}
+        endif
+      endif
+    endif
+  endfor
+
+  return {}
+endfunction
+
+" ============================================================================
+" DISPLAY FUNCTIONS
+" ============================================================================
+
+" Show function signature (existing logic, renamed)
+function! s:show_function_signature(bufnr, line, word, data) abort
+  let func = {}
+  if type(a:data) == type([]) && !empty(a:data)
+    for item in a:data
+      if type(item) == type({}) && get(item, 'name', '') ==? a:word
+        let func = item
+        break
+      endif
+    endfor
+    if empty(func) && type(a:data[0]) == type({})
+      let func = a:data[0]
+    endif
+  elseif type(a:data) == type({})
+    let func = a:data
+  else
+    return
+  endif
+
+  if empty(func)
+    return
+  endif
+
+  " Build parameter string
+  let params = get(func, 'parameters', [])
+  let param_str = ''
+  if !empty(params)
+    let param_strs = []
+    for p in params
+      if type(p) == type({})
+        call add(param_strs, get(p, 'name', '?') . ' ' . get(p, 'type', '?'))
+      endif
+    endfor
+    let param_str = '(' . join(param_strs, ', ') . ')'
+  else
+    let param_str = '()'
+  endif
+
+  " Return types
+  let ret_str = ''
+  let returns = get(func, 'returns', [])
+  if !empty(returns)
+    let ret_strs = []
+    for r in returns
+      if type(r) == type({})
+        call add(ret_strs, get(r, 'type', get(r, 'name', '?')))
+      endif
+    endfor
+    let ret_str = '→ ' . join(ret_strs, ', ')
+  endif
+
+  " File location
+  let file_str = ''
+  let file = get(func, 'file', '')
+  if !empty(file)
+    let file_str = fnamemodify(file, ':t')
+  endif
+
+  " Calculate available space
+  let line_text = getline(a:line)
+  let line_len = strdisplaywidth(line_text)
+  let win_width = winwidth(0)
+  let available = win_width - line_len - 4
+
+  let full_text = param_str
+  if !empty(ret_str)
+    let full_text .= ' ' . ret_str
+  endif
+  if !empty(file_str)
+    let full_text .= '  ' . file_str
+  endif
+
+  call genero_tools#compiler#type_info#clear_extmarks()
+
+  " Fits on one line
+  if len(full_text) <= available && available >= 20
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ' . full_text, 'GeneroTypeInfo']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+    return
+  endif
+
+  " Wrap into virtual lines below
+  let virt_lines = []
+  let indent = matchstr(line_text, '^\s*')
+  let pad = indent . repeat(' ', 4)
+
+  call add(virt_lines, [[pad . param_str, 'GeneroTypeInfo']])
+
+  if !empty(ret_str) || !empty(file_str)
+    let second = pad
+    if !empty(ret_str)
+      let second .= ret_str
+    endif
+    if !empty(file_str)
+      let second .= '  ' . file_str
+    endif
+    call add(virt_lines, [[second, 'GeneroTypeInfo']])
+  endif
+
+  try
+    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+      \ 'virt_lines': virt_lines,
+      \ 'virt_lines_above': v:false,
+      \ 'priority': 30
+      \ })
+  catch
+  endtry
+endfunction
+
+" Show variable type from DEFINE scan
+function! s:show_variable_type(bufnr, line, word, define_info) abort
+  let type_str = a:define_info.type
+  let def_line = a:define_info.line
+  let scope = get(a:define_info, 'scope', 'local')
+
+  let display = type_str
+  if scope == 'module'
+    let display .= '  (module)'
+  endif
+
+  call genero_tools#compiler#type_info#clear_extmarks()
+
+  try
+    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+      \ 'virt_text': [['  ' . display, 'GeneroTypeInfoVar']],
+      \ 'virt_text_pos': 'eol',
+      \ 'priority': 30
+      \ })
+  catch
+  endtry
+endfunction
+
+" ============================================================================
+" MANUAL COMMAND
+" ============================================================================
+
 function! genero_tools#compiler#type_info#manual() abort
   if !has('nvim')
     echom '[type_info] Neovim required for virtual text'
@@ -143,29 +510,58 @@ function! genero_tools#compiler#type_info#manual() abort
     return
   endif
 
-  echom '[type_info] Looking up: ' . word
-
-  " Force a fresh lookup
   let s:last_word = ''
   let s:last_bufnr = -1
   let s:last_line = -1
 
-  let result = genero_tools#command#execute_shell('find-function', [word])
+  let is_func = s:word_is_function_call(word, line('.'))
+  echom '[type_info] Word: ' . word . ' | Is function call: ' . is_func
 
-  if result.success && !empty(result.data)
-    echom '[type_info] Found function, showing signature'
-    let cache_key = 'find-function:' . word
-    call genero_tools#cache#set(cache_key, result)
-    call s:show_signature(bufnr('%'), line('.'), word, result.data)
-    let s:last_word = word
-    let s:last_bufnr = bufnr('%')
-    let s:last_line = line('.')
+  if is_func
+    echom '[type_info] Looking up function via query.sh...'
+    let result = genero_tools#command#execute_shell('find-function', [word])
+    if result.success && !empty(result.data)
+      echom '[type_info] Found function signature'
+      let cache_key = 'find-function:' . word
+      call genero_tools#cache#set(cache_key, result)
+      call s:show_function_signature(bufnr('%'), line('.'), word, result.data)
+    else
+      echom '[type_info] Function not found, trying variable lookup...'
+      let define_info = s:find_define(word, bufnr('%'), line('.'))
+      if !empty(define_info)
+        echom '[type_info] Found DEFINE: ' . define_info.type . ' (line ' . define_info.line . ', ' . define_info.scope . ')'
+        call s:show_variable_type(bufnr('%'), line('.'), word, define_info)
+      else
+        echom '[type_info] No DEFINE found for: ' . word
+      endif
+    endif
   else
-    echom '[type_info] Function not found: ' . word . ' (error: ' . result.error . ')'
+    echom '[type_info] Looking up variable DEFINE...'
+    let define_info = s:find_define(word, bufnr('%'), line('.'))
+    if !empty(define_info)
+      echom '[type_info] Found DEFINE: ' . define_info.type . ' (line ' . define_info.line . ', ' . define_info.scope . ')'
+      call s:show_variable_type(bufnr('%'), line('.'), word, define_info)
+    else
+      echom '[type_info] No DEFINE found, trying function lookup...'
+      let result = genero_tools#command#execute_shell('find-function', [word])
+      if result.success && !empty(result.data)
+        echom '[type_info] Found function signature'
+        call s:show_function_signature(bufnr('%'), line('.'), word, result.data)
+      else
+        echom '[type_info] Nothing found for: ' . word
+      endif
+    endif
   endif
+
+  let s:last_word = word
+  let s:last_bufnr = bufnr('%')
+  let s:last_line = line('.')
 endfunction
 
-" Check if a word is a Genero keyword
+" ============================================================================
+" UTILITY FUNCTIONS
+" ============================================================================
+
 function! s:is_keyword(upper_word) abort
   let keywords = {
     \ 'DEFINE': 1, 'FUNCTION': 1, 'END': 1, 'IF': 1, 'THEN': 1, 'ELSE': 1,
@@ -229,131 +625,6 @@ function! s:silent_lookup(word) abort
   endtry
 
   return result
-endfunction
-
-" Show signature from full function data
-function! s:show_signature(bufnr, line, word, data) abort
-  let func = {}
-  if type(a:data) == type([]) && !empty(a:data)
-    for item in a:data
-      if type(item) == type({}) && get(item, 'name', '') ==? a:word
-        let func = item
-        break
-      endif
-    endfor
-    if empty(func) && type(a:data[0]) == type({})
-      let func = a:data[0]
-    endif
-  elseif type(a:data) == type({})
-    let func = a:data
-  else
-    return
-  endif
-
-  if empty(func)
-    return
-  endif
-
-  " Build virtual text lines — one chunk per logical section
-  " Line 1 (eol): parameters
-  " Line 2 (below, if needed): returns + file
-  let virt_lines = []
-
-  " Parameters
-  let params = get(func, 'parameters', [])
-  let param_str = ''
-  if !empty(params)
-    let param_strs = []
-    for p in params
-      if type(p) == type({})
-        call add(param_strs, get(p, 'name', '?') . ' ' . get(p, 'type', '?'))
-      endif
-    endfor
-    let param_str = '(' . join(param_strs, ', ') . ')'
-  else
-    let param_str = '()'
-  endif
-
-  " Return types
-  let ret_str = ''
-  let returns = get(func, 'returns', [])
-  if !empty(returns)
-    let ret_strs = []
-    for r in returns
-      if type(r) == type({})
-        call add(ret_strs, get(r, 'type', get(r, 'name', '?')))
-      endif
-    endfor
-    let ret_str = '→ ' . join(ret_strs, ', ')
-  endif
-
-  " File location
-  let file_str = ''
-  let file = get(func, 'file', '')
-  if !empty(file)
-    let file_str = fnamemodify(file, ':t')
-  endif
-
-  " Calculate available space on the current line
-  let line_text = getline(a:line)
-  let line_len = strdisplaywidth(line_text)
-  let win_width = winwidth(0)
-  let available = win_width - line_len - 4
-
-  " Build the full single-line text
-  let full_text = param_str
-  if !empty(ret_str)
-    let full_text .= ' ' . ret_str
-  endif
-  if !empty(file_str)
-    let full_text .= '  ' . file_str
-  endif
-
-  call genero_tools#compiler#type_info#clear_extmarks()
-
-  " If it fits on one line, use simple eol virtual text
-  if len(full_text) <= available && available >= 20
-    try
-      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-        \ 'virt_text': [['  ' . full_text, 'GeneroTypeInfo']],
-        \ 'virt_text_pos': 'eol',
-        \ 'priority': 30
-        \ })
-    catch
-    endtry
-    return
-  endif
-
-  " Doesn't fit — use virt_lines below the current line
-  " Split into: params on first line, returns + file on second line
-  let virt_lines = []
-
-  " Params line — indent to align with code
-  let indent = matchstr(line_text, '^\s*')
-  let pad = indent . repeat(' ', 4)
-
-  call add(virt_lines, [[pad . param_str, 'GeneroTypeInfo']])
-
-  " Returns + file on a second line (if present)
-  if !empty(ret_str) || !empty(file_str)
-    let second = pad
-    if !empty(ret_str)
-      let second .= ret_str
-    endif
-    if !empty(file_str)
-      let second .= '  ' . file_str
-    endif
-    call add(virt_lines, [[second, 'GeneroTypeInfo']])
-  endif
-
-  try
-    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-      \ 'virt_lines': virt_lines,
-      \ 'virt_lines_above': v:false,
-      \ 'priority': 30
-      \ })
-  catch
-  endtry
 endfunction
 
 " Clear extmarks only
