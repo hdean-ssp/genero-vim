@@ -254,10 +254,9 @@ function! s:show_signature(bufnr, line, word, data) abort
     return
   endif
 
-  let sig_parts = []
-
-  " Parameters
+  " Build parameter string
   let params = get(func, 'parameters', [])
+  let param_str = ''
   if !empty(params)
     let param_strs = []
     for p in params
@@ -265,12 +264,13 @@ function! s:show_signature(bufnr, line, word, data) abort
         call add(param_strs, get(p, 'name', '?') . ' ' . get(p, 'type', '?'))
       endif
     endfor
-    call add(sig_parts, '(' . join(param_strs, ', ') . ')')
+    let param_str = '(' . join(param_strs, ', ') . ')'
   else
-    call add(sig_parts, '()')
+    let param_str = '()'
   endif
 
-  " Return types
+  " Build return string
+  let ret_str = ''
   let returns = get(func, 'returns', [])
   if !empty(returns)
     let ret_strs = []
@@ -279,16 +279,49 @@ function! s:show_signature(bufnr, line, word, data) abort
         call add(ret_strs, get(r, 'type', get(r, 'name', '?')))
       endif
     endfor
-    call add(sig_parts, '→ ' . join(ret_strs, ', '))
+    let ret_str = '→ ' . join(ret_strs, ', ')
   endif
 
-  " File location
+  " Build file string
+  let file_str = ''
   let file = get(func, 'file', '')
   if !empty(file)
-    call add(sig_parts, '  ' . fnamemodify(file, ':t'))
+    let file_str = fnamemodify(file, ':t')
   endif
 
-  let display_text = join(sig_parts, ' ')
+  " Calculate available space: window width minus current line length minus padding
+  let line_text = getline(a:line)
+  let line_len = strdisplaywidth(line_text)
+  let win_width = winwidth(0)
+  let available = win_width - line_len - 4  " 4 = leading spaces + margin
+
+  " Build display text, truncating intelligently if needed
+  if available < 20
+    " Not enough room for anything useful
+    return
+  endif
+
+  let display_text = param_str
+  if !empty(ret_str)
+    let display_text .= ' ' . ret_str
+  endif
+  if !empty(file_str)
+    let display_text .= '  ' . file_str
+  endif
+
+  " Truncate if too long — drop file first, then truncate params
+  if len(display_text) > available && !empty(file_str)
+    " Try without file location
+    let display_text = param_str
+    if !empty(ret_str)
+      let display_text .= ' ' . ret_str
+    endif
+  endif
+
+  if len(display_text) > available
+    " Still too long — truncate with ellipsis
+    let display_text = display_text[0:available - 4] . '...'
+  endif
 
   call genero_tools#compiler#type_info#clear_extmarks()
 
