@@ -137,8 +137,9 @@ function! genero_tools#compiler#type_info#show_for_cursor() abort
     return
   endif
 
-  " Nothing in cache — do a lookup (this calls query.sh, but only on CursorHold)
-  let result = genero_tools#command#execute_shell('find-function', [word])
+  " Nothing in cache — do a silent lookup (bypass execute_shell to avoid
+  " echom/progress output which breaks CursorHold in Neovim)
+  let result = s:silent_lookup(word)
 
   if result.success && !empty(result.data)
     " Cache it for future use
@@ -185,6 +186,37 @@ function! genero_tools#compiler#type_info#manual() abort
   else
     echom '[type_info] Function not found: ' . word . ' (error: ' . result.error . ')'
   endif
+endfunction
+
+" Silent lookup — calls query.sh directly without progress/echo side effects
+" This is critical for CursorHold: any echom during CursorHold breaks Neovim
+function! s:silent_lookup(word) abort
+  let tool_path = genero_tools#config#get('genero_tools_path')
+  let escaped_word = genero_tools#command#escape_arg(a:word)
+  let cmd = tool_path . ' find-function ' . escaped_word
+
+  let result = {
+    \ 'success': 0,
+    \ 'data': {},
+    \ 'error': '',
+    \ 'timestamp': localtime()
+    \ }
+
+  try
+    silent let output = system(cmd)
+    if v:shell_error != 0
+      let result.error = 'query.sh exited with code ' . v:shell_error
+      return result
+    endif
+
+    let data = json_decode(output)
+    let result.success = 1
+    let result.data = data
+  catch
+    let result.error = v:exception
+  endtry
+
+  return result
 endfunction
 
 " Show signature from full function data (find-function result)
