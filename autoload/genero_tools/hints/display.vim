@@ -129,30 +129,40 @@ function! genero_tools#hints#display#highlight_columns(bufnr, hints) abort
 endfunction
 
 " Display hints as virtual text (Neovim only)
+" When hints_current_line_only is enabled: icon-only on all lines, full text on current line
 function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
   if !has('nvim')
     return
   endif
   
-  " Get or create namespace for hints
   let ns_id = nvim_create_namespace('genero_hints')
+  let current_line_only = genero_tools#hints#config#get('hints_current_line_only')
+  let current_line = line('.')
   
   for hint in a:hints
     let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
     
+    if current_line_only && hint.line != current_line
+      " Icon only for non-current lines
+      let virt_text = [['  ▸ ', hl_group]]
+    else
+      " Full message
+      let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+    endif
+    
     try
       call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-        \ 'virt_text': [['  ▸ ' . hint.message . ' ', hl_group]],
+        \ 'virt_text': virt_text,
         \ 'virt_text_pos': 'eol',
         \ 'priority': 50
         \ })
     catch
-      " Silently ignore extmark errors
     endtry
   endfor
 endfunction
 
-" Display virtual text for a single line only (current-line-only mode)
+" Update virtual text when cursor line changes (current-line-only mode)
+" Replaces icon-only with full text on current line, and vice versa for previous line
 function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, current_line) abort
   if !has('nvim')
     return
@@ -160,23 +170,26 @@ function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, cu
   
   let ns_id = nvim_create_namespace('genero_hints')
   
-  " Clear existing virtual text (but not signs)
+  " Clear and redraw all — simplest approach that handles all edge cases
   call nvim_buf_clear_namespace(a:bufnr, ns_id, 0, -1)
   
-  " Only place virtual text for hints on the current line
   for hint in a:hints
+    let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
+    
     if hint.line == a:current_line
-      let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
-      
-      try
-        call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-          \ 'virt_text': [['  ▸ ' . hint.message . ' ', hl_group]],
-          \ 'virt_text_pos': 'eol',
-          \ 'priority': 50
-          \ })
-      catch
-      endtry
+      let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+    else
+      let virt_text = [['  ▸ ', hl_group]]
     endif
+    
+    try
+      call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
+        \ 'virt_text': virt_text,
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 50
+        \ })
+    catch
+    endtry
   endfor
 endfunction
 
