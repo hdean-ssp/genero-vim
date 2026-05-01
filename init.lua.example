@@ -41,7 +41,13 @@ vim.opt.timeoutlen = 300
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 vim.opt.mouse = "a"
-vim.opt.clipboard = "unnamedplus"
+
+-- Use system clipboard if a provider is available (xclip, xsel, wl-copy, etc.)
+-- Falls back to Neovim's internal registers if no provider is found
+if vim.fn.executable("xclip") == 1 or vim.fn.executable("xsel") == 1
+    or vim.fn.executable("wl-copy") == 1 or vim.fn.executable("pbcopy") == 1 then
+  vim.opt.clipboard = "unnamedplus"
+end
 
 -- Persistent Undo (Neovim only)
 vim.opt.undofile = true
