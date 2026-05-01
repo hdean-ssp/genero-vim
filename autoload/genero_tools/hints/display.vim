@@ -181,19 +181,13 @@ function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, cu
 endfunction
 
 " Setup CursorMoved autocommand for current-line-only virtual text
+" NOTE: Autocommands are now handled by the unified cursor dispatcher (cursor.vim)
 function! genero_tools#hints#display#setup_cursor_autocmd() abort
-  augroup GeneroHintsCursorLine
-    autocmd!
-    autocmd CursorMoved,CursorMovedI *.4gl,*.m3,*.m4,*.per call genero_tools#hints#display#on_cursor_moved()
-  augroup END
+  " No-op — cursor.vim handles the dispatch
 endfunction
 
-" Handler for CursorMoved — update virtual text if in current-line-only mode
-function! genero_tools#hints#display#on_cursor_moved() abort
-  if !has('nvim')
-    return
-  endif
-  
+" Called by cursor dispatcher when line changes
+function! genero_tools#hints#display#on_line_changed(bufnr, current_line) abort
   let display_mode = genero_tools#hints#config#get('hints_display')
   if display_mode != 'virtual_text' && display_mode != 'both'
     return
@@ -203,13 +197,20 @@ function! genero_tools#hints#display#on_cursor_moved() abort
     return
   endif
   
-  let bufnr = bufnr('%')
-  let hints = genero_tools#hints#get_hints(bufnr)
+  let hints = genero_tools#hints#get_hints(a:bufnr)
   if empty(hints)
     return
   endif
   
-  call genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, line('.'))
+  call genero_tools#hints#display#show_virtual_text_for_line(a:bufnr, hints, a:current_line)
+endfunction
+
+" Legacy handler — kept for backward compatibility
+function! genero_tools#hints#display#on_cursor_moved() abort
+  if !has('nvim')
+    return
+  endif
+  call genero_tools#hints#display#on_line_changed(bufnr('%'), line('.'))
 endfunction
 
 " Clear all hints for a buffer

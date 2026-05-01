@@ -26,30 +26,21 @@ function! genero_tools#refcount#init() abort
 
   augroup GeneroRefCount
     autocmd!
-    autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#on_cursor_moved()
-    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#clear()
-    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#clear()
+    " Autocommands handled by unified cursor dispatcher (cursor.vim)
   augroup END
 endfunction
 
-function! genero_tools#refcount#on_cursor_moved() abort
-  if !has('nvim')
+" Called by cursor dispatcher when line changes
+function! genero_tools#refcount#on_line_changed(bufnr, current_line) abort
+  if a:current_line == s:last_line
     return
   endif
 
-  let current_line = line('.')
-
-  " Quick check: same line, nothing to do
-  if current_line == s:last_line
-    return
-  endif
-
-  " Clear previous extmark
   call genero_tools#refcount#clear_extmarks()
-  let s:last_line = current_line
+  let s:last_line = a:current_line
 
   " Check if cursor is on a FUNCTION line
-  let line_text = getline(current_line)
+  let line_text = getline(a:current_line)
   let trimmed = substitute(line_text, '^\s*', '', '')
   let upper = toupper(trimmed)
 
@@ -64,19 +55,19 @@ function! genero_tools#refcount#on_cursor_moved() abort
     return
   endif
 
-  " Same function as last time — show from local cache instantly
-  if func_name ==# s:last_func && has_key(g:genero_tools_refcount_cache, func_name)
-    call s:show_count(bufnr('%'), current_line, g:genero_tools_refcount_cache[func_name])
-    return
-  endif
-
   let s:last_func = func_name
 
-  " Check local refcount cache (no TTL — lasts until editor restart or manual clear)
+  " Check local refcount cache
   if has_key(g:genero_tools_refcount_cache, func_name)
-    call s:show_count(bufnr('%'), current_line, g:genero_tools_refcount_cache[func_name])
+    call s:show_count(a:bufnr, a:current_line, g:genero_tools_refcount_cache[func_name])
     return
   endif
+
+  " Schedule a lookup with debounce
+  if s:timer_id != -1
+    call timer_stop(s:timer_id)
+  endif
+  let s:timer_id = timer_start(500, function('s:fetch_refcount', [func_name, a:bufnr, a:current_line]))
 
   " Not cached — schedule a lookup with a short debounce
   if s:timer_id != -1

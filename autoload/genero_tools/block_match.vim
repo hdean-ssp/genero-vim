@@ -32,25 +32,18 @@ function! genero_tools#block_match#init() abort
     highlight GeneroBlockMatch guibg=#2a2a3a guifg=NONE gui=underline ctermbg=236 ctermfg=NONE cterm=underline
   endif
 
-  augroup GeneroBlockMatch
-    autocmd!
-    autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#block_match#on_cursor_moved()
-    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#block_match#clear()
-    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#block_match#clear()
-  augroup END
+  " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
-function! genero_tools#block_match#on_cursor_moved() abort
-  let bufnr = bufnr('%')
-  let current_line = line('.')
-
-  if current_line == s:last_line && bufnr == s:last_bufnr
+" Called by cursor dispatcher when line changes
+function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
+  if a:current_line == s:last_line && a:bufnr == s:last_bufnr
     return
   endif
 
   call genero_tools#block_match#clear()
-  let s:last_line = current_line
-  let s:last_bufnr = bufnr
+  let s:last_line = a:current_line
+  let s:last_bufnr = a:bufnr
 
   let line_text = getline(current_line)
   let trimmed = substitute(line_text, '^\s*', '', '')

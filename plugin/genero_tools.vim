@@ -36,6 +36,9 @@ endif
 " Initialize auto-close blocks
 call genero_tools#autoclose#init()
 
+" Initialize unified cursor event dispatcher (must be last — dispatches to all above)
+call genero_tools#cursor#init()
+
 " Initialize hint system
 call genero_tools#hints#init()
 

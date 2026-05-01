@@ -27,24 +27,14 @@ function! genero_tools#compiler#inline_diagnostics#init() abort
     highlight GeneroInlineInfo guifg=#5080a0 guibg=NONE gui=italic ctermfg=DarkCyan ctermbg=NONE
   endif
 
-  " Set up CursorMoved autocommand
-  augroup GeneroInlineDiagnostics
-    autocmd!
-    autocmd CursorMoved,CursorMovedI *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#inline_diagnostics#on_cursor_moved()
-    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#inline_diagnostics#clear()
-  augroup END
+  " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
-" Called on CursorMoved — show diagnostic for current line if one exists
-function! genero_tools#compiler#inline_diagnostics#on_cursor_moved() abort
-  if !has('nvim')
-    return
-  endif
-
+" Called by cursor dispatcher when line changes
+function! genero_tools#compiler#inline_diagnostics#on_line_changed(bufnr, current_line) abort
   if !genero_tools#config#get('compiler_inline_diagnostics')
     return
   endif
-
   call genero_tools#compiler#inline_diagnostics#update()
 endfunction
 

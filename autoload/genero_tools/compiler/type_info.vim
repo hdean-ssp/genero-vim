@@ -31,75 +31,33 @@ function! genero_tools#compiler#type_info#init() abort
     highlight GeneroTypeInfoVar guifg=#7a8a6a guibg=NONE gui=italic ctermfg=DarkGreen ctermbg=NONE
   endif
 
-  augroup GeneroTypeInfo
-    autocmd!
-    autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#on_cursor_moved()
-    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear()
-    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#compiler#type_info#clear()
-  augroup END
+  " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
-" Called on CursorMoved — debounce and schedule a lookup
-function! genero_tools#compiler#type_info#on_cursor_moved() abort
-  if !has('nvim')
-    return
-  endif
+" Called by cursor dispatcher when the word under cursor changes
+function! genero_tools#compiler#type_info#on_word_changed(word, bufnr, current_line) abort
+  call genero_tools#compiler#type_info#clear_extmarks()
+endfunction
 
+" Called by cursor dispatcher after debounce — do the actual lookup
+function! genero_tools#compiler#type_info#do_lookup(word, bufnr, line) abort
   if !genero_tools#config#get('compiler_type_info')
     return
   endif
 
-  let word = expand('<cword>')
-  let bufnr = bufnr('%')
-  let current_line = line('.')
-
-  if word ==# s:last_word && bufnr == s:last_bufnr && current_line == s:last_line
+  if empty(a:word) || len(a:word) < 3
     return
   endif
 
-  call genero_tools#compiler#type_info#clear_extmarks()
-
-  if s:timer_id != -1
-    call timer_stop(s:timer_id)
-    let s:timer_id = -1
-  endif
-
-  if empty(word) || len(word) < 3
-    let s:last_word = ''
-    let s:last_bufnr = -1
-    let s:last_line = -1
-    return
-  endif
-
-  let upper = toupper(word)
+  let upper = toupper(a:word)
   if s:is_keyword(upper)
-    let s:last_word = word
-    let s:last_bufnr = bufnr
-    let s:last_line = current_line
     return
   endif
 
-  let s:timer_id = timer_start(400, function('s:debounced_lookup', [word, bufnr, current_line]))
-endfunction
-
-" Debounced callback — determine if word is a function call or variable, then look up
-function! s:debounced_lookup(word, bufnr, line, timer_id) abort
-  let s:timer_id = -1
-
-  " Verify cursor hasn't moved
-  if expand('<cword>') !=# a:word || bufnr('%') != a:bufnr || line('.') != a:line
-    return
-  endif
-
-  " Skip if cursor is inside a comment
   if s:cursor_in_comment(a:line)
-    let s:last_word = a:word
-    let s:last_bufnr = a:bufnr
-    let s:last_line = a:line
     return
   endif
 
-  " Determine if this is a function call: word followed by ( with optional whitespace
   let is_function_call = s:word_is_function_call(a:word, a:line)
 
   if is_function_call
