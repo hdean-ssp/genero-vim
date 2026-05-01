@@ -11,14 +11,6 @@ vim.g.maplocalleader = " "
 -- UI & Display
 vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.numberwidth = 1
-
--- Custom status column: compact number display that only uses needed width
--- %l = absolute line number (on cursor line), %r = relative number (other lines)
--- %s = sign column
-if vim.fn.has("nvim-0.9") == 1 then
-  vim.opt.statuscolumn = "%s%=%{v:relnum?v:relnum:v:lnum} "
-end
 vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 vim.opt.cursorline = true
