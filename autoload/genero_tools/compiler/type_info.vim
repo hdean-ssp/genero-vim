@@ -522,44 +522,128 @@ function! s:show_function_signature(bufnr, line, word, data) abort
   endtry
 endfunction
 
+" Translate schema types to Genero types
+function! s:translate_type(type_str) abort
+  let t = a:type_str
+  " SERIAL is represented as INTEGER in Genero
+  let t = substitute(t, '\cSERIAL', 'INTEGER', 'g')
+  return t
+endfunction
+
 " Show variable type from DEFINE scan
 " If the type is a LIKE reference, resolve it to get the actual column type
+" For LIKE table.*, shows the full column list as virtual lines
 function! s:show_variable_type(bufnr, line, word, define_info) abort
   let type_str = a:define_info.type
   let def_line = a:define_info.line
   let scope = get(a:define_info, 'scope', 'local')
 
-  " If type is a LIKE reference, resolve it to get the actual schema type
-  let resolved_type = ''
+  " If type is a LIKE reference, resolve it
+  let schema = {}
   if type_str =~? '^LIKE\s\+'
     let like_ref = substitute(type_str, '\c^LIKE\s\+', '', '')
     let like_ref = substitute(like_ref, '\s*$', '', '')
     if !empty(like_ref)
       let schema = s:resolve_like_cached(like_ref)
-      if !empty(schema)
-        let actual_type = get(schema, 'type', '')
-        if !empty(actual_type)
-          let resolved_type = actual_type
-        endif
-      endif
     endif
   endif
 
-  " Build display: show resolved type if available, otherwise raw type
-  let display = ''
-  if !empty(resolved_type)
-    let display = resolved_type . '  (' . type_str . ')'
-  else
-    let display = type_str
+  " Also handle RECORD LIKE table.*
+  if type_str =~? 'RECORD\s\+LIKE\s\+'
+    let like_ref = substitute(type_str, '\c.*LIKE\s\+', '', '')
+    let like_ref = substitute(like_ref, '\s*$', '', '')
+    if !empty(like_ref)
+      let schema = s:resolve_like_cached(like_ref)
+    endif
   endif
 
+  call genero_tools#compiler#type_info#clear_extmarks()
+
+  let kind = get(schema, 'kind', '')
+
+  " LIKE table.* or RECORD LIKE table.* → show column list
+  if kind ==# 'record' || (has_key(schema, 'columns') && !empty(get(schema, 'columns', [])))
+    let table = get(schema, 'table', '')
+    let columns = get(schema, 'columns', [])
+    let col_count = get(schema, 'column_count', len(columns))
+
+    let summary = 'RECORD (' . col_count . ' cols)'
+    if !empty(table)
+      let summary .= '  ' . table . '.*'
+    endif
+    if scope == 'module'
+      let summary .= '  (module)'
+    elseif scope == 'param'
+      let summary .= '  (param)'
+    endif
+
+    " Show summary inline
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ◇ ' . summary . ' ', 'GeneroTypeInfoVar']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+
+    " Show columns as virtual lines below
+    if !empty(columns)
+      let line_text = getline(a:line)
+      let indent = matchstr(line_text, '^\s*')
+      let pad = indent . repeat(' ', 4)
+      let virt_lines = []
+      let show_count = min([len(columns), 15])
+      for i in range(show_count)
+        let c = columns[i]
+        let col_type = s:translate_type(get(c, 'type', '?'))
+        let col_text = pad . get(c, 'name', '?') . ' ' . col_type
+        call add(virt_lines, [[col_text, 'GeneroTypeInfoSchema']])
+      endfor
+      if len(columns) > show_count
+        call add(virt_lines, [[pad . '... +' . (len(columns) - show_count) . ' more', 'GeneroTypeInfoSchema']])
+      endif
+
+      try
+        call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+          \ 'virt_lines': virt_lines,
+          \ 'virt_lines_above': v:false,
+          \ 'priority': 30
+          \ })
+      catch
+      endtry
+    endif
+    return
+  endif
+
+  " LIKE table.column → single column, show resolved type
+  if kind ==# 'column' || has_key(schema, 'type')
+    let actual_type = s:translate_type(get(schema, 'type', ''))
+    let display = actual_type . '  (' . type_str . ')'
+    if scope == 'module'
+      let display .= '  (module)'
+    elseif scope == 'param'
+      let display .= '  (param)'
+    endif
+
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ◇ ' . display . ' ', 'GeneroTypeInfoVar']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+    return
+  endif
+
+  " No schema resolution — show raw type
+  let display = s:translate_type(type_str)
   if scope == 'module'
     let display .= '  (module)'
   elseif scope == 'param'
     let display .= '  (param)'
   endif
-
-  call genero_tools#compiler#type_info#clear_extmarks()
 
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
@@ -770,7 +854,7 @@ function! s:show_schema_info(bufnr, line, data) abort
   if kind ==# 'column'
     " resolve-like "table.column" → single column
     " {"table": "account", "column": "acc_code", "type": "VARCHAR(8)", "kind": "column"}
-    let col_type = get(a:data, 'type', '')
+    let col_type = s:translate_type(get(a:data, 'type', ''))
     let table = get(a:data, 'table', '')
     let col_name = get(a:data, 'column', '')
     if !empty(col_type)
@@ -807,7 +891,7 @@ function! s:show_schema_info(bufnr, line, data) abort
       endif
     elseif has_key(a:data, 'type')
       " get-column response: {"table": "account", "column": "acc_balance", "type": "DECIMAL(3842)"}
-      let col_type = get(a:data, 'type', '')
+      let col_type = s:translate_type(get(a:data, 'type', ''))
       let table = get(a:data, 'table', '')
       let col_name = get(a:data, 'column', '')
       if !empty(col_type)
@@ -851,7 +935,7 @@ function! s:show_schema_info(bufnr, line, data) abort
     let show_count = min([len(columns), 15])
     for i in range(show_count)
       let c = columns[i]
-      let col_text = pad . get(c, 'name', '?') . ' ' . get(c, 'type', '?')
+      let col_text = pad . get(c, 'name', '?') . ' ' . s:translate_type(get(c, 'type', '?'))
       call add(virt_lines, [[col_text, 'GeneroTypeInfoSchema']])
     endfor
     if len(columns) > show_count
