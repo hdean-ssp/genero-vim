@@ -918,10 +918,10 @@ function! s:show_schema_info(bufnr, line, data) abort
   let win_width = winwidth(0)
   let available = win_width - line_len - 4
 
-  " For records/tables with columns, show column list as virt_lines if space is tight
+  " For records/tables with columns, always show floating window
   let columns = get(a:data, 'columns', [])
-  if !empty(columns) && (available < len(display) + 6 || len(columns) <= 8)
-    " Show summary inline + column list below
+  if !empty(columns)
+    " Show summary inline
     try
       call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
         \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
@@ -931,12 +931,12 @@ function! s:show_schema_info(bufnr, line, data) abort
     catch
     endtry
 
-    " Show columns in floating window
+    " Show full column list in floating window
     let table = get(a:data, 'table', '')
     let float_title = table . '  (' . len(columns) . ' columns)'
     call s:show_schema_float(columns, float_title)
   else
-    " Simple inline display
+    " Single column or no columns — just inline display
     try
       call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
         \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
