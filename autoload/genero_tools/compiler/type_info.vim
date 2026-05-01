@@ -1073,39 +1073,32 @@ function! s:show_schema_float(columns, title) abort
     call add(lines, '  ' . get(c, 'name', '?') . '  ' . col_type)
   endfor
 
+  " Use Lua to create the float — most reliable across Neovim versions
+  let max_width = 0
+  for l in lines
+    let max_width = max([max_width, strdisplaywidth(l)])
+  endfor
+  let width = min([max_width + 2, &columns - 10])
+  let height = min([len(lines), &lines - 6])
+
   try
-    let s:schema_float_buf = nvim_create_buf(v:false, v:true)
-
-    " Set buffer options before content
-    call nvim_buf_set_option(s:schema_float_buf, 'buftype', 'nofile')
-    call nvim_buf_set_option(s:schema_float_buf, 'bufhidden', 'wipe')
-    call nvim_buf_set_option(s:schema_float_buf, 'swapfile', v:false)
-
-    " Set content
-    call nvim_buf_set_lines(s:schema_float_buf, 0, -1, v:false, lines)
-
-    " Lock buffer
-    call nvim_buf_set_option(s:schema_float_buf, 'modifiable', v:false)
-
-    let max_width = 0
-    for l in lines
-      let max_width = max([max_width, strdisplaywidth(l)])
-    endfor
-    let width = min([max_width + 2, &columns - 10])
-    let height = min([len(lines), &lines - 6])
-
-    let opts = {
-      \ 'relative': 'cursor',
-      \ 'row': 1,
-      \ 'col': 0,
-      \ 'width': width,
-      \ 'height': height,
-      \ 'style': 'minimal',
-      \ 'border': 'rounded',
-      \ 'focusable': v:false,
-      \ }
-
-    let s:schema_float_win = nvim_open_win(s:schema_float_buf, v:false, opts)
+    let result = luaeval('(function(lines, width, height) ' .
+      \ 'local buf = vim.api.nvim_create_buf(false, true) ' .
+      \ 'vim.bo[buf].buftype = "nofile" ' .
+      \ 'vim.bo[buf].bufhidden = "wipe" ' .
+      \ 'vim.bo[buf].swapfile = false ' .
+      \ 'vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines) ' .
+      \ 'vim.bo[buf].modifiable = false ' .
+      \ 'local win = vim.api.nvim_open_win(buf, false, { ' .
+      \ '  relative = "cursor", row = 1, col = 0, ' .
+      \ '  width = width, height = height, ' .
+      \ '  style = "minimal", border = "rounded", ' .
+      \ '  focusable = false ' .
+      \ '}) ' .
+      \ 'return {buf = buf, win = win} ' .
+      \ 'end)(_A[1], _A[2], _A[3])', [lines, width, height])
+    let s:schema_float_buf = result.buf
+    let s:schema_float_win = result.win
   catch
     call s:close_schema_float()
   endtry
