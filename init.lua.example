@@ -287,8 +287,8 @@ local plugins = {
         sections = {
           lualine_a = { "mode" },
           lualine_b = { "filename", "modified" },
-          lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.breadcrumb, lualine_genero.function_signature },
-          lualine_x = { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "fileformat", "filetype" },
+          lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.breadcrumb },
+          lualine_x = { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
         },

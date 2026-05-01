@@ -171,11 +171,12 @@ end
 
 -- Breadcrumb: show the enclosing function name by scanning upward from cursor
 -- Lightweight — no shell calls, just a buffer scan
+-- Respects END FUNCTION boundaries — returns empty if cursor is between functions
 function M.breadcrumb()
-  local bufnr = vim.api.nvim_get_current_buf()
   local row = vim.api.nvim_win_get_cursor(0)[1]
 
   -- Scan upward to find the enclosing FUNCTION/MAIN/REPORT
+  -- but also track if we cross an END FUNCTION first (meaning we're outside any function)
   for i = row, 1, -1 do
     local line = vim.fn.getline(i)
     local trimmed = line:match('^%s*(.*)')
@@ -184,12 +185,17 @@ function M.breadcrumb()
     end
     local upper = trimmed:upper()
 
+    -- If we hit END FUNCTION/MAIN/REPORT before finding an opener, we're between functions
+    if upper:match('^END%s+FUNCTION') or upper:match('^END%s+MAIN') or upper:match('^END%s+REPORT') then
+      return ''
+    end
+
     if upper:match('^FUNCTION%s') then
       local name = trimmed:match('^%w+%s+(%w+)')
       if name then
         return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
       end
-    elseif upper:match('^MAIN') then
+    elseif upper:match('^MAIN') and not upper:match('^MAIN%s*%(') then
       return '%#GeneroLualineFunctionName# ƒ MAIN %*'
     elseif upper:match('^REPORT%s') then
       local name = trimmed:match('^%w+%s+(%w+)')
