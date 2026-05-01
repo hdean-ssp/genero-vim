@@ -1073,30 +1073,35 @@ function! s:show_schema_float(columns, title) abort
     call add(lines, '  ' . get(c, 'name', '?') . '  ' . col_type)
   endfor
 
-  let s:schema_float_buf = nvim_create_buf(v:false, v:true)
-  call nvim_buf_set_lines(s:schema_float_buf, 0, -1, v:false, lines)
+  try
+    let s:schema_float_buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(s:schema_float_buf, 0, -1, v:false, lines)
 
-  " Calculate dimensions
-  let max_width = 0
-  for l in lines
-    let max_width = max([max_width, strdisplaywidth(l)])
-  endfor
-  let width = min([max_width + 2, &columns - 10])
-  let height = min([len(lines), &lines - 6])
+    let max_width = 0
+    for l in lines
+      let max_width = max([max_width, strdisplaywidth(l)])
+    endfor
+    let width = min([max_width + 2, &columns - 10])
+    let height = min([len(lines), &lines - 6])
 
-  let opts = {
-    \ 'relative': 'cursor',
-    \ 'row': 1,
-    \ 'col': 0,
-    \ 'width': width,
-    \ 'height': height,
-    \ 'style': 'minimal',
-    \ 'border': 'rounded',
-    \ }
+    let opts = {
+      \ 'relative': 'cursor',
+      \ 'row': 1,
+      \ 'col': 0,
+      \ 'width': width,
+      \ 'height': height,
+      \ 'style': 'minimal',
+      \ 'border': 'rounded',
+      \ }
 
-  let s:schema_float_win = nvim_open_win(s:schema_float_buf, v:false, opts)
-  call nvim_win_set_option(s:schema_float_win, 'wrap', v:false)
-  call nvim_buf_set_option(s:schema_float_buf, 'modifiable', v:false)
+    let s:schema_float_win = nvim_open_win(s:schema_float_buf, v:false, opts)
+
+    " Use vim.api for options (compatible across Neovim versions)
+    call setbufvar(s:schema_float_buf, '&modifiable', 0)
+    call setwinvar(win_getid(), '&wrap', 0)
+  catch
+    call s:close_schema_float()
+  endtry
 endfunction
 
 " Close the schema floating window if open
