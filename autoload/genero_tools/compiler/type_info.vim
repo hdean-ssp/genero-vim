@@ -1096,19 +1096,27 @@ function! s:show_schema_float(columns, title) abort
     endif
   endfor
 
-  let lines = [a:title, repeat('─', len(a:title))]
+  let lines = [a:title]
+
+  " Build column rows first so we can calculate max width for the separator
+  let col_lines = []
   for c in a:columns
     let col_name = get(c, 'name', '?')
     let col_type = s:translate_type(get(c, 'type', '?'))
     let padding = repeat(' ', max_name_len - len(col_name))
-    call add(lines, col_name . padding . '  ' . col_type)
+    call add(col_lines, col_name . padding . '  ' . col_type)
   endfor
 
-  " Use Lua to create the float — most reliable across Neovim versions
-  let max_width = 0
-  for l in lines
+  " Calculate max width across title and all rows
+  let max_width = strdisplaywidth(a:title)
+  for l in col_lines
     let max_width = max([max_width, strdisplaywidth(l)])
   endfor
+
+  " Insert separator at full width, then column rows
+  call add(lines, repeat('─', max_width))
+  let lines = lines + col_lines
+
   let width = min([max_width, &columns - 10])
   let height = min([len(lines), &lines - 6])
 
