@@ -672,7 +672,12 @@ function! s:resolve_like_cached(reference) abort
   let cache_key = 'resolve-like:' . a:reference
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached) && has_key(cached, 'success') && cached.success && !empty(get(cached, 'data', {}))
-    return cached.data
+    let d = cached.data
+    " Skip cached error responses
+    if has_key(d, 'error')
+      return {}
+    endif
+    return d
   endif
 
   let tool_path = genero_tools#config#get('genero_tools_path')
@@ -685,6 +690,10 @@ function! s:resolve_like_cached(reference) abort
       return {}
     endif
     let data = json_decode(output)
+    " Check for error response: {"error": "not_found", "message": "..."}
+    if has_key(data, 'error')
+      return {}
+    endif
     call genero_tools#cache#set(cache_key, {'success': 1, 'data': data, 'timestamp': localtime()})
     return data
   catch
@@ -697,7 +706,11 @@ function! s:lookup_table_cached(table_name) abort
   let cache_key = 'get-table:' . a:table_name
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached) && has_key(cached, 'success') && cached.success && !empty(get(cached, 'data', {}))
-    return cached.data
+    let d = cached.data
+    if has_key(d, 'error')
+      return {}
+    endif
+    return d
   endif
 
   let tool_path = genero_tools#config#get('genero_tools_path')
@@ -710,7 +723,7 @@ function! s:lookup_table_cached(table_name) abort
       return {}
     endif
     let data = json_decode(output)
-    if empty(data)
+    if empty(data) || has_key(data, 'error')
       return {}
     endif
     call genero_tools#cache#set(cache_key, {'success': 1, 'data': data, 'timestamp': localtime()})
@@ -721,47 +734,63 @@ function! s:lookup_table_cached(table_name) abort
 endfunction
 
 " Display schema info as virtual text
+" Handles all response shapes from resolve-like, get-table, get-column
 function! s:show_schema_info(bufnr, line, data) abort
-  if empty(a:data)
+  if empty(a:data) || has_key(a:data, 'error')
     return
   endif
 
   let kind = get(a:data, 'kind', '')
   let display = ''
 
-  if kind == 'column'
-    " Single column: show type
-    let col_name = get(a:data, 'column', get(a:data, 'name', ''))
-    let col_type = get(a:data, 'type', get(a:data, 'column_type', ''))
+  if kind ==# 'column'
+    " resolve-like "table.column" → single column
+    " {"table": "account", "column": "acc_code", "type": "VARCHAR(8)", "kind": "column"}
+    let col_type = get(a:data, 'type', '')
     let table = get(a:data, 'table', '')
+    let col_name = get(a:data, 'column', '')
     if !empty(col_type)
       let display = col_type
-      if !empty(table)
+      if !empty(table) && !empty(col_name)
         let display .= '  ' . table . '.' . col_name
       endif
     endif
-  elseif kind == 'record'
-    " Record (table.*): show column count
+
+  elseif kind ==# 'record'
+    " resolve-like "table.*" → full record
+    " {"table": "account", "column_count": 10, "columns": [...], "kind": "record"}
     let table = get(a:data, 'table', '')
+    let col_count = get(a:data, 'column_count', 0)
     let columns = get(a:data, 'columns', [])
-    let display = 'RECORD (' . len(columns) . ' columns)'
+    if col_count == 0 && !empty(columns)
+      let col_count = len(columns)
+    endif
+    let display = 'RECORD (' . col_count . ' cols)'
     if !empty(table)
       let display .= '  ' . table . '.*'
     endif
-  elseif kind == 'table'
-    " Full table: show column count
-    let table = get(a:data, 'table', get(a:data, 'name', ''))
-    let columns = get(a:data, 'columns', [])
-    let display = 'TABLE (' . len(columns) . ' columns)'
+
   else
-    " Unknown kind — try to show whatever we have
-    let col_type = get(a:data, 'type', get(a:data, 'column_type', ''))
-    if !empty(col_type)
-      let display = col_type
-    else
-      let columns = get(a:data, 'columns', [])
-      if !empty(columns)
-        let display = 'TABLE (' . len(columns) . ' columns)'
+    " No kind field — from get-table or get-column responses
+    " Distinguish by checking for 'columns' key (table) vs 'type' key (column)
+    if has_key(a:data, 'columns')
+      " get-table response: {"table": "acc_type", "column_count": 2, "columns": [...]}
+      let table = get(a:data, 'table', '')
+      let col_count = get(a:data, 'column_count', len(get(a:data, 'columns', [])))
+      let display = 'TABLE (' . col_count . ' cols)'
+      if !empty(table)
+        let display .= '  ' . table
+      endif
+    elseif has_key(a:data, 'type')
+      " get-column response: {"table": "account", "column": "acc_balance", "type": "DECIMAL(3842)"}
+      let col_type = get(a:data, 'type', '')
+      let table = get(a:data, 'table', '')
+      let col_name = get(a:data, 'column', '')
+      if !empty(col_type)
+        let display = col_type
+        if !empty(table) && !empty(col_name)
+          let display .= '  ' . table . '.' . col_name
+        endif
       endif
     endif
   endif
@@ -778,9 +807,10 @@ function! s:show_schema_info(bufnr, line, data) abort
   let win_width = winwidth(0)
   let available = win_width - line_len - 4
 
-  " For tables with columns, show as virt_lines if it won't fit inline
-  if (kind == 'table' || kind == 'record') && available >= 20
-    " Show summary inline
+  " For records/tables with columns, show column list as virt_lines if space is tight
+  let columns = get(a:data, 'columns', [])
+  if !empty(columns) && (available < len(display) + 6 || len(columns) <= 8)
+    " Show summary inline + column list below
     try
       call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
         \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
@@ -789,7 +819,31 @@ function! s:show_schema_info(bufnr, line, data) abort
         \ })
     catch
     endtry
-  elseif !empty(display)
+
+    " Show columns as virtual lines below (up to 15)
+    let indent = matchstr(line_text, '^\s*')
+    let pad = indent . repeat(' ', 4)
+    let virt_lines = []
+    let show_count = min([len(columns), 15])
+    for i in range(show_count)
+      let c = columns[i]
+      let col_text = pad . get(c, 'name', '?') . ' ' . get(c, 'type', '?')
+      call add(virt_lines, [[col_text, 'GeneroTypeInfoSchema']])
+    endfor
+    if len(columns) > show_count
+      call add(virt_lines, [[pad . '... +' . (len(columns) - show_count) . ' more', 'GeneroTypeInfoSchema']])
+    endif
+
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_lines': virt_lines,
+        \ 'virt_lines_above': v:false,
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+  else
+    " Simple inline display
     try
       call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
         \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
