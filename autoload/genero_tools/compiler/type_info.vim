@@ -446,7 +446,7 @@ function! s:show_function_signature(bufnr, line, word, data) abort
 
   " File location
   let file_str = ''
-  let file = get(func, 'file', '')
+  let file = get(func, 'file', get(func, 'file_path', get(func, 'path', '')))
   if !empty(file)
     let file_str = fnamemodify(file, ':t')
   endif

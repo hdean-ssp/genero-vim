@@ -57,7 +57,7 @@ function! genero_tools#navigation#goto_definition(...) abort
     return
   endif
 
-  let file = get(func, 'file', '')
+  let file = get(func, 'file', get(func, 'file_path', get(func, 'path', '')))
   let line_nr = get(func, 'line_start', get(func, 'line', 0))
 
   " Handle line as dict (e.g. {"start": N, "end": M})
@@ -66,9 +66,6 @@ function! genero_tools#navigation#goto_definition(...) abort
   endif
 
   if empty(file)
-    " Debug: show what keys are available so we can fix the extraction
-    echom '[goto_definition] Function data keys: ' . string(keys(func))
-    echom '[goto_definition] Function data: ' . string(func)
     call genero_tools#error#warn('navigation', 'No file location for: ' . word)
     return
   endif
@@ -141,7 +138,7 @@ function! genero_tools#navigation#peek_definition(...) abort
     return
   endif
 
-  let file = get(func, 'file', '')
+  let file = get(func, 'file', get(func, 'file_path', get(func, 'path', '')))
   let line_start = get(func, 'line_start', get(func, 'line', 1))
   let line_end = get(func, 'line_end', line_start + 20)
 
