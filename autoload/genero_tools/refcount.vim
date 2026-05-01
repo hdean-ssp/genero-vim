@@ -68,12 +68,6 @@ function! genero_tools#refcount#on_line_changed(bufnr, current_line) abort
     call timer_stop(s:timer_id)
   endif
   let s:timer_id = timer_start(500, function('s:fetch_refcount', [func_name, a:bufnr, a:current_line]))
-
-  " Not cached — schedule a lookup with a short debounce
-  if s:timer_id != -1
-    call timer_stop(s:timer_id)
-  endif
-  let s:timer_id = timer_start(500, function('s:fetch_refcount', [func_name, bufnr('%'), current_line]))
 endfunction
 
 function! s:fetch_refcount(func_name, bufnr, line_nr, timer_id) abort

@@ -45,16 +45,16 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
   let s:last_line = a:current_line
   let s:last_bufnr = a:bufnr
 
-  let line_text = getline(current_line)
+  let line_text = getline(a:current_line)
   let trimmed = substitute(line_text, '^\s*', '', '')
   let upper = toupper(trimmed)
 
   " Check if cursor is on an END block
   if upper =~# '^END\s\+'
-    let match_line = s:find_opener(current_line, upper)
+    let match_line = s:find_opener(a:current_line, upper)
     if match_line > 0
-      call s:highlight_line(bufnr, match_line)
-      call s:highlight_line(bufnr, current_line)
+      call s:highlight_line(a:bufnr, match_line)
+      call s:highlight_line(a:bufnr, a:current_line)
     endif
     return
   endif
@@ -62,10 +62,10 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
   " Check if cursor is on an opener block
   for [opener, closer_pattern] in items(s:block_pairs)
     if upper =~# '^\V' . opener . '\v\>'
-      let match_line = s:find_closer(current_line, opener, closer_pattern)
+      let match_line = s:find_closer(a:current_line, opener, closer_pattern)
       if match_line > 0
-        call s:highlight_line(bufnr, match_line)
-        call s:highlight_line(bufnr, current_line)
+        call s:highlight_line(a:bufnr, match_line)
+        call s:highlight_line(a:bufnr, a:current_line)
       endif
       return
     endif
