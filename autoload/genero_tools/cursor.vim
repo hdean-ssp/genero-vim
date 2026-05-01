@@ -29,12 +29,13 @@ function! genero_tools#cursor#on_moved() abort
   let word = expand('<cword>')
 
   let line_changed = current_line != s:last_line || bufnr != s:last_bufnr
+  let col_changed = current_col != s:last_col
   let word_changed = word !=# s:last_word || line_changed
 
   " === CHEAP operations (run every CursorMoved, but only if line changed) ===
 
   if line_changed
-    " Block matching — just highlight/clear, no external calls
+    " Block matching — keywords (IF/END IF etc.)
     call genero_tools#block_match#on_line_changed(bufnr, current_line)
 
     " Inline diagnostics — just extmark lookup from cached data
@@ -51,6 +52,11 @@ function! genero_tools#cursor#on_moved() abort
     if has('nvim')
       call genero_tools#refcount#on_line_changed(bufnr, current_line)
     endif
+  endif
+
+  " Quote matching — needs to run on column changes too (moving within a line)
+  if line_changed || col_changed
+    call genero_tools#block_match#check_quotes(bufnr, current_line)
   endif
 
   " === EXPENSIVE operations (debounced, only if word changed) ===

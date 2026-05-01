@@ -4,8 +4,10 @@
 " Neovim only
 
 let s:ns_id = -1
+let s:quote_ns_id = -1
 let s:last_line = -1
 let s:last_bufnr = -1
+let s:last_quote_col = -1
 
 " Block openers and their END patterns
 let s:block_types = [
@@ -30,6 +32,7 @@ let s:if_inner_keywords = ['ELSE', 'WHEN']
 function! genero_tools#block_match#init() abort
   if has('nvim')
     let s:ns_id = nvim_create_namespace('genero_block_match')
+    let s:quote_ns_id = nvim_create_namespace('genero_quote_match')
   endif
 
   " Keyword-only highlight — background only, preserve syntax foreground
@@ -114,9 +117,6 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
       return
     endif
   endfor
-
-  " Check if cursor is on a quote character — find the matching quote
-  call s:check_quote_match(a:bufnr, a:current_line)
 endfunction
 
 " Highlight inner keywords (ELSE inside IF, WHEN inside CASE) at the same nesting level
@@ -234,15 +234,36 @@ function! s:highlight_keyword(bufnr, line_nr) abort
   endtry
 endfunction
 
+" Public entry point for quote matching — called by cursor dispatcher on every col change
+function! genero_tools#block_match#check_quotes(bufnr, current_line) abort
+  if !has('nvim') || s:quote_ns_id == -1
+    return
+  endif
+
+  let cursor_col = col('.') - 1
+
+  " Skip if same position
+  if cursor_col == s:last_quote_col && a:current_line == s:last_line
+    return
+  endif
+  let s:last_quote_col = cursor_col
+
+  " Clear previous quote highlights
+  try
+    call nvim_buf_clear_namespace(a:bufnr, s:quote_ns_id, 0, -1)
+  catch
+  endtry
+
+  call s:do_quote_match(a:bufnr, a:current_line, cursor_col)
+endfunction
+
 " Check if cursor is near a quote and highlight the matching one
-" Supports double quotes and single quotes across multiple lines
-function! s:check_quote_match(bufnr, current_line) abort
+function! s:do_quote_match(bufnr, current_line, cursor_col) abort
   let line_text = getline(a:current_line)
-  let cursor_col = col('.') - 1  " 0-indexed
 
   " Check if cursor is on or adjacent to a quote character
-  let char_at = cursor_col < len(line_text) ? line_text[cursor_col] : ''
-  let char_before = cursor_col > 0 ? line_text[cursor_col - 1] : ''
+  let char_at = a:cursor_col < len(line_text) ? line_text[a:cursor_col] : ''
+  let char_before = a:cursor_col > 0 ? line_text[a:cursor_col - 1] : ''
 
   let quote_char = ''
   let quote_col = -1
@@ -350,14 +371,14 @@ function! s:find_opening_quote(start_line, start_col, quote_char) abort
   return {}
 endfunction
 
-" Highlight a single character at a specific position
+" Highlight a single character at a specific position (quote matching)
 function! s:highlight_char(bufnr, line_nr, col) abort
-  if !has('nvim') || s:ns_id == -1
+  if !has('nvim') || s:quote_ns_id == -1
     return
   endif
 
   try
-    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, a:col, {
+    call nvim_buf_set_extmark(a:bufnr, s:quote_ns_id, a:line_nr - 1, a:col, {
       \ 'end_col': a:col + 1,
       \ 'hl_group': 'GeneroBlockMatch',
       \ 'priority': 200
@@ -369,10 +390,18 @@ endfunction
 function! genero_tools#block_match#clear() abort
   let s:last_line = -1
   let s:last_bufnr = -1
+  let s:last_quote_col = -1
 
   if has('nvim') && s:ns_id != -1
     try
       call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)
+    catch
+    endtry
+  endif
+
+  if has('nvim') && s:quote_ns_id != -1
+    try
+      call nvim_buf_clear_namespace(bufnr('%'), s:quote_ns_id, 0, -1)
     catch
     endtry
   endif
