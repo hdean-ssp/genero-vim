@@ -950,8 +950,6 @@ wk.register({
   },
   b = {
     name = "+Buffers",
-    n = { ":bnext<CR>", "Next buffer" },
-    p = { ":bprev<CR>", "Previous buffer" },
     d = { ":bdelete<CR>", "Delete buffer" },
   },
 }, { prefix = "<leader>" })
@@ -977,19 +975,13 @@ COMPILATION:
   Space+cx        - Filter: show all diagnostics
 
 NAVIGATION:
-  Ctrl+,          - Jump to previous error/warning (GUI/modern terminals)
-  Ctrl+.          - Jump to next error/warning (GUI/modern terminals)
-  [d              - Jump to previous error/warning (works everywhere)
-  ]d              - Jump to next error/warning (works everywhere)
-  [h              - Jump to previous hint
-  ]h              - Jump to next hint
-  [b              - Previous buffer
-  ]b              - Next buffer
-  [[              - Jump to previous temp code tag (#TMP<initials>)
-  ]]              - Jump to next temp code tag (#TMP<initials>)
+  ]d / [d         - Next/previous error/warning
+  ]h / [h         - Next/previous hint
+  ]b / [b         - Next/previous buffer
+  ]] / [[         - Next/previous temp code tag (#TMP<initials>)
+  gd              - Go to definition (jump to function/variable source)
+  gp              - Peek definition (preview in floating window)
   Ctrl+h/j/k/l    - Navigate between windows
-  Space+bn        - Next buffer
-  Space+bp        - Previous buffer
   Space+bd        - Delete current buffer
 
 GENERO TOOLS:
@@ -998,12 +990,8 @@ GENERO TOOLS:
   Space+gs        - Get function signature
   Space+gm        - Get file metadata
   Space+gd        - Toggle debug stream (real-time file monitoring)
-  gd              - Go to definition (jump to function/variable source)
-  gp              - Peek definition (preview in floating window)
 
 CODE HINTS:
-  Space+hn        - Jump to next hint
-  Space+hp        - Jump to previous hint
   Space+hl        - List all hints in file
   Space+hd        - Show hint details
   Space+hf        - Apply auto-fix for hint
@@ -1117,27 +1105,32 @@ COMMANDS:
   :GeneroHelp                 - Show this help
 
 FEATURES:
-  • Floating windows for command results
-  • Real-time debug file streaming
-  • which-key integration for keybinding discovery
+  • Go to definition (gd) and peek definition (gp)
+  • Function signature and variable type hover (virtual text)
+  • Schema/table/column lookup with floating window
+  • Block matching highlights (IF/END IF, ELSE, CASE/WHEN)
+  • Quote matching highlights
+  • Breadcrumb: current function name in statusline
+  • Reference count on FUNCTION lines
+  • Auto-close blocks (IF→END IF, FOR→END FOR, etc.)
+  • Inline diagnostics: errors always visible, warnings on cursor line
+  • Code hints with current-line-only expansion
+  • Compiler integration with error/warning signs
+  • Autocompile on save
   • SVN diff markers in sign column
-  • Unified sign column (compiler + SVN combined)
-  • Code hints system (real-time code quality analysis)
-  • Compiler error/warning highlighting
-  • Automatic code snippets
-  • Autocompile on save (500ms delay)
-  • Autocomplete on pause (500ms delay)
-  • In-buffer terminal (toggleterm)
-  • Fuzzy search across project (Telescope)
-  • Search word under cursor across files
+  • Code snippets (Neovim + LuaSnip)
+  • In-buffer terminal (toggleterm, login shell)
+  • Fuzzy search across project (Telescope with grep fallback)
+  • Bracket-style navigation: ]d ]h ]b ]] for errors, hints, buffers, temp tags
 
 TIPS:
   • Press Space to see available keybindings (which-key)
-  • Use Ctrl+h/j/k/l to navigate between split windows
-  • Autocompile is enabled by default
-  • Errors appear in the sign column and quickfix list
-  • Debug stream shows real-time file changes
-  • Floating windows can be closed with q or Esc
+  • Use ]d/[d to navigate errors, ]h/[h for hints, ]b/[b for buffers
+  • Use ]]/[[ to jump between your temp code tags (#TMP<initials>)
+  • gd jumps to definition, gp peeks without leaving current position
+  • Hover on a function call to see its signature
+  • Hover on a variable to see its type (resolves LIKE references)
+  • Hover on a table name to see all columns in a floating window
   • Press Ctrl+\ to quickly open/close a terminal
   • Cursor on a word? Press Space+fw to search the whole project for it
   ]==])
