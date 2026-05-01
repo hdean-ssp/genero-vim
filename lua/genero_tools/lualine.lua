@@ -191,14 +191,14 @@ function M.breadcrumb()
     end
 
     if upper:match('^FUNCTION%s') then
-      local name = trimmed:match('^%w+%s+(%w+)')
+      local name = trimmed:match('^%w+%s+([%w_]+)')
       if name then
         return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
       end
     elseif upper:match('^MAIN') and not upper:match('^MAIN%s*%(') then
       return '%#GeneroLualineFunctionName# ƒ MAIN %*'
     elseif upper:match('^REPORT%s') then
-      local name = trimmed:match('^%w+%s+(%w+)')
+      local name = trimmed:match('^%w+%s+([%w_]+)')
       if name then
         return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
       end
