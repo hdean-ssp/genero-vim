@@ -270,10 +270,10 @@ function! s:do_quote_match(bufnr, current_line, cursor_col) abort
 
   if char_at == '"' || char_at == "'"
     let quote_char = char_at
-    let quote_col = cursor_col
+    let quote_col = a:cursor_col
   elseif char_before == '"' || char_before == "'"
     let quote_char = char_before
-    let quote_col = cursor_col - 1
+    let quote_col = a:cursor_col - 1
   endif
 
   if empty(quote_char)
