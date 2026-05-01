@@ -741,6 +741,8 @@ map("n", "<leader>hp", ":GeneroPrevHint<CR>", opts)
 map("n", "<leader>hl", ":GeneroListHints<CR>", opts)
 map("n", "<leader>hd", ":GeneroHintDetails<CR>", opts)
 map("n", "<leader>hf", ":GeneroHintAutofix<CR>", opts)
+map("n", "]h", ":GeneroNextHint<CR>", { noremap = true, silent = true, desc = "Next hint" })
+map("n", "[h", ":GeneroPrevHint<CR>", { noremap = true, silent = true, desc = "Previous hint" })
 
 -- SVN diff markers
 map("n", "<leader>sv", ":GeneroSVNToggle<CR>", opts)
@@ -771,6 +773,23 @@ map("n", "<C-l>", "<C-w>l", opts)
 map("n", "<leader>bn", ":bnext<CR>", opts)
 map("n", "<leader>bp", ":bprev<CR>", opts)
 map("n", "<leader>bd", ":bdelete<CR>", opts)
+map("n", "]b", ":bnext<CR>", { noremap = true, silent = true, desc = "Next buffer" })
+map("n", "[b", ":bprev<CR>", { noremap = true, silent = true, desc = "Previous buffer" })
+
+-- Temp code tag navigation: jump to next/prev #TMP<initials> tag for current user
+-- Uses $DEVNAME to build the tag pattern (e.g. hdean → #TMPHD)
+local devname = os.getenv("DEVNAME") or ""
+local tmp_tag = "#TMP" .. string.upper(string.sub(devname, 1, 2))
+
+map("n", "]]", function()
+  local pattern = vim.fn.escape(tmp_tag, "#")
+  vim.fn.search(pattern, "W")
+end, { noremap = true, silent = true, desc = "Next temp tag (" .. tmp_tag .. ")" })
+
+map("n", "[[", function()
+  local pattern = vim.fn.escape(tmp_tag, "#")
+  vim.fn.search(pattern, "bW")
+end, { noremap = true, silent = true, desc = "Prev temp tag (" .. tmp_tag .. ")" })
 
 -- Resize windows
 map("n", "<C-Up>", ":resize +2<CR>", opts)
@@ -957,6 +976,12 @@ NAVIGATION:
   Ctrl+.          - Jump to next error/warning (GUI/modern terminals)
   [d              - Jump to previous error/warning (works everywhere)
   ]d              - Jump to next error/warning (works everywhere)
+  [h              - Jump to previous hint
+  ]h              - Jump to next hint
+  [b              - Previous buffer
+  ]b              - Next buffer
+  [[              - Jump to previous temp code tag (#TMP<initials>)
+  ]]              - Jump to next temp code tag (#TMP<initials>)
   Ctrl+h/j/k/l    - Navigate between windows
   Space+bn        - Next buffer
   Space+bp        - Previous buffer
