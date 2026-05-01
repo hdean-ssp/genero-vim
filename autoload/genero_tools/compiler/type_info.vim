@@ -523,12 +523,36 @@ function! s:show_function_signature(bufnr, line, word, data) abort
 endfunction
 
 " Show variable type from DEFINE scan
+" If the type is a LIKE reference, resolve it to get the actual column type
 function! s:show_variable_type(bufnr, line, word, define_info) abort
   let type_str = a:define_info.type
   let def_line = a:define_info.line
   let scope = get(a:define_info, 'scope', 'local')
 
-  let display = type_str
+  " If type is a LIKE reference, resolve it to get the actual schema type
+  let resolved_type = ''
+  if type_str =~? '^LIKE\s\+'
+    let like_ref = substitute(type_str, '\c^LIKE\s\+', '', '')
+    let like_ref = substitute(like_ref, '\s*$', '', '')
+    if !empty(like_ref)
+      let schema = s:resolve_like_cached(like_ref)
+      if !empty(schema)
+        let actual_type = get(schema, 'type', '')
+        if !empty(actual_type)
+          let resolved_type = actual_type
+        endif
+      endif
+    endif
+  endif
+
+  " Build display: show resolved type if available, otherwise raw type
+  let display = ''
+  if !empty(resolved_type)
+    let display = resolved_type . '  (' . type_str . ')'
+  else
+    let display = type_str
+  endif
+
   if scope == 'module'
     let display .= '  (module)'
   elseif scope == 'param'
