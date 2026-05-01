@@ -708,19 +708,36 @@ endfunction
 
 " Try to resolve the word as a table or column reference
 " Checks the current line for table.column patterns (LIKE, FROM, INTO, etc.)
+" If the word is the TABLE part of table.column, shows the full table definition
 function! s:lookup_schema(word, line_nr) abort
   let line_text = getline(a:line_nr)
 
   " Strategy 1: Check if word is part of a table.column reference on this line
-  " Match patterns like: LIKE table.column, table.column, table.*
   let dotref = s:extract_dot_reference(a:word, line_text)
   if !empty(dotref)
+    " Determine if the hovered word is the table part or the column part
+    let parts = split(dotref, '\.')
+    if len(parts) == 2 && parts[0] ==? a:word
+      " Hovering on the TABLE name — show full table definition
+      let table_data = s:lookup_table_cached(a:word)
+      if !empty(table_data)
+        return table_data
+      endif
+    endif
+    " Hovering on the column name or fallback — resolve the specific reference
     return s:resolve_like_cached(dotref)
   endif
 
   " Strategy 2: Check if the line has LIKE ... before or around the word
   let like_ref = s:extract_like_reference(a:word, line_text)
   if !empty(like_ref)
+    let parts = split(like_ref, '\.')
+    if len(parts) == 2 && parts[0] ==? a:word
+      let table_data = s:lookup_table_cached(a:word)
+      if !empty(table_data)
+        return table_data
+      endif
+    endif
     return s:resolve_like_cached(like_ref)
   endif
 
