@@ -405,7 +405,8 @@ function! s:show_peek_window(lines, title) abort
   for line in a:lines
     let max_width = max([max_width, strdisplaywidth(line)])
   endfor
-  let width = min([max([max_width + 2, 60], 40), &columns - 4])
+  let width = max([max_width + 2, 60])
+  let width = min([width, &columns - 4])
   let height = min([len(a:lines), 25, &lines - 4])
 
   let row = (&lines - height) / 2
