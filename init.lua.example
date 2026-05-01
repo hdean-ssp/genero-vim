@@ -32,7 +32,7 @@ vim.opt.breakindent = true
 -- Search & Navigation
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
-vim.opt.hlsearch = false
+vim.opt.hlsearch = true
 vim.opt.incsearch = true
 
 -- Performance & Behavior
@@ -859,6 +859,12 @@ map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { noremap = tru
 
 -- Clear search highlight
 map("n", "<Esc>", ":nohlsearch<CR>", opts)
+
+-- Search navigation: center screen and briefly pulse the current match
+map("n", "n", "nzzzv", opts)
+map("n", "N", "Nzzzv", opts)
+map("n", "*", "*zzzv", opts)
+map("n", "#", "#zzzv", opts)
 
 -- ============================================================================
 -- WHICH-KEY DESCRIPTIONS
