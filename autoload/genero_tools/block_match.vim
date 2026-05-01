@@ -1,13 +1,13 @@
 " Genero-Tools Plugin - Block Matching Highlights
-" Highlights matching block pairs: IF/END IF, FOR/END FOR, FUNCTION/END FUNCTION, etc.
-" Neovim only for extmark highlights
+" Highlights matching block keywords: IF/ELSE/END IF, FOR/END FOR, etc.
+" Highlights just the keyword text, not the whole line
+" Neovim only
 
 let s:ns_id = -1
 let s:last_line = -1
 let s:last_bufnr = -1
 
 " Block openers and their END patterns
-" Each entry: [opener_keyword, end_pattern_for_regex]
 let s:block_types = [
   \ ['FUNCTION',  'END\s\+FUNCTION'],
   \ ['MAIN',      'END\s\+MAIN'],
@@ -24,13 +24,21 @@ let s:block_types = [
   \ ['DISPLAY',   'END\s\+DISPLAY'],
   \ ]
 
+" Keywords that belong to an IF block (between IF and END IF)
+let s:if_inner_keywords = ['ELSE', 'WHEN']
+
 function! genero_tools#block_match#init() abort
   if has('nvim')
     let s:ns_id = nvim_create_namespace('genero_block_match')
   endif
 
+  " Keyword-only highlight — subtle colored background on just the keyword
   if !hlexists('GeneroBlockMatch')
-    highlight GeneroBlockMatch guibg=#2a2a3a guifg=NONE gui=underline ctermbg=236 ctermfg=NONE cterm=underline
+    highlight GeneroBlockMatch guifg=#c0c8d0 guibg=#3a3a50 gui=bold ctermbg=60 ctermfg=252 cterm=bold
+  endif
+
+  if !hlexists('GeneroBlockMatchPair')
+    highlight GeneroBlockMatchPair guifg=#c0c8d0 guibg=#3a3a50 gui=bold ctermbg=60 ctermfg=252 cterm=bold
   endif
 endfunction
 
@@ -54,12 +62,40 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
       if upper =~# '^' . end_pattern . '\>'
         let match_line = s:find_opener(a:current_line, opener, end_pattern)
         if match_line > 0
-          call s:highlight_line(a:bufnr, match_line)
-          call s:highlight_line(a:bufnr, a:current_line)
+          call s:highlight_keyword(a:bufnr, a:current_line)
+          call s:highlight_keyword(a:bufnr, match_line)
         endif
         return
       endif
     endfor
+    return
+  endif
+
+  " Check if line starts with ELSE — highlight the enclosing IF and END IF
+  if upper =~# '^ELSE\>'
+    let if_line = s:find_opener(a:current_line, 'IF', 'END\s\+IF')
+    let endif_line = s:find_closer(a:current_line, 'IF', 'END\s\+IF')
+    if if_line > 0
+      call s:highlight_keyword(a:bufnr, if_line)
+    endif
+    call s:highlight_keyword(a:bufnr, a:current_line)
+    if endif_line > 0
+      call s:highlight_keyword(a:bufnr, endif_line)
+    endif
+    return
+  endif
+
+  " Check if line starts with WHEN (inside CASE) — highlight CASE and END CASE
+  if upper =~# '^WHEN\>'
+    let case_line = s:find_opener(a:current_line, 'CASE', 'END\s\+CASE')
+    let endcase_line = s:find_closer(a:current_line, 'CASE', 'END\s\+CASE')
+    if case_line > 0
+      call s:highlight_keyword(a:bufnr, case_line)
+    endif
+    call s:highlight_keyword(a:bufnr, a:current_line)
+    if endcase_line > 0
+      call s:highlight_keyword(a:bufnr, endcase_line)
+    endif
     return
   endif
 
@@ -68,15 +104,47 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
     if upper =~# '^' . opener . '\>'
       let match_line = s:find_closer(a:current_line, opener, end_pattern)
       if match_line > 0
-        call s:highlight_line(a:bufnr, match_line)
-        call s:highlight_line(a:bufnr, a:current_line)
+        call s:highlight_keyword(a:bufnr, a:current_line)
+        call s:highlight_keyword(a:bufnr, match_line)
+        " For IF blocks, also highlight ELSE lines between
+        if opener ==# 'IF'
+          call s:highlight_inner_keywords(a:bufnr, a:current_line, match_line, 'IF', 'END\s\+IF')
+        endif
+        " For CASE blocks, highlight WHEN lines
+        if opener ==# 'CASE'
+          call s:highlight_inner_keywords(a:bufnr, a:current_line, match_line, 'CASE', 'END\s\+CASE')
+        endif
       endif
       return
     endif
   endfor
 endfunction
 
-" Find the opening block for an END statement (search upward)
+" Highlight inner keywords (ELSE inside IF, WHEN inside CASE) at the same nesting level
+function! s:highlight_inner_keywords(bufnr, open_line, close_line, opener, end_pattern) abort
+  let nesting = 0
+  let i = a:open_line + 1
+
+  while i < a:close_line
+    let line = getline(i)
+    let upper = toupper(substitute(line, '^\s*', '', ''))
+
+    " Track nesting — only highlight at nesting level 0
+    if upper =~# '^' . a:opener . '\>'
+      let nesting += 1
+    elseif upper =~# '^' . a:end_pattern . '\>'
+      let nesting -= 1
+    elseif nesting == 0
+      if upper =~# '^ELSE\>' || upper =~# '^WHEN\>'
+        call s:highlight_keyword(a:bufnr, i)
+      endif
+    endif
+
+    let i += 1
+  endwhile
+endfunction
+
+" Find the opening block for an END/ELSE statement (search upward)
 function! s:find_opener(end_line, opener, end_pattern) abort
   let nesting = 1
   let i = a:end_line - 1
@@ -85,10 +153,8 @@ function! s:find_opener(end_line, opener, end_pattern) abort
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 
-    " Check for another END of the same type (increases nesting)
     if upper =~# '^' . a:end_pattern . '\>'
       let nesting += 1
-    " Check for opener (decreases nesting)
     elseif upper =~# '^' . a:opener . '\>'
       let nesting -= 1
       if nesting == 0
@@ -112,10 +178,8 @@ function! s:find_closer(open_line, opener, end_pattern) abort
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 
-    " Check for another opener of the same type (increases nesting)
     if upper =~# '^' . a:opener . '\>'
       let nesting += 1
-    " Check for END of the same type (decreases nesting)
     elseif upper =~# '^' . a:end_pattern . '\>'
       let nesting -= 1
       if nesting == 0
@@ -129,17 +193,46 @@ function! s:find_closer(open_line, opener, end_pattern) abort
   return 0
 endfunction
 
-" Highlight a line
-function! s:highlight_line(bufnr, line_nr) abort
-  if has('nvim') && s:ns_id != -1
-    try
-      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, 0, {
-        \ 'line_hl_group': 'GeneroBlockMatch',
-        \ 'priority': 20
-        \ })
-    catch
-    endtry
+" Highlight just the keyword at the start of a line (not the whole line)
+function! s:highlight_keyword(bufnr, line_nr) abort
+  if !has('nvim') || s:ns_id == -1
+    return
   endif
+
+  let line_text = getline(a:line_nr)
+
+  " Find the leading whitespace to get the keyword start column
+  let indent_len = matchend(line_text, '^\s*')
+  if indent_len == -1
+    let indent_len = 0
+  endif
+
+  " Find the keyword end — first keyword word(s) on the line
+  let trimmed = strpart(line_text, indent_len)
+  let upper = toupper(trimmed)
+
+  " Determine keyword length
+  let kw_len = 0
+  if upper =~# '^END\s\+\w\+'
+    " END IF, END FOR, etc. — highlight both words
+    let kw_len = matchend(upper, '^END\s\+\w\+')
+  elseif upper =~# '^\w\+'
+    " Single keyword: IF, FOR, ELSE, WHEN, FUNCTION, etc.
+    let kw_len = matchend(upper, '^\w\+')
+  endif
+
+  if kw_len == 0
+    return
+  endif
+
+  try
+    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, indent_len, {
+      \ 'end_col': indent_len + kw_len,
+      \ 'hl_group': 'GeneroBlockMatch',
+      \ 'priority': 200
+      \ })
+  catch
+  endtry
 endfunction
 
 function! genero_tools#block_match#clear() abort
