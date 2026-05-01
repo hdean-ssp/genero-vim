@@ -150,6 +150,7 @@ function! s:lookup_variable(word, bufnr, line) abort
   endif
 
   " No DEFINE found — try schema lookup (table.column or table name)
+  " This also handles hovering on table/column names inside DEFINE type references
   let schema_info = s:lookup_schema(a:word, a:line)
   if !empty(schema_info)
     call s:show_schema_info(a:bufnr, a:line, schema_info)
@@ -381,8 +382,10 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
     let code_part = substitute(code_part, '\s*--.*$', '', '')
     let code_part = substitute(code_part, '\s*{[^}]*}.*$', '', '')
 
-    " Check if the code portion (not comment) contains our variable
-    if code_part =~? a:var_pattern
+    " Check if the FIRST WORD of the chunk (the variable name) matches our pattern
+    " This prevents matching table/column names in the type portion (e.g. LIKE account.acc_code)
+    let var_name = matchstr(code_part, '^\s*\zs\w\+')
+    if var_name =~? a:var_pattern
       " Extract the type — everything after the variable name
       let type_match = matchstr(chunk, '\c\<' . '\S\+' . '\>\s\+\zs.*')
       if !empty(type_match)
