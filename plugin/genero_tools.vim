@@ -19,6 +19,22 @@ if has('nvim')
   call genero_tools#compiler#type_info#init()
 endif
 
+" Initialize block matching highlights
+call genero_tools#block_match#init()
+
+" Initialize breadcrumbs (Neovim winbar)
+if has('nvim')
+  call genero_tools#breadcrumbs#init()
+endif
+
+" Initialize reference counts (Neovim only)
+if has('nvim')
+  call genero_tools#refcount#init()
+endif
+
+" Initialize auto-close blocks
+call genero_tools#autoclose#init()
+
 " Initialize hint system
 call genero_tools#hints#init()
 
@@ -58,6 +74,10 @@ command! GeneroFilterAll call genero_tools#compiler#commands#filter_all()
 
 " Type info command (manual trigger for testing/debugging)
 command! GeneroTypeInfo call genero_tools#compiler#type_info#manual()
+
+" Navigation commands
+command! -nargs=? GeneroGotoDefinition call genero_tools#navigation#goto_definition(<q-args>)
+command! -nargs=? GeneroPeekDefinition call genero_tools#navigation#peek_definition(<q-args>)
 
 " Register snippet commands (Neovim only)
 if has('nvim')

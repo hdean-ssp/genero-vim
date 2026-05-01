@@ -61,6 +61,7 @@ vim.g.genero_tools_config = {
   compiler_autocompile_delay = 500,
   compiler_inline_diagnostics = true,    -- Show error/warning text on cursor line (Neovim only)
   compiler_type_info = true,             -- Show function signature on hover (Neovim only)
+  autoclose_blocks = true,               -- Auto-insert END statements on Enter
   compiler_sign_column = true,
   compiler_sign_column_always_visible = true,  -- Keep sign column visible
   compiler_highlight_unused = true,
@@ -736,6 +737,10 @@ map("n", "<leader>su", ":GeneroUnifiedSignsToggle<CR>", opts)
 -- Debug streaming (toggle on/off)
 map("n", "<leader>gd", ":GeneroDebugStreamToggle<CR>", opts)
 
+-- Go to definition / Peek definition
+map("n", "gd", ":GeneroGotoDefinition<CR>", { noremap = true, silent = true, desc = "Go to definition" })
+map("n", "gp", ":GeneroPeekDefinition<CR>", { noremap = true, silent = true, desc = "Peek definition" })
+
 -- Snippet commands (Neovim only with LuaSnip)
 map("n", "<leader>sl", ":GeneroSnippetList<CR>", opts)
 map("n", "<leader>sh", ":GeneroSnippetHelp<CR>", opts)
@@ -939,6 +944,8 @@ GENERO TOOLS:
   Space+gs        - Get function signature
   Space+gm        - Get file metadata
   Space+gd        - Toggle debug stream (real-time file monitoring)
+  gd              - Go to definition (jump to function/variable source)
+  gp              - Peek definition (preview in floating window)
 
 CODE HINTS:
   Space+hn        - Jump to next hint

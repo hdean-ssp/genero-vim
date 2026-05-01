@@ -34,6 +34,7 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('compiler_autocompile_delay', 1000)
   call genero_tools#config#init_key('compiler_inline_diagnostics', 1)
   call genero_tools#config#init_key('compiler_type_info', 1)
+  call genero_tools#config#init_key('autoclose_blocks', 1)
   call genero_tools#config#init_key('snippets_enabled', 1)
   call genero_tools#config#init_key('snippet_engine', 'luasnip')
   call genero_tools#config#init_key('snippet_smart_expansion', 1)
