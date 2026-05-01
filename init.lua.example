@@ -9,7 +9,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- UI & Display
-vim.opt.number = true
+vim.opt.number = false
 vim.opt.relativenumber = true
 vim.opt.numberwidth = 1              -- Minimum gutter width; grows only as needed
 vim.opt.termguicolors = true
