@@ -1067,7 +1067,7 @@ endfunction
 function! s:show_schema_float(columns, title) abort
   call s:close_schema_float()
 
-  let lines = [title, repeat('─', len(title))]
+  let lines = [a:title, repeat('─', len(a:title))]
   for c in a:columns
     let col_type = s:translate_type(get(c, 'type', '?'))
     call add(lines, '  ' . get(c, 'name', '?') . '  ' . col_type)
