@@ -1121,6 +1121,16 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
+-- Parentheses/bracket matching: background-only highlight (no orange foreground)
+-- Uses the same background as the cursor line for a consistent look
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    vim.api.nvim_set_hl(0, "MatchParen", { bg = "#3b4261", fg = "NONE", bold = true })
+  end,
+})
+-- Apply immediately for the current colorscheme
+vim.api.nvim_set_hl(0, "MatchParen", { bg = "#3b4261", fg = "NONE", bold = true })
+
 -- Auto-resize splits when window is resized
 -- Note: Disabled to preserve debug stream window width
 -- Uncomment if you want equal-sized splits

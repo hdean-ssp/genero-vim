@@ -32,14 +32,10 @@ function! genero_tools#block_match#init() abort
     let s:ns_id = nvim_create_namespace('genero_block_match')
   endif
 
-  " Keyword-only highlight — subtle background, preserve syntax foreground color
-  if !hlexists('GeneroBlockMatch')
-    highlight GeneroBlockMatch guibg=#2e3450 gui=NONE ctermbg=60 cterm=NONE
-  endif
-
-  if !hlexists('GeneroBlockMatchPair')
-    highlight GeneroBlockMatchPair guibg=#2e3450 gui=NONE ctermbg=60 cterm=NONE
-  endif
+  " Keyword-only highlight — background only, preserve syntax foreground
+  " Use highlight! to force override any existing definition
+  highlight! GeneroBlockMatch guifg=NONE guibg=#2e3450 gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE
+  highlight! GeneroBlockMatchPair guifg=NONE guibg=#2e3450 gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE
 endfunction
 
 " Called by cursor dispatcher when line changes
