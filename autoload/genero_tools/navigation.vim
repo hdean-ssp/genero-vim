@@ -73,16 +73,48 @@ function! genero_tools#navigation#goto_definition(...) abort
   " Resolve file path relative to codebase root
   let full_path = s:resolve_path(file)
 
-  " Open the file and jump to the line
+  " Open the file
   try
     if full_path !=# expand('%:p')
       execute 'edit ' . fnameescape(full_path)
     endif
+  catch
+    call genero_tools#error#warn('navigation', 'Failed to open: ' . full_path . ' — ' . v:exception)
+    return
+  endtry
+
+  " Check if the file has SVN modifications — if so, don't trust the line number
+  let trust_line = 1
+  if genero_tools#config#get('svn_enabled') && genero_tools#svn#is_available()
+    if genero_tools#svn#is_in_working_copy(full_path)
+      let diff_result = genero_tools#svn#get_diff(full_path)
+      if diff_result.success && !empty(diff_result.diff)
+        let trust_line = 0
+      endif
+    endif
+  endif
+
+  if !trust_line
+    " File has been modified — search for the FUNCTION definition instead
+    let found_line = s:find_function_in_buffer(word)
+    if found_line > 0
+      execute found_line
+      normal! zz
+      echom 'ƒ ' . word . ' → ' . fnamemodify(full_path, ':t') . ':' . found_line . ' (searched — file modified)'
+    elseif line_nr > 0
+      " Fall back to database line if search fails
+      execute line_nr
+      normal! zz
+      echom 'ƒ ' . word . ' → ' . fnamemodify(full_path, ':t') . ':' . line_nr . ' (line may be stale)'
+    endif
+  else
+    " File is clean — trust the database line number
     if line_nr > 0
       execute line_nr
     endif
     normal! zz
     echom 'ƒ ' . word . ' → ' . fnamemodify(full_path, ':t') . ':' . line_nr
+  endif
   catch
     call genero_tools#error#warn('navigation', 'Failed to open: ' . full_path . ' — ' . v:exception)
   endtry
@@ -154,17 +186,41 @@ function! genero_tools#navigation#peek_definition(...) abort
   endif
 
   let full_path = s:resolve_path(file)
-  let preview_end = min([line_end, line_start + 30])
 
-  try
-    let file_lines = readfile(full_path, '', preview_end)
-    if line_start > 0
-      let file_lines = file_lines[line_start - 1:]
+  " Check if file has SVN modifications — if so, search for the function
+  let trust_line = 1
+  if genero_tools#config#get('svn_enabled') && genero_tools#svn#is_available()
+    if genero_tools#svn#is_in_working_copy(full_path)
+      let diff_result = genero_tools#svn#get_diff(full_path)
+      if diff_result.success && !empty(diff_result.diff)
+        let trust_line = 0
+      endif
     endif
+  endif
+
+  " Read the file and find the right starting line
+  try
+    let all_lines = readfile(full_path)
   catch
     call genero_tools#error#warn('navigation', 'Cannot read: ' . full_path)
     return
   endtry
+
+  if !trust_line
+    " Search for the FUNCTION line in the file
+    let pattern = '\c^\s*FUNCTION\s\+' . escape(word, '\') . '\>'
+    let i = 0
+    while i < len(all_lines)
+      if all_lines[i] =~? pattern
+        let line_start = i + 1
+        break
+      endif
+      let i += 1
+    endwhile
+  endif
+
+  let preview_end = min([line_start + 30, len(all_lines)])
+  let file_lines = all_lines[line_start - 1 : preview_end - 1]
 
   if empty(file_lines)
     call genero_tools#error#warn('navigation', 'Empty function body')
