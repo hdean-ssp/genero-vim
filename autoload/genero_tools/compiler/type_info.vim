@@ -91,6 +91,14 @@ function! s:debounced_lookup(word, bufnr, line, timer_id) abort
     return
   endif
 
+  " Skip if cursor is inside a comment
+  if s:cursor_in_comment(a:line)
+    let s:last_word = a:word
+    let s:last_bufnr = a:bufnr
+    let s:last_line = a:line
+    return
+  endif
+
   " Determine if this is a function call: word followed by ( with optional whitespace
   let is_function_call = s:word_is_function_call(a:word, a:line)
 
@@ -391,8 +399,14 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
   for chunk in chunks
     let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
 
-    " Check if this chunk contains our variable
-    if chunk =~? a:var_pattern
+    " Strip inline comments before matching variable name
+    " This prevents #SR-1234 in a DEFINE comment from matching
+    let code_part = substitute(chunk, '\s*[#].*$', '', '')
+    let code_part = substitute(code_part, '\s*--.*$', '', '')
+    let code_part = substitute(code_part, '\s*{[^}]*}.*$', '', '')
+
+    " Check if the code portion (not comment) contains our variable
+    if code_part =~? a:var_pattern
       " Extract the type — everything after the variable name
       let type_match = matchstr(chunk, '\c\<' . '\S\+' . '\>\s\+\zs.*')
       if !empty(type_match)
@@ -628,6 +642,39 @@ endfunction
 " ============================================================================
 " UTILITY FUNCTIONS
 " ============================================================================
+
+" Check if the cursor position is inside a comment on the given line
+function! s:cursor_in_comment(line_nr) abort
+  let line_text = getline(a:line_nr)
+  let cursor_col = col('.')
+
+  " Check if entire line is a comment
+  let trimmed = substitute(line_text, '^\s*', '', '')
+  if trimmed =~# '^[#\-]' || trimmed =~# '^--' || trimmed =~# '^{'
+    return 1
+  endif
+
+  " Check if cursor is after a # or -- comment start
+  let before_cursor = strpart(line_text, 0, cursor_col - 1)
+  " Find the last # that isn't inside quotes (simple check)
+  if before_cursor =~# '#'
+    " Check it's not inside a string literal
+    let hash_pos = strridx(before_cursor, '#')
+    let quotes_before = len(substitute(strpart(before_cursor, 0, hash_pos), '[^"]', '', 'g'))
+    if quotes_before % 2 == 0
+      return 1
+    endif
+  endif
+  if before_cursor =~# '--'
+    let dash_pos = strridx(before_cursor, '--')
+    let quotes_before = len(substitute(strpart(before_cursor, 0, dash_pos), '[^"]', '', 'g'))
+    if quotes_before % 2 == 0
+      return 1
+    endif
+  endif
+
+  return 0
+endfunction
 
 function! s:is_keyword(upper_word) abort
   let keywords = {
