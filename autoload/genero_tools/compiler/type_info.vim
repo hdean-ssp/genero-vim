@@ -1101,7 +1101,7 @@ function! s:show_schema_float(columns, title) abort
     let col_name = get(c, 'name', '?')
     let col_type = s:translate_type(get(c, 'type', '?'))
     let padding = repeat(' ', max_name_len - len(col_name))
-    call add(lines, '  ' . col_name . padding . '  ' . col_type)
+    call add(lines, col_name . padding . '  ' . col_type)
   endfor
 
   " Use Lua to create the float — most reliable across Neovim versions
