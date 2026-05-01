@@ -66,6 +66,9 @@ function! genero_tools#navigation#goto_definition(...) abort
   endif
 
   if empty(file)
+    " Debug: show what keys are available so we can fix the extraction
+    echom '[goto_definition] Function data keys: ' . string(keys(func))
+    echom '[goto_definition] Function data: ' . string(func)
     call genero_tools#error#warn('navigation', 'No file location for: ' . word)
     return
   endif
