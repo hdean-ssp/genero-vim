@@ -32,13 +32,13 @@ function! genero_tools#block_match#init() abort
     let s:ns_id = nvim_create_namespace('genero_block_match')
   endif
 
-  " Keyword-only highlight — subtle colored background on just the keyword
+  " Keyword-only highlight — subtle background, preserve syntax foreground color
   if !hlexists('GeneroBlockMatch')
-    highlight GeneroBlockMatch guifg=#c0c8d0 guibg=#3a3a50 gui=bold ctermbg=60 ctermfg=252 cterm=bold
+    highlight GeneroBlockMatch guibg=#2e3450 gui=NONE ctermbg=60 cterm=NONE
   endif
 
   if !hlexists('GeneroBlockMatchPair')
-    highlight GeneroBlockMatchPair guifg=#c0c8d0 guibg=#3a3a50 gui=bold ctermbg=60 ctermfg=252 cterm=bold
+    highlight GeneroBlockMatchPair guibg=#2e3450 gui=NONE ctermbg=60 cterm=NONE
   endif
 endfunction
 
