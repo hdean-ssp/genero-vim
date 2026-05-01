@@ -9,9 +9,9 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- UI & Display
-vim.opt.number = false
+vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.numberwidth = 1              -- Minimum gutter width; grows only as needed
+vim.opt.numberwidth = 1              -- Start minimal; dynamically adjusted below
 vim.opt.termguicolors = true
 vim.opt.background = 'dark'
 vim.opt.cursorline = true
@@ -1131,6 +1131,20 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     local line = mark[1]
     if line > 0 and line <= vim.api.nvim_buf_line_count(0) then
       vim.api.nvim_win_set_cursor(0, mark)
+    end
+  end,
+})
+
+-- Dynamic number column width: shrink/grow based on current line number
+-- At line 1 the gutter is narrow (2 chars), at line 20000 it grows to 6
+vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI", "BufEnter" }, {
+  callback = function()
+    local cur_line = vim.fn.line(".")
+    local digits = #tostring(cur_line)
+    -- Minimum 1 for the number + 1 for padding
+    local needed = math.max(digits + 1, 2)
+    if vim.wo.numberwidth ~= needed then
+      vim.wo.numberwidth = needed
     end
   end,
 })
