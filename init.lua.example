@@ -1121,15 +1121,28 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Parentheses/bracket matching: background-only highlight (no orange foreground)
--- Uses the same background as the cursor line for a consistent look
+-- Parentheses/bracket matching: background-only highlight matching the cursor
+-- Dynamically reads the Cursor highlight bg so it works with any colorscheme
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
-    vim.api.nvim_set_hl(0, "MatchParen", { bg = "#3b4261", fg = "NONE", bold = true })
+    local cursor_hl = vim.api.nvim_get_hl(0, { name = "Cursor" })
+    local bg = cursor_hl.bg
+    if bg then
+      vim.api.nvim_set_hl(0, "MatchParen", { bg = string.format("#%06x", bg), fg = "NONE", bold = true })
+    else
+      -- Fallback if Cursor has no bg set
+      vim.api.nvim_set_hl(0, "MatchParen", { bg = "#c0caf5", fg = "NONE", bold = true })
+    end
   end,
 })
 -- Apply immediately for the current colorscheme
-vim.api.nvim_set_hl(0, "MatchParen", { bg = "#3b4261", fg = "NONE", bold = true })
+local cursor_hl = vim.api.nvim_get_hl(0, { name = "Cursor" })
+local cursor_bg = cursor_hl.bg
+if cursor_bg then
+  vim.api.nvim_set_hl(0, "MatchParen", { bg = string.format("#%06x", cursor_bg), fg = "NONE", bold = true })
+else
+  vim.api.nvim_set_hl(0, "MatchParen", { bg = "#c0caf5", fg = "NONE", bold = true })
+end
 
 -- Auto-resize splits when window is resized
 -- Note: Disabled to preserve debug stream window width
