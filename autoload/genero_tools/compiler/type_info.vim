@@ -15,6 +15,10 @@ let s:last_line = -1
 " Debounce timer
 let s:timer_id = -1
 
+" Floating window for schema column lists
+let s:schema_float_win = -1
+let s:schema_float_buf = -1
+
 " Initialize the type info system
 function! genero_tools#compiler#type_info#init() abort
   if !has('nvim')
@@ -587,31 +591,10 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
     catch
     endtry
 
-    " Show columns as virtual lines below
+    " Show columns in a floating window next to cursor
     if !empty(columns)
-      let line_text = getline(a:line)
-      let indent = matchstr(line_text, '^\s*')
-      let pad = indent . repeat(' ', 4)
-      let virt_lines = []
-      let show_count = min([len(columns), 15])
-      for i in range(show_count)
-        let c = columns[i]
-        let col_type = s:translate_type(get(c, 'type', '?'))
-        let col_text = pad . get(c, 'name', '?') . ' ' . col_type
-        call add(virt_lines, [[col_text, 'GeneroTypeInfoSchema']])
-      endfor
-      if len(columns) > show_count
-        call add(virt_lines, [[pad . '... +' . (len(columns) - show_count) . ' more', 'GeneroTypeInfoSchema']])
-      endif
-
-      try
-        call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-          \ 'virt_lines': virt_lines,
-          \ 'virt_lines_above': v:false,
-          \ 'priority': 30
-          \ })
-      catch
-      endtry
+      let float_title = table . '.*  (' . col_count . ' columns)'
+      call s:show_schema_float(columns, float_title)
     endif
     return
   endif
@@ -928,28 +911,10 @@ function! s:show_schema_info(bufnr, line, data) abort
     catch
     endtry
 
-    " Show columns as virtual lines below (up to 15)
-    let indent = matchstr(line_text, '^\s*')
-    let pad = indent . repeat(' ', 4)
-    let virt_lines = []
-    let show_count = min([len(columns), 15])
-    for i in range(show_count)
-      let c = columns[i]
-      let col_text = pad . get(c, 'name', '?') . ' ' . s:translate_type(get(c, 'type', '?'))
-      call add(virt_lines, [[col_text, 'GeneroTypeInfoSchema']])
-    endfor
-    if len(columns) > show_count
-      call add(virt_lines, [[pad . '... +' . (len(columns) - show_count) . ' more', 'GeneroTypeInfoSchema']])
-    endif
-
-    try
-      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
-        \ 'virt_lines': virt_lines,
-        \ 'virt_lines_above': v:false,
-        \ 'priority': 30
-        \ })
-    catch
-    endtry
+    " Show columns in floating window
+    let table = get(a:data, 'table', '')
+    let float_title = table . '  (' . len(columns) . ' columns)'
+    call s:show_schema_float(columns, float_title)
   else
     " Simple inline display
     try
@@ -1098,11 +1063,70 @@ function! s:silent_lookup(word) abort
   return result
 endfunction
 
+" Show a small floating window next to the cursor with column list
+function! s:show_schema_float(columns, title) abort
+  call s:close_schema_float()
+
+  let lines = [title, repeat('─', len(title))]
+  for c in a:columns
+    let col_type = s:translate_type(get(c, 'type', '?'))
+    call add(lines, '  ' . get(c, 'name', '?') . '  ' . col_type)
+  endfor
+
+  let s:schema_float_buf = nvim_create_buf(v:false, v:true)
+  call nvim_buf_set_lines(s:schema_float_buf, 0, -1, v:false, lines)
+
+  " Calculate dimensions
+  let max_width = 0
+  for l in lines
+    let max_width = max([max_width, strdisplaywidth(l)])
+  endfor
+  let width = min([max_width + 2, &columns - 10])
+  let height = min([len(lines), &lines - 6])
+
+  let opts = {
+    \ 'relative': 'cursor',
+    \ 'row': 1,
+    \ 'col': 0,
+    \ 'width': width,
+    \ 'height': height,
+    \ 'style': 'minimal',
+    \ 'border': 'rounded',
+    \ }
+
+  let s:schema_float_win = nvim_open_win(s:schema_float_buf, v:false, opts)
+  call nvim_win_set_option(s:schema_float_win, 'wrap', v:false)
+  call nvim_buf_set_option(s:schema_float_buf, 'modifiable', v:false)
+endfunction
+
+" Close the schema floating window if open
+function! s:close_schema_float() abort
+  if s:schema_float_win != -1
+    try
+      if nvim_win_is_valid(s:schema_float_win)
+        call nvim_win_close(s:schema_float_win, v:true)
+      endif
+    catch
+    endtry
+    let s:schema_float_win = -1
+  endif
+  if s:schema_float_buf != -1
+    try
+      if nvim_buf_is_valid(s:schema_float_buf)
+        call nvim_buf_delete(s:schema_float_buf, {'force': v:true})
+      endif
+    catch
+    endtry
+    let s:schema_float_buf = -1
+  endif
+endfunction
+
 " Clear extmarks only
 function! genero_tools#compiler#type_info#clear_extmarks() abort
   if !has('nvim') || s:ns_id == -1
     return
   endif
+  call s:close_schema_float()
   try
     call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)
   catch
