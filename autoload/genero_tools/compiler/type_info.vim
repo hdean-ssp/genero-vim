@@ -1075,7 +1075,17 @@ function! s:show_schema_float(columns, title) abort
 
   try
     let s:schema_float_buf = nvim_create_buf(v:false, v:true)
+
+    " Set buffer options before content
+    call nvim_buf_set_option(s:schema_float_buf, 'buftype', 'nofile')
+    call nvim_buf_set_option(s:schema_float_buf, 'bufhidden', 'wipe')
+    call nvim_buf_set_option(s:schema_float_buf, 'swapfile', v:false)
+
+    " Set content
     call nvim_buf_set_lines(s:schema_float_buf, 0, -1, v:false, lines)
+
+    " Lock buffer
+    call nvim_buf_set_option(s:schema_float_buf, 'modifiable', v:false)
 
     let max_width = 0
     for l in lines
@@ -1092,13 +1102,10 @@ function! s:show_schema_float(columns, title) abort
       \ 'height': height,
       \ 'style': 'minimal',
       \ 'border': 'rounded',
+      \ 'focusable': v:false,
       \ }
 
     let s:schema_float_win = nvim_open_win(s:schema_float_buf, v:false, opts)
-
-    " Use vim.api for options (compatible across Neovim versions)
-    call setbufvar(s:schema_float_buf, '&modifiable', 0)
-    call setwinvar(win_getid(), '&wrap', 0)
   catch
     call s:close_schema_float()
   endtry
