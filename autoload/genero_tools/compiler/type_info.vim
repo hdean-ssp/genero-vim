@@ -1109,7 +1109,7 @@ function! s:show_schema_float(columns, title) abort
   for l in lines
     let max_width = max([max_width, strdisplaywidth(l)])
   endfor
-  let width = min([max_width + 2, &columns - 10])
+  let width = min([max_width, &columns - 10])
   let height = min([len(lines), &lines - 6])
 
   try
