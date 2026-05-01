@@ -29,6 +29,11 @@ vim.opt.wrap = true
 vim.opt.linebreak = true
 vim.opt.breakindent = true
 
+-- Preserve indentation when continuing comments (# in Genero)
+-- r = auto-insert comment leader after Enter in insert mode
+-- o = auto-insert comment leader after o/O in normal mode
+vim.opt.formatoptions:append("ro")
+
 -- Search & Navigation
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -777,9 +782,9 @@ map("n", "]b", ":bnext<CR>", { noremap = true, silent = true, desc = "Next buffe
 map("n", "[b", ":bprev<CR>", { noremap = true, silent = true, desc = "Previous buffer" })
 
 -- Temp code tag navigation: jump to next/prev #TMP<initials> tag for current user
--- Uses $DEVNAME to build the tag pattern (e.g. hdean → #TMPHD)
-local devname = os.getenv("DEVNAME") or ""
-local tmp_tag = "#TMP" .. string.upper(string.sub(devname, 1, 2))
+-- Uses $USER to build the tag pattern (e.g. hdean → #TMPHD)
+local username = os.getenv("USER") or ""
+local tmp_tag = "#TMP" .. string.upper(string.sub(username, 1, 2))
 
 map("n", "]]", function()
   local pattern = vim.fn.escape(tmp_tag, "#")
