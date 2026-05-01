@@ -716,8 +716,12 @@ map("n", "<F5>", ":GeneroCompile<CR>", opts)
 map("i", "<C-Space>", "<C-x><C-o>", opts)
 
 -- Navigate errors/warnings
+-- Ctrl+. and Ctrl+, work in GUI Neovim and modern terminals (kitty, WezTerm)
+-- ]d and [d work everywhere (standard Neovim diagnostic convention)
 map("n", "<C-,>", ":GeneroPrevError<CR>", opts)
 map("n", "<C-.>", ":GeneroNextError<CR>", opts)
+map("n", "]d", ":GeneroNextError<CR>", { noremap = true, silent = true, desc = "Next error" })
+map("n", "[d", ":GeneroPrevError<CR>", { noremap = true, silent = true, desc = "Previous error" })
 
 -- Toggle autocompile
 map("n", "<leader>ca", ":GeneroAutocompileEnable<CR>", opts)
@@ -949,8 +953,10 @@ COMPILATION:
   Space+cx        - Filter: show all diagnostics
 
 NAVIGATION:
-  Ctrl+,          - Jump to previous error/warning
-  Ctrl+.          - Jump to next error/warning
+  Ctrl+,          - Jump to previous error/warning (GUI/modern terminals)
+  Ctrl+.          - Jump to next error/warning (GUI/modern terminals)
+  [d              - Jump to previous error/warning (works everywhere)
+  ]d              - Jump to next error/warning (works everywhere)
   Ctrl+h/j/k/l    - Navigate between windows
   Space+bn        - Next buffer
   Space+bp        - Previous buffer
