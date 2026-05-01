@@ -1087,10 +1087,21 @@ endfunction
 function! s:show_schema_float(columns, title) abort
   call s:close_schema_float()
 
+  " Find the longest column name for alignment
+  let max_name_len = 0
+  for c in a:columns
+    let name_len = len(get(c, 'name', '?'))
+    if name_len > max_name_len
+      let max_name_len = name_len
+    endif
+  endfor
+
   let lines = [a:title, repeat('─', len(a:title))]
   for c in a:columns
+    let col_name = get(c, 'name', '?')
     let col_type = s:translate_type(get(c, 'type', '?'))
-    call add(lines, '  ' . get(c, 'name', '?') . '  ' . col_type)
+    let padding = repeat(' ', max_name_len - len(col_name))
+    call add(lines, '  ' . col_name . padding . '  ' . col_type)
   endfor
 
   " Use Lua to create the float — most reliable across Neovim versions
