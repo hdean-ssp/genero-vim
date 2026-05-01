@@ -1096,9 +1096,7 @@ function! s:show_schema_float(columns, title) abort
     endif
   endfor
 
-  let lines = [a:title]
-
-  " Build column rows first so we can calculate max width for the separator
+  " Calculate max width from column rows first (title will be centered to this)
   let col_lines = []
   for c in a:columns
     let col_name = get(c, 'name', '?')
@@ -1107,15 +1105,18 @@ function! s:show_schema_float(columns, title) abort
     call add(col_lines, col_name . padding . '  ' . col_type)
   endfor
 
-  " Calculate max width across title and all rows
-  let max_width = strdisplaywidth(a:title)
+  let max_width = 0
   for l in col_lines
     let max_width = max([max_width, strdisplaywidth(l)])
   endfor
+  let max_width = max([max_width, strdisplaywidth(a:title)])
 
-  " Insert separator at full width, then column rows
-  call add(lines, repeat('─', max_width))
-  let lines = lines + col_lines
+  " Center the title
+  let title_len = strdisplaywidth(a:title)
+  let left_pad = (max_width - title_len) / 2
+  let centered_title = repeat(' ', left_pad) . a:title
+
+  let lines = [centered_title, repeat('─', max_width)] + col_lines
 
   let width = min([max_width, &columns - 10])
   let height = min([len(lines), &lines - 6])
