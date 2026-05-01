@@ -134,7 +134,7 @@ function! genero_tools#config#get(key) abort
   elseif a:key == 'cache_ttl'
     return 3600
   elseif a:key == 'cache_max_size'
-    return 100
+    return 500
   elseif a:key == 'display_mode'
     return 'quickfix'
   elseif a:key == 'keybindings_enabled'
@@ -374,8 +374,8 @@ function! genero_tools#config#validate() abort
   
   let l:cache_max_size = genero_tools#config#get('cache_max_size')
   if l:cache_max_size <= 0
-    call genero_tools#error#warn('config', 'cache_max_size must be positive, using default 100')
-    let g:genero_tools_config.cache_max_size = 100
+    call genero_tools#error#warn('config', 'cache_max_size must be positive, using default 500')
+    let g:genero_tools_config.cache_max_size = 500
   endif
   
   " Validate result_limit

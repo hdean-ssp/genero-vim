@@ -31,6 +31,10 @@ function! genero_tools#compiler#type_info#init() abort
     highlight GeneroTypeInfoVar guifg=#7a8a6a guibg=#1e2030 gui=italic ctermfg=DarkGreen ctermbg=234
   endif
 
+  if !hlexists('GeneroTypeInfoSchema')
+    highlight GeneroTypeInfoSchema guifg=#6a8a9a guibg=#1e2030 gui=italic ctermfg=DarkCyan ctermbg=234
+  endif
+
   " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
@@ -135,6 +139,16 @@ function! s:lookup_variable(word, bufnr, line) abort
 
   if !empty(define_info)
     call s:show_variable_type(a:bufnr, a:line, a:word, define_info)
+    let s:last_word = a:word
+    let s:last_bufnr = a:bufnr
+    let s:last_line = a:line
+    return
+  endif
+
+  " No DEFINE found — try schema lookup (table.column or table name)
+  let schema_info = s:lookup_schema(a:word, a:line)
+  if !empty(schema_info)
+    call s:show_schema_info(a:bufnr, a:line, schema_info)
   endif
 
   let s:last_word = a:word
@@ -595,6 +609,196 @@ function! genero_tools#compiler#type_info#manual() abort
   let s:last_word = word
   let s:last_bufnr = bufnr('%')
   let s:last_line = line('.')
+endfunction
+
+" ============================================================================
+" SCHEMA LOOKUP (table/column via query.sh resolve-like, get-table, get-column)
+" ============================================================================
+
+" Try to resolve the word as a table or column reference
+" Checks the current line for table.column patterns (LIKE, FROM, INTO, etc.)
+function! s:lookup_schema(word, line_nr) abort
+  let line_text = getline(a:line_nr)
+
+  " Strategy 1: Check if word is part of a table.column reference on this line
+  " Match patterns like: LIKE table.column, table.column, table.*
+  let dotref = s:extract_dot_reference(a:word, line_text)
+  if !empty(dotref)
+    return s:resolve_like_cached(dotref)
+  endif
+
+  " Strategy 2: Check if the line has LIKE ... before or around the word
+  let like_ref = s:extract_like_reference(a:word, line_text)
+  if !empty(like_ref)
+    return s:resolve_like_cached(like_ref)
+  endif
+
+  " Strategy 3: Try as a standalone table name
+  return s:lookup_table_cached(a:word)
+endfunction
+
+" Extract a table.column reference containing the word from the line
+function! s:extract_dot_reference(word, line_text) abort
+  " Look for word.something or something.word patterns
+  let pattern = '\c\(\w\+\)\.\(\w\+\|\*\)'
+  let start = 0
+  while 1
+    let match = matchstrpos(a:line_text, pattern, start)
+    if empty(match[0])
+      break
+    endif
+    " Check if our word is part of this match
+    if match[0] =~? '\<' . escape(a:word, '\') . '\>'
+      return match[0]
+    endif
+    let start = match[2]
+  endwhile
+  return ''
+endfunction
+
+" Extract a LIKE reference from the line
+function! s:extract_like_reference(word, line_text) abort
+  " Match: LIKE table.column or LIKE table.*
+  let pattern = '\c\<LIKE\s\+\(\w\+\.\(\w\+\|\*\)\)'
+  let match = matchlist(a:line_text, pattern)
+  if !empty(match) && match[1] =~? '\<' . escape(a:word, '\') . '\>'
+    return match[1]
+  endif
+  return ''
+endfunction
+
+" Call resolve-like with caching
+function! s:resolve_like_cached(reference) abort
+  let cache_key = 'resolve-like:' . a:reference
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached) && has_key(cached, 'success') && cached.success && !empty(get(cached, 'data', {}))
+    return cached.data
+  endif
+
+  let tool_path = genero_tools#config#get('genero_tools_path')
+  let escaped = genero_tools#command#escape_arg(a:reference)
+  let cmd = tool_path . ' resolve-like ' . escaped
+
+  try
+    silent let output = system(cmd)
+    if v:shell_error != 0
+      return {}
+    endif
+    let data = json_decode(output)
+    call genero_tools#cache#set(cache_key, {'success': 1, 'data': data, 'timestamp': localtime()})
+    return data
+  catch
+    return {}
+  endtry
+endfunction
+
+" Call get-table with caching
+function! s:lookup_table_cached(table_name) abort
+  let cache_key = 'get-table:' . a:table_name
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached) && has_key(cached, 'success') && cached.success && !empty(get(cached, 'data', {}))
+    return cached.data
+  endif
+
+  let tool_path = genero_tools#config#get('genero_tools_path')
+  let escaped = genero_tools#command#escape_arg(a:table_name)
+  let cmd = tool_path . ' get-table ' . escaped
+
+  try
+    silent let output = system(cmd)
+    if v:shell_error != 0
+      return {}
+    endif
+    let data = json_decode(output)
+    if empty(data)
+      return {}
+    endif
+    call genero_tools#cache#set(cache_key, {'success': 1, 'data': data, 'timestamp': localtime()})
+    return data
+  catch
+    return {}
+  endtry
+endfunction
+
+" Display schema info as virtual text
+function! s:show_schema_info(bufnr, line, data) abort
+  if empty(a:data)
+    return
+  endif
+
+  let kind = get(a:data, 'kind', '')
+  let display = ''
+
+  if kind == 'column'
+    " Single column: show type
+    let col_name = get(a:data, 'column', get(a:data, 'name', ''))
+    let col_type = get(a:data, 'type', get(a:data, 'column_type', ''))
+    let table = get(a:data, 'table', '')
+    if !empty(col_type)
+      let display = col_type
+      if !empty(table)
+        let display .= '  ' . table . '.' . col_name
+      endif
+    endif
+  elseif kind == 'record'
+    " Record (table.*): show column count
+    let table = get(a:data, 'table', '')
+    let columns = get(a:data, 'columns', [])
+    let display = 'RECORD (' . len(columns) . ' columns)'
+    if !empty(table)
+      let display .= '  ' . table . '.*'
+    endif
+  elseif kind == 'table'
+    " Full table: show column count
+    let table = get(a:data, 'table', get(a:data, 'name', ''))
+    let columns = get(a:data, 'columns', [])
+    let display = 'TABLE (' . len(columns) . ' columns)'
+  else
+    " Unknown kind — try to show whatever we have
+    let col_type = get(a:data, 'type', get(a:data, 'column_type', ''))
+    if !empty(col_type)
+      let display = col_type
+    else
+      let columns = get(a:data, 'columns', [])
+      if !empty(columns)
+        let display = 'TABLE (' . len(columns) . ' columns)'
+      endif
+    endif
+  endif
+
+  if empty(display)
+    return
+  endif
+
+  call genero_tools#compiler#type_info#clear_extmarks()
+
+  " Calculate available space
+  let line_text = getline(a:line)
+  let line_len = strdisplaywidth(line_text)
+  let win_width = winwidth(0)
+  let available = win_width - line_len - 4
+
+  " For tables with columns, show as virt_lines if it won't fit inline
+  if (kind == 'table' || kind == 'record') && available >= 20
+    " Show summary inline
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+  elseif !empty(display)
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ⊞ ' . display . ' ', 'GeneroTypeInfoSchema']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+  endif
 endfunction
 
 " ============================================================================
