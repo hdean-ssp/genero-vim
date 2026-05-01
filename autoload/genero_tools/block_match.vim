@@ -32,20 +32,10 @@ function! genero_tools#block_match#init() abort
     let s:ns_id = nvim_create_namespace('genero_block_match')
   endif
 
-  " Keyword-only highlight — background matches cursor color, preserve syntax foreground
-  " Read the Cursor highlight bg dynamically so it works with any colorscheme
-  let cursor_bg = '#c0caf5'
-  if has('nvim')
-    try
-      let hl = nvim_get_hl(0, {'name': 'Cursor'})
-      if has_key(hl, 'bg')
-        let cursor_bg = printf('#%06x', hl.bg)
-      endif
-    catch
-    endtry
-  endif
-  execute 'highlight! GeneroBlockMatch guifg=NONE guibg=' . cursor_bg . ' gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE'
-  execute 'highlight! GeneroBlockMatchPair guifg=NONE guibg=' . cursor_bg . ' gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE'
+  " Keyword-only highlight — background only, preserve syntax foreground
+  " Use highlight! to force override any existing definition
+  highlight! GeneroBlockMatch guifg=NONE guibg=#2e3450 gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE
+  highlight! GeneroBlockMatchPair guifg=NONE guibg=#2e3450 gui=NONE ctermbg=60 ctermfg=NONE cterm=NONE
 endfunction
 
 " Called by cursor dispatcher when line changes
