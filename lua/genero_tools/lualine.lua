@@ -169,6 +169,39 @@ function M.function_name()
   return '%#GeneroLualineFunctionName# ' .. word .. ' %*'
 end
 
+-- Breadcrumb: show the enclosing function name by scanning upward from cursor
+-- Lightweight — no shell calls, just a buffer scan
+function M.breadcrumb()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local row = vim.api.nvim_win_get_cursor(0)[1]
+
+  -- Scan upward to find the enclosing FUNCTION/MAIN/REPORT
+  for i = row, 1, -1 do
+    local line = vim.fn.getline(i)
+    local trimmed = line:match('^%s*(.*)')
+    if not trimmed then
+      trimmed = ''
+    end
+    local upper = trimmed:upper()
+
+    if upper:match('^FUNCTION%s') then
+      local name = trimmed:match('^%w+%s+(%w+)')
+      if name then
+        return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
+      end
+    elseif upper:match('^MAIN') then
+      return '%#GeneroLualineFunctionName# ƒ MAIN %*'
+    elseif upper:match('^REPORT%s') then
+      local name = trimmed:match('^%w+%s+(%w+)')
+      if name then
+        return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
+      end
+    end
+  end
+
+  return ''
+end
+
 -- Setup highlight groups for lualine
 function M.setup_highlights()
   -- Error highlight: dark red background, light text

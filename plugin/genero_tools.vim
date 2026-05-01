@@ -22,10 +22,11 @@ endif
 " Initialize block matching highlights
 call genero_tools#block_match#init()
 
-" Initialize breadcrumbs (Neovim winbar)
-if has('nvim')
-  call genero_tools#breadcrumbs#init()
-endif
+" Initialize breadcrumbs (disabled — using lualine statusline component instead)
+" To use winbar breadcrumbs instead of lualine, uncomment the line below:
+" if has('nvim')
+"   call genero_tools#breadcrumbs#init()
+" endif
 
 " Initialize reference counts (Neovim only)
 if has('nvim')
