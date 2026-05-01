@@ -601,28 +601,61 @@ endfunction
 " UTILITY FUNCTIONS
 " ============================================================================
 
-" Check if the cursor position is inside a comment on the given line
+" Check if the cursor position is inside a comment or string literal
 function! s:cursor_in_comment(line_nr) abort
   let line_text = getline(a:line_nr)
   let cursor_col = col('.')
 
   " Check if entire line is a comment
   let trimmed = substitute(line_text, '^\s*', '', '')
-  if trimmed =~# '^[#\-]' || trimmed =~# '^--' || trimmed =~# '^{'
+  if trimmed =~# '^[#]' || trimmed =~# '^--' || trimmed =~# '^{'
     return 1
   endif
 
-  " Check if cursor is after a # or -- comment start
   let before_cursor = strpart(line_text, 0, cursor_col - 1)
-  " Find the last # that isn't inside quotes (simple check)
+
+  " Check if cursor is inside a string literal
+  " Count unescaped double quotes before cursor — odd means inside a string
+  let quote_count = 0
+  let i = 0
+  while i < len(before_cursor)
+    if before_cursor[i] == '"'
+      " Check it's not escaped (preceded by backslash)
+      if i == 0 || before_cursor[i - 1] != '\'
+        let quote_count += 1
+      endif
+    endif
+    let i += 1
+  endwhile
+  if quote_count % 2 == 1
+    return 1
+  endif
+
+  " Also check single-quoted strings (Genero uses both)
+  let sq_count = 0
+  let i = 0
+  while i < len(before_cursor)
+    if before_cursor[i] == "'"
+      if i == 0 || before_cursor[i - 1] != '\'
+        let sq_count += 1
+      endif
+    endif
+    let i += 1
+  endwhile
+  if sq_count % 2 == 1
+    return 1
+  endif
+
+  " Check if cursor is after a # comment start (not inside a string)
   if before_cursor =~# '#'
-    " Check it's not inside a string literal
     let hash_pos = strridx(before_cursor, '#')
     let quotes_before = len(substitute(strpart(before_cursor, 0, hash_pos), '[^"]', '', 'g'))
     if quotes_before % 2 == 0
       return 1
     endif
   endif
+
+  " Check if cursor is after a -- comment start (not inside a string)
   if before_cursor =~# '--'
     let dash_pos = strridx(before_cursor, '--')
     let quotes_before = len(substitute(strpart(before_cursor, 0, dash_pos), '[^"]', '', 'g'))
