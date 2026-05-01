@@ -142,7 +142,7 @@ function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
     
     try
       call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-        \ 'virt_text': [['  ▸ ' . hint.message, hl_group]],
+        \ 'virt_text': [['  ▸ ' . hint.message . ' ', hl_group]],
         \ 'virt_text_pos': 'eol',
         \ 'priority': 50
         \ })
@@ -170,7 +170,7 @@ function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, cu
       
       try
         call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-          \ 'virt_text': [['  ▸ ' . hint.message, hl_group]],
+          \ 'virt_text': [['  ▸ ' . hint.message . ' ', hl_group]],
           \ 'virt_text_pos': 'eol',
           \ 'priority': 50
           \ })

@@ -110,7 +110,7 @@ function! genero_tools#compiler#inline_diagnostics#update() abort
       call add(virt_text, ['  │  ', 'Comment'])
     endif
 
-    call add(virt_text, ['  ' . prefix . msg.text, hl])
+    call add(virt_text, ['  ' . prefix . msg.text . ' ', hl])
   endfor
 
   try

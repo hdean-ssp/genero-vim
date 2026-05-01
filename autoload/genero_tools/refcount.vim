@@ -110,7 +110,7 @@ function! s:show_count(bufnr, line_nr, count) abort
 
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, 0, {
-      \ 'virt_text': [['  ' . text, 'GeneroRefCount']],
+      \ 'virt_text': [['  ' . text . ' ', 'GeneroRefCount']],
       \ 'virt_text_pos': 'eol',
       \ 'priority': 10
       \ })
