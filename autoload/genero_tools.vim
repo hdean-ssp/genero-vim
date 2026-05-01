@@ -220,6 +220,8 @@ endfunction
 
 " Get function signature in concise format
 " Returns single-line format: function_name(params) -> return_type
+" NOTE: Returns cache-only results to avoid shell calls from statusline/lualine.
+" The type_info module populates the cache as the user navigates.
 function! genero_tools#get_function_concise(function_name) abort
   if empty(a:function_name)
     let function_name = expand('<cword>')
@@ -228,29 +230,25 @@ function! genero_tools#get_function_concise(function_name) abort
   endif
   
   if empty(function_name)
-    call genero_tools#error#error('Concise', 'No function name provided')
     return {}
   endif
   
+  " Only return cached results — never trigger a shell call from here
+  " This function is called frequently by lualine/statusline
   let cache_key = 'find-function-concise:' . function_name
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached)
     return cached
   endif
   
-  let format = genero_tools#format#get_concise_format()
-  let result = genero_tools#format#execute_with_format('find-function', [function_name], format)
-  
-  if result.success
-    " Check if result is empty
-    if (type(result.data) == type('') && empty(result.data))
-      call genero_tools#error#warn('Concise', 'Function not found: ' . function_name)
-    else
-      call genero_tools#cache#set(cache_key, result)
-    endif
+  " Also check the full function cache (populated by type_info, lookup, etc.)
+  let full_key = 'find-function:' . function_name
+  let full_cached = genero_tools#cache#get(full_key)
+  if !empty(full_cached)
+    return full_cached
   endif
   
-  return result
+  return {}
 endfunction
 
 " Display result using configured display mode
