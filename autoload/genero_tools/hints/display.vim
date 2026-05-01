@@ -32,18 +32,18 @@ function! genero_tools#hints#display#init() abort
     highlight GeneroHintStyle ctermfg=Gray ctermbg=NONE guifg=#555555 guibg=NONE
   endif
   
-  " Virtual text highlight groups — subtle, dim text that blends with the editor
-  " These should look like faded comments, not bright blocks
+  " Virtual text highlight groups — subtle italic with faint background tint
+  " Just enough bg to lift the text slightly off the editor background
   if !hlexists('GeneroHintInfoVirtual')
-    highlight GeneroHintInfoVirtual ctermfg=DarkBlue ctermbg=NONE guifg=#4a6a8a guibg=NONE gui=italic
+    highlight GeneroHintInfoVirtual ctermfg=DarkBlue ctermbg=234 guifg=#4a6a8a guibg=#1e2030 gui=italic
   endif
   
   if !hlexists('GeneroHintWarningVirtual')
-    highlight GeneroHintWarningVirtual ctermfg=DarkYellow ctermbg=NONE guifg=#8a7a50 guibg=NONE gui=italic
+    highlight GeneroHintWarningVirtual ctermfg=DarkYellow ctermbg=234 guifg=#8a7a50 guibg=#1e2030 gui=italic
   endif
   
   if !hlexists('GeneroHintStyleVirtual')
-    highlight GeneroHintStyleVirtual ctermfg=DarkGray ctermbg=NONE guifg=#555555 guibg=NONE gui=italic
+    highlight GeneroHintStyleVirtual ctermfg=DarkGray ctermbg=234 guifg=#555555 guibg=#1e2030 gui=italic
   endif
   
   " Set up CursorMoved autocommand for current-line-only mode

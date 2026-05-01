@@ -14,17 +14,17 @@ function! genero_tools#compiler#inline_diagnostics#init() abort
   " Create namespace
   let s:ns_id = nvim_create_namespace('genero_compiler_inline_diag')
 
-  " Define subtle highlight groups — dim italic text, no background
+  " Define subtle highlight groups — dim italic text with faint background tint
   if !hlexists('GeneroInlineError')
-    highlight GeneroInlineError guifg=#b05050 guibg=NONE gui=italic ctermfg=DarkRed ctermbg=NONE
+    highlight GeneroInlineError guifg=#b05050 guibg=#1e2030 gui=italic ctermfg=DarkRed ctermbg=234
   endif
 
   if !hlexists('GeneroInlineWarning')
-    highlight GeneroInlineWarning guifg=#a08050 guibg=NONE gui=italic ctermfg=DarkYellow ctermbg=NONE
+    highlight GeneroInlineWarning guifg=#a08050 guibg=#1e2030 gui=italic ctermfg=DarkYellow ctermbg=234
   endif
 
   if !hlexists('GeneroInlineInfo')
-    highlight GeneroInlineInfo guifg=#5080a0 guibg=NONE gui=italic ctermfg=DarkCyan ctermbg=NONE
+    highlight GeneroInlineInfo guifg=#5080a0 guibg=#1e2030 gui=italic ctermfg=DarkCyan ctermbg=234
   endif
 
   " Autocommands are handled by the unified cursor dispatcher (cursor.vim)

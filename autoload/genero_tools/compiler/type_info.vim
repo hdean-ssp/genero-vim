@@ -24,11 +24,11 @@ function! genero_tools#compiler#type_info#init() abort
   let s:ns_id = nvim_create_namespace('genero_type_info')
 
   if !hlexists('GeneroTypeInfo')
-    highlight GeneroTypeInfo guifg=#6a7a8a guibg=NONE gui=italic ctermfg=DarkGray ctermbg=NONE
+    highlight GeneroTypeInfo guifg=#6a7a8a guibg=#1e2030 gui=italic ctermfg=DarkGray ctermbg=234
   endif
 
   if !hlexists('GeneroTypeInfoVar')
-    highlight GeneroTypeInfoVar guifg=#7a8a6a guibg=NONE gui=italic ctermfg=DarkGreen ctermbg=NONE
+    highlight GeneroTypeInfoVar guifg=#7a8a6a guibg=#1e2030 gui=italic ctermfg=DarkGreen ctermbg=234
   endif
 
   " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
