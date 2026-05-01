@@ -1,27 +1,28 @@
 " Genero-Tools Plugin - Block Matching Highlights
 " Highlights matching block pairs: IF/END IF, FOR/END FOR, FUNCTION/END FUNCTION, etc.
-" Neovim only for extmark highlights; Vim gets matchaddpos fallback
+" Neovim only for extmark highlights
 
 let s:ns_id = -1
 let s:last_line = -1
 let s:last_bufnr = -1
 
-" Block pairs: opener → closer pattern
-let s:block_pairs = {
-  \ 'IF':        'END\s\+IF',
-  \ 'FOR':       'END\s\+FOR',
-  \ 'WHILE':     'END\s\+WHILE',
-  \ 'CASE':      'END\s\+CASE',
-  \ 'FUNCTION':  'END\s\+FUNCTION',
-  \ 'MAIN':      'END\s\+MAIN',
-  \ 'REPORT':    'END\s\+REPORT',
-  \ 'MENU':      'END\s\+MENU',
-  \ 'INPUT':     'END\s\+INPUT',
-  \ 'DIALOG':    'END\s\+DIALOG',
-  \ 'CONSTRUCT': 'END\s\+CONSTRUCT',
-  \ 'FOREACH':   'END\s\+FOREACH',
-  \ 'DISPLAY':   'END\s\+DISPLAY',
-  \ }
+" Block openers and their END patterns
+" Each entry: [opener_keyword, end_pattern_for_regex]
+let s:block_types = [
+  \ ['FUNCTION',  'END\s\+FUNCTION'],
+  \ ['MAIN',      'END\s\+MAIN'],
+  \ ['REPORT',    'END\s\+REPORT'],
+  \ ['IF',        'END\s\+IF'],
+  \ ['FOR',       'END\s\+FOR'],
+  \ ['FOREACH',   'END\s\+FOREACH'],
+  \ ['WHILE',     'END\s\+WHILE'],
+  \ ['CASE',      'END\s\+CASE'],
+  \ ['MENU',      'END\s\+MENU'],
+  \ ['INPUT',     'END\s\+INPUT'],
+  \ ['DIALOG',    'END\s\+DIALOG'],
+  \ ['CONSTRUCT', 'END\s\+CONSTRUCT'],
+  \ ['DISPLAY',   'END\s\+DISPLAY'],
+  \ ]
 
 function! genero_tools#block_match#init() abort
   if has('nvim')
@@ -31,8 +32,6 @@ function! genero_tools#block_match#init() abort
   if !hlexists('GeneroBlockMatch')
     highlight GeneroBlockMatch guibg=#2a2a3a guifg=NONE gui=underline ctermbg=236 ctermfg=NONE cterm=underline
   endif
-
-  " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
 " Called by cursor dispatcher when line changes
@@ -49,20 +48,25 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
   let trimmed = substitute(line_text, '^\s*', '', '')
   let upper = toupper(trimmed)
 
-  " Check if cursor is on an END block
+  " Check if line starts with END — find the opener
   if upper =~# '^END\s\+'
-    let match_line = s:find_opener(a:current_line, upper)
-    if match_line > 0
-      call s:highlight_line(a:bufnr, match_line)
-      call s:highlight_line(a:bufnr, a:current_line)
-    endif
+    for [opener, end_pattern] in s:block_types
+      if upper =~# '^' . end_pattern . '\>'
+        let match_line = s:find_opener(a:current_line, opener, end_pattern)
+        if match_line > 0
+          call s:highlight_line(a:bufnr, match_line)
+          call s:highlight_line(a:bufnr, a:current_line)
+        endif
+        return
+      endif
+    endfor
     return
   endif
 
-  " Check if cursor is on an opener block
-  for [opener, closer_pattern] in items(s:block_pairs)
-    if upper =~# '^\V' . opener . '\v\>'
-      let match_line = s:find_closer(a:current_line, opener, closer_pattern)
+  " Check if line starts with a block opener — find the closer
+  for [opener, end_pattern] in s:block_types
+    if upper =~# '^' . opener . '\>'
+      let match_line = s:find_closer(a:current_line, opener, end_pattern)
       if match_line > 0
         call s:highlight_line(a:bufnr, match_line)
         call s:highlight_line(a:bufnr, a:current_line)
@@ -72,22 +76,8 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
   endfor
 endfunction
 
-" Find the opening block for an END statement
-function! s:find_opener(end_line, upper_text) abort
-  " Determine which block type this END closes
-  let block_type = ''
-  for [opener, closer_pattern] in items(s:block_pairs)
-    if a:upper_text =~# '^\V' . closer_pattern
-      let block_type = opener
-      break
-    endif
-  endfor
-
-  if empty(block_type)
-    return 0
-  endif
-
-  let closer_pattern = s:block_pairs[block_type]
+" Find the opening block for an END statement (search upward)
+function! s:find_opener(end_line, opener, end_pattern) abort
   let nesting = 1
   let i = a:end_line - 1
 
@@ -95,11 +85,11 @@ function! s:find_opener(end_line, upper_text) abort
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 
-    " Check for closer (increases nesting)
-    if upper =~# '^\V' . closer_pattern
+    " Check for another END of the same type (increases nesting)
+    if upper =~# '^' . a:end_pattern . '\>'
       let nesting += 1
     " Check for opener (decreases nesting)
-    elseif upper =~# '^\V' . block_type . '\v\>'
+    elseif upper =~# '^' . a:opener . '\>'
       let nesting -= 1
       if nesting == 0
         return i
@@ -112,8 +102,8 @@ function! s:find_opener(end_line, upper_text) abort
   return 0
 endfunction
 
-" Find the closing block for an opener statement
-function! s:find_closer(open_line, opener, closer_pattern) abort
+" Find the closing block for an opener statement (search downward)
+function! s:find_closer(open_line, opener, end_pattern) abort
   let nesting = 1
   let i = a:open_line + 1
   let total = line('$')
@@ -122,11 +112,11 @@ function! s:find_closer(open_line, opener, closer_pattern) abort
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 
-    " Check for opener (increases nesting)
-    if upper =~# '^\V' . a:opener . '\v\>'
+    " Check for another opener of the same type (increases nesting)
+    if upper =~# '^' . a:opener . '\>'
       let nesting += 1
-    " Check for closer (decreases nesting)
-    elseif upper =~# '^\V' . a:closer_pattern
+    " Check for END of the same type (decreases nesting)
+    elseif upper =~# '^' . a:end_pattern . '\>'
       let nesting -= 1
       if nesting == 0
         return i
