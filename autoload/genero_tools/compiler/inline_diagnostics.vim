@@ -1,20 +1,17 @@
 " Genero-Tools Plugin - Inline Diagnostics Virtual Text
-" Shows error/warning messages as virtual text on the current cursor line
-" Neovim only — silently does nothing in Vim
+" Errors: always show full text on all error lines
+" Warnings/Info: only show on current cursor line
+" Neovim only
 
-" Namespace for inline diagnostic extmarks
 let s:ns_id = -1
 
-" Initialize the inline diagnostics system
 function! genero_tools#compiler#inline_diagnostics#init() abort
   if !has('nvim')
     return
   endif
 
-  " Create namespace
   let s:ns_id = nvim_create_namespace('genero_compiler_inline_diag')
 
-  " Define subtle highlight groups — dim italic text with faint background tint
   if !hlexists('GeneroInlineError')
     highlight GeneroInlineError guifg=#b05050 guibg=#1e2030 gui=italic ctermfg=DarkRed ctermbg=234
   endif
@@ -26,8 +23,6 @@ function! genero_tools#compiler#inline_diagnostics#init() abort
   if !hlexists('GeneroInlineInfo')
     highlight GeneroInlineInfo guifg=#5080a0 guibg=#1e2030 gui=italic ctermfg=DarkCyan ctermbg=234
   endif
-
-  " Autocommands are handled by the unified cursor dispatcher (cursor.vim)
 endfunction
 
 " Called by cursor dispatcher when line changes
@@ -38,7 +33,6 @@ function! genero_tools#compiler#inline_diagnostics#on_line_changed(bufnr, curren
   call genero_tools#compiler#inline_diagnostics#update()
 endfunction
 
-" Update the virtual text for the current cursor line
 function! genero_tools#compiler#inline_diagnostics#update() abort
   if !has('nvim')
     return
@@ -49,7 +43,6 @@ function! genero_tools#compiler#inline_diagnostics#update() abort
     return
   endif
 
-  " Ensure namespace exists
   if s:ns_id == -1
     let s:ns_id = nvim_create_namespace('genero_compiler_inline_diag')
   endif
@@ -57,83 +50,61 @@ function! genero_tools#compiler#inline_diagnostics#update() abort
   let bufnr = bufnr('%')
   let current_line = line('.')
 
-  " Clear previous virtual text
   call nvim_buf_clear_namespace(bufnr, s:ns_id, 0, -1)
 
-  " Get compile result for this buffer
   let result = genero_tools#compiler#get_buffer_result(bufnr)
   if empty(result)
     return
   endif
 
-  " Collect all diagnostics for the current line
-  let messages = []
-
+  " Errors: always show full text on every error line
   for error in get(result, 'errors', [])
-    if get(error, 'line', 0) == current_line
-      call add(messages, {'text': error.message, 'type': 'E'})
+    let lnum = get(error, 'line', 0)
+    if lnum > 0
+      try
+        call nvim_buf_set_extmark(bufnr, s:ns_id, lnum - 1, 0, {
+          \ 'virt_text': [['  ✕ ' . error.message . ' ', 'GeneroInlineError']],
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 100
+          \ })
+      catch
+      endtry
     endif
   endfor
 
+  " Warnings: only show on current cursor line
   for warning in get(result, 'warnings', [])
     if get(warning, 'line', 0) == current_line
-      call add(messages, {'text': warning.message, 'type': 'W'})
+      try
+        call nvim_buf_set_extmark(bufnr, s:ns_id, current_line - 1, 0, {
+          \ 'virt_text': [['  ▸ ' . warning.message . ' ', 'GeneroInlineWarning']],
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 90
+          \ })
+      catch
+      endtry
     endif
   endfor
 
+  " Info: only show on current cursor line
   for info_item in get(result, 'info', [])
     if get(info_item, 'line', 0) == current_line
-      call add(messages, {'text': info_item.message, 'type': 'I'})
+      try
+        call nvim_buf_set_extmark(bufnr, s:ns_id, current_line - 1, 0, {
+          \ 'virt_text': [['  ℹ ' . info_item.message . ' ', 'GeneroInlineInfo']],
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 80
+          \ })
+      catch
+      endtry
     endif
   endfor
-
-  if empty(messages)
-    return
-  endif
-
-  " Build virtual text chunks — multiple diagnostics on one line get joined
-  let virt_text = []
-  for msg in messages
-    if msg.type == 'E'
-      let hl = 'GeneroInlineError'
-      let prefix = '✕ '
-    elseif msg.type == 'W'
-      let hl = 'GeneroInlineWarning'
-      let prefix = '▸ '
-    else
-      let hl = 'GeneroInlineInfo'
-      let prefix = 'ℹ '
-    endif
-
-    " Add separator between multiple diagnostics
-    if !empty(virt_text)
-      call add(virt_text, ['  │  ', 'Comment'])
-    endif
-
-    call add(virt_text, ['  ' . prefix . msg.text . ' ', hl])
-  endfor
-
-  try
-    call nvim_buf_set_extmark(bufnr, s:ns_id, current_line - 1, 0, {
-      \ 'virt_text': virt_text,
-      \ 'virt_text_pos': 'eol',
-      \ 'priority': 100
-      \ })
-  catch
-    " Silently ignore
-  endtry
 endfunction
 
-" Clear all inline diagnostic virtual text
 function! genero_tools#compiler#inline_diagnostics#clear() abort
-  if !has('nvim')
+  if !has('nvim') || s:ns_id == -1
     return
   endif
-
-  if s:ns_id == -1
-    return
-  endif
-
   try
     call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)
   catch

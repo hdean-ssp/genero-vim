@@ -114,6 +114,9 @@ function! genero_tools#block_match#on_line_changed(bufnr, current_line) abort
       return
     endif
   endfor
+
+  " Check if cursor is on a quote character — find the matching quote
+  call s:check_quote_match(a:bufnr, a:current_line)
 endfunction
 
 " Highlight inner keywords (ELSE inside IF, WHEN inside CASE) at the same nesting level
@@ -224,6 +227,138 @@ function! s:highlight_keyword(bufnr, line_nr) abort
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, indent_len, {
       \ 'end_col': indent_len + kw_len,
+      \ 'hl_group': 'GeneroBlockMatch',
+      \ 'priority': 200
+      \ })
+  catch
+  endtry
+endfunction
+
+" Check if cursor is near a quote and highlight the matching one
+" Supports double quotes and single quotes across multiple lines
+function! s:check_quote_match(bufnr, current_line) abort
+  let line_text = getline(a:current_line)
+  let cursor_col = col('.') - 1  " 0-indexed
+
+  " Check if cursor is on or adjacent to a quote character
+  let char_at = cursor_col < len(line_text) ? line_text[cursor_col] : ''
+  let char_before = cursor_col > 0 ? line_text[cursor_col - 1] : ''
+
+  let quote_char = ''
+  let quote_col = -1
+
+  if char_at == '"' || char_at == "'"
+    let quote_char = char_at
+    let quote_col = cursor_col
+  elseif char_before == '"' || char_before == "'"
+    let quote_char = char_before
+    let quote_col = cursor_col - 1
+  endif
+
+  if empty(quote_char)
+    return
+  endif
+
+  " Count quotes before this position on the current line to determine if opening or closing
+  let count_before = 0
+  let i = 0
+  while i < quote_col
+    if line_text[i] == quote_char && (i == 0 || line_text[i - 1] != '\')
+      let count_before += 1
+    endif
+    let i += 1
+  endwhile
+
+  " Even count = this is an opening quote, odd count = this is a closing quote
+  let is_opening = count_before % 2 == 0
+
+  if is_opening
+    " Search forward for the closing quote (same line first, then subsequent lines)
+    let match_pos = s:find_closing_quote(a:current_line, quote_col, quote_char)
+  else
+    " Search backward for the opening quote
+    let match_pos = s:find_opening_quote(a:current_line, quote_col, quote_char)
+  endif
+
+  if !empty(match_pos)
+    " Highlight both quotes
+    call s:highlight_char(a:bufnr, a:current_line, quote_col)
+    call s:highlight_char(a:bufnr, match_pos.line, match_pos.col)
+  endif
+endfunction
+
+" Find the closing quote starting after the given position
+function! s:find_closing_quote(start_line, start_col, quote_char) abort
+  let line_text = getline(a:start_line)
+
+  " Search on the same line first
+  let i = a:start_col + 1
+  while i < len(line_text)
+    if line_text[i] == a:quote_char && (i == 0 || line_text[i - 1] != '\')
+      return {'line': a:start_line, 'col': i}
+    endif
+    let i += 1
+  endwhile
+
+  " Search subsequent lines (multi-line strings)
+  let max_search = min([a:start_line + 50, line('$')])
+  let line_nr = a:start_line + 1
+  while line_nr <= max_search
+    let line_text = getline(line_nr)
+    let i = 0
+    while i < len(line_text)
+      if line_text[i] == a:quote_char && (i == 0 || line_text[i - 1] != '\')
+        return {'line': line_nr, 'col': i}
+      endif
+      let i += 1
+    endwhile
+    let line_nr += 1
+  endwhile
+
+  return {}
+endfunction
+
+" Find the opening quote searching backward from the given position
+function! s:find_opening_quote(start_line, start_col, quote_char) abort
+  let line_text = getline(a:start_line)
+
+  " Search backward on the same line
+  let i = a:start_col - 1
+  while i >= 0
+    if line_text[i] == a:quote_char && (i == 0 || line_text[i - 1] != '\')
+      return {'line': a:start_line, 'col': i}
+    endif
+    let i -= 1
+  endwhile
+
+  " Search previous lines (multi-line strings)
+  let min_search = max([a:start_line - 50, 1])
+  let line_nr = a:start_line - 1
+  while line_nr >= min_search
+    let line_text = getline(line_nr)
+    " Search from end of line backward
+    let i = len(line_text) - 1
+    while i >= 0
+      if line_text[i] == a:quote_char && (i == 0 || line_text[i - 1] != '\')
+        return {'line': line_nr, 'col': i}
+      endif
+      let i -= 1
+    endwhile
+    let line_nr -= 1
+  endwhile
+
+  return {}
+endfunction
+
+" Highlight a single character at a specific position
+function! s:highlight_char(bufnr, line_nr, col) abort
+  if !has('nvim') || s:ns_id == -1
+    return
+  endif
+
+  try
+    call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, a:col, {
+      \ 'end_col': a:col + 1,
       \ 'hl_group': 'GeneroBlockMatch',
       \ 'priority': 200
       \ })
