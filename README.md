@@ -242,7 +242,7 @@ let g:genero_tools_config = {
   \ 'genero_tools_path': 'query.sh',
   \ 'cache_enabled': 1,
   \ 'cache_ttl': 3600,
-  \ 'cache_max_size': 100,
+  \ 'cache_max_size': 500,
   \ 'display_mode': 'quickfix',
   \ 'keybindings_enabled': 1,
   \ 'timeout': 10000,
@@ -359,7 +359,7 @@ Configure result caching for performance optimization:
 ```vim
 let g:genero_tools_config.cache_enabled = 1                      " Enable/disable result caching (default: 1)
 let g:genero_tools_config.cache_ttl = 3600                       " Cache time-to-live in seconds (default: 3600)
-let g:genero_tools_config.cache_max_size = 100                   " Maximum cache entries (default: 100)
+let g:genero_tools_config.cache_max_size = 500                   " Maximum cache entries (default: 500)
 ```
 
 **Cache Features:**

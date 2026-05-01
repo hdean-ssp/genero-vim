@@ -116,7 +116,7 @@ vim.g.genero_tools_config = {
   -- Cache settings
   cache_enabled = true,                 -- Enable result caching
   cache_ttl = 3600,                     -- Cache time-to-live in seconds
-  cache_max_size = 100,                 -- Maximum cache entries
+  cache_max_size = 500,                 -- Maximum cache entries
   
   -- Result settings
   result_limit = 1000,                  -- Maximum results returned

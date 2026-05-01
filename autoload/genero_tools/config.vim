@@ -10,7 +10,7 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('genero_tools_path', 'query.sh')
   call genero_tools#config#init_key('cache_enabled', 1)
   call genero_tools#config#init_key('cache_ttl', 3600)
-  call genero_tools#config#init_key('cache_max_size', 100)
+  call genero_tools#config#init_key('cache_max_size', 500)
   call genero_tools#config#init_key('display_mode', 'quickfix')
   call genero_tools#config#init_key('keybindings_enabled', 1)
   call genero_tools#config#init_key('timeout', 10000)
