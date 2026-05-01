@@ -115,9 +115,6 @@ function! genero_tools#navigation#goto_definition(...) abort
     normal! zz
     echom 'ƒ ' . word . ' → ' . fnamemodify(full_path, ':t') . ':' . line_nr
   endif
-  catch
-    call genero_tools#error#warn('navigation', 'Failed to open: ' . full_path . ' — ' . v:exception)
-  endtry
 endfunction
 
 " Peek definition: show function body in a floating window without leaving current position
