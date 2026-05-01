@@ -1,10 +1,17 @@
 " Genero-Tools Plugin - Reference Count Virtual Text
 " Shows how many callers a function has on its FUNCTION definition line
+" Fetches lazily: only looks up the function the cursor is currently on
 " Neovim only — uses virtual text extmarks
 
 let s:ns_id = -1
 let s:timer_id = -1
-let s:processed_lines = {}
+let s:last_func = ''
+let s:last_line = -1
+
+" Dedicated cache for refcounts — doesn't pollute the main query cache
+if !exists('g:genero_tools_refcount_cache')
+  let g:genero_tools_refcount_cache = {}
+endif
 
 function! genero_tools#refcount#init() abort
   if !has('nvim')
@@ -19,110 +26,102 @@ function! genero_tools#refcount#init() abort
 
   augroup GeneroRefCount
     autocmd!
-    autocmd BufEnter *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#schedule_update()
-    autocmd BufWritePost *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#schedule_update()
+    autocmd CursorMoved *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#on_cursor_moved()
+    autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#clear()
+    autocmd InsertEnter *.4gl,*.m3,*.m4,*.per call genero_tools#refcount#clear()
   augroup END
 endfunction
 
-" Schedule an update with a short delay to avoid blocking on buffer enter
-function! genero_tools#refcount#schedule_update() abort
+function! genero_tools#refcount#on_cursor_moved() abort
+  if !has('nvim')
+    return
+  endif
+
+  let current_line = line('.')
+
+  " Quick check: same line, nothing to do
+  if current_line == s:last_line
+    return
+  endif
+
+  " Clear previous extmark
+  call genero_tools#refcount#clear_extmarks()
+  let s:last_line = current_line
+
+  " Check if cursor is on a FUNCTION line
+  let line_text = getline(current_line)
+  let trimmed = substitute(line_text, '^\s*', '', '')
+  let upper = toupper(trimmed)
+
+  if upper !~# '^FUNCTION\>'
+    let s:last_func = ''
+    return
+  endif
+
+  let func_name = matchstr(trimmed, '\c^FUNCTION\s\+\zs\w\+')
+  if empty(func_name)
+    let s:last_func = ''
+    return
+  endif
+
+  " Same function as last time — show from local cache instantly
+  if func_name ==# s:last_func && has_key(g:genero_tools_refcount_cache, func_name)
+    call s:show_count(bufnr('%'), current_line, g:genero_tools_refcount_cache[func_name])
+    return
+  endif
+
+  let s:last_func = func_name
+
+  " Check local refcount cache (no TTL — lasts until editor restart or manual clear)
+  if has_key(g:genero_tools_refcount_cache, func_name)
+    call s:show_count(bufnr('%'), current_line, g:genero_tools_refcount_cache[func_name])
+    return
+  endif
+
+  " Not cached — schedule a lookup with a short debounce
   if s:timer_id != -1
     call timer_stop(s:timer_id)
   endif
-  let s:timer_id = timer_start(1000, function('genero_tools#refcount#update_buffer'))
+  let s:timer_id = timer_start(500, function('s:fetch_refcount', [func_name, bufnr('%'), current_line]))
 endfunction
 
-" Update reference counts for all FUNCTION lines in the current buffer
-function! genero_tools#refcount#update_buffer(...) abort
+function! s:fetch_refcount(func_name, bufnr, line_nr, timer_id) abort
   let s:timer_id = -1
 
-  if !has('nvim') || s:ns_id == -1
+  " Verify cursor is still on the same line
+  if line('.') != a:line_nr || bufnr('%') != a:bufnr
     return
   endif
 
-  let bufnr = bufnr('%')
+  let tool_path = genero_tools#config#get('genero_tools_path')
+  let escaped = genero_tools#command#escape_arg(a:func_name)
+  let cmd = tool_path . ' find-function-dependents ' . escaped
 
-  " Clear existing
   try
-    call nvim_buf_clear_namespace(bufnr, s:ns_id, 0, -1)
-  catch
-  endtry
+    silent let output = system(cmd)
+    if v:shell_error == 0
+      let data = json_decode(output)
+      if type(data) == type([])
+        let count = len(data)
+        " Store in dedicated refcount cache
+        let g:genero_tools_refcount_cache[a:func_name] = count
 
-  " Find all FUNCTION lines
-  let total = line('$')
-  let i = 1
-
-  while i <= total
-    let line = getline(i)
-    let trimmed = substitute(line, '^\s*', '', '')
-    let upper = toupper(trimmed)
-
-    if upper =~# '^FUNCTION\>'
-      let func_name = matchstr(trimmed, '\c^FUNCTION\s\+\zs\w\+')
-      if !empty(func_name)
-        " Look up dependents (callers) — use cache, don't block
-        call s:show_refcount_for_line(bufnr, i, func_name)
-      endif
-    endif
-
-    let i += 1
-  endwhile
-endfunction
-
-" Show reference count for a single function line
-function! s:show_refcount_for_line(bufnr, line_nr, func_name) abort
-  " Check cache first
-  let cache_key = 'find-function:' . a:func_name
-  let cached = genero_tools#cache#get(cache_key)
-
-  let call_count = -1
-
-  if !empty(cached) && has_key(cached, 'success') && cached.success
-    let func = s:pick_func(cached.data, a:func_name)
-    if !empty(func)
-      let calls = get(func, 'calls', [])
-      " 'calls' is what this function calls, not who calls it
-      " We need dependents — skip if not available in cache
-    endif
-  endif
-
-  " Try dependents cache
-  let dep_key = 'find-function-dependents:' . a:func_name
-  let dep_cached = genero_tools#cache#get(dep_key)
-
-  if !empty(dep_cached) && has_key(dep_cached, 'success') && dep_cached.success
-    if type(dep_cached.data) == type([])
-      let call_count = len(dep_cached.data)
-    endif
-  endif
-
-  " If not in cache, do a silent lookup (only for visible functions)
-  if call_count == -1
-    let tool_path = genero_tools#config#get('genero_tools_path')
-    let escaped = genero_tools#command#escape_arg(a:func_name)
-    let cmd = tool_path . ' find-function-dependents ' . escaped
-
-    try
-      silent let output = system(cmd)
-      if v:shell_error == 0
-        let data = json_decode(output)
-        if type(data) == type([])
-          let call_count = len(data)
-          " Cache it
-          call genero_tools#cache#set(dep_key, {'success': 1, 'data': data, 'timestamp': localtime()})
+        " Verify cursor hasn't moved during the shell call
+        if line('.') == a:line_nr && bufnr('%') == a:bufnr
+          call s:show_count(a:bufnr, a:line_nr, count)
         endif
       endif
-    catch
-    endtry
-  endif
+    endif
+  catch
+  endtry
+endfunction
 
-  if call_count < 0
-    return
-  endif
+function! s:show_count(bufnr, line_nr, count) abort
+  call genero_tools#refcount#clear_extmarks()
 
-  let text = call_count == 0 ? '0 references' :
-    \ call_count == 1 ? '1 reference' :
-    \ call_count . ' references'
+  let text = a:count == 0 ? '0 references' :
+    \ a:count == 1 ? '1 reference' :
+    \ a:count . ' references'
 
   try
     call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line_nr - 1, 0, {
@@ -134,15 +133,22 @@ function! s:show_refcount_for_line(bufnr, line_nr, func_name) abort
   endtry
 endfunction
 
-function! s:pick_func(data, word) abort
-  if type(a:data) == type([])
-    for item in a:data
-      if type(item) == type({}) && get(item, 'name', '') ==? a:word
-        return item
-      endif
-    endfor
-  elseif type(a:data) == type({})
-    return a:data
+function! genero_tools#refcount#clear_extmarks() abort
+  if !has('nvim') || s:ns_id == -1
+    return
   endif
-  return {}
+  try
+    call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)
+  catch
+  endtry
+endfunction
+
+function! genero_tools#refcount#clear() abort
+  if s:timer_id != -1
+    call timer_stop(s:timer_id)
+    let s:timer_id = -1
+  endif
+  call genero_tools#refcount#clear_extmarks()
+  let s:last_func = ''
+  let s:last_line = -1
 endfunction
