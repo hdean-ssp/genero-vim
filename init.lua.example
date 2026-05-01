@@ -962,7 +962,7 @@ wk.register({
 
 -- Show keybindings help
 vim.api.nvim_create_user_command("GeneroHelp", function()
-  print([[
+  print([==[
 ╔════════════════════════════════════════════════════════════════╗
 ║           Genero Tools Keybindings & Commands                  ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -1140,7 +1140,7 @@ TIPS:
   • Floating windows can be closed with q or Esc
   • Press Ctrl+\ to quickly open/close a terminal
   • Cursor on a word? Press Space+fw to search the whole project for it
-  ]])
+  ]==])
 end, {})
 
 -- Show help on startup if no files are opened
