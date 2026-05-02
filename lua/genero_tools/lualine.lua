@@ -233,7 +233,8 @@ function M.breadcrumb()
 end
 
 -- Get reference count for a function from the refcount cache
--- Returns count (number) or nil if not cached yet
+-- If not cached, triggers an async fetch so it appears on next statusline refresh
+-- Returns count (number) or nil if not available yet
 function M._get_refcount(func_name)
   if not func_name or func_name == '' then
     return nil
@@ -242,12 +243,44 @@ function M._get_refcount(func_name)
     return vim.g.genero_tools_refcount_cache
   end)
   if not ok or not cache or type(cache) ~= 'table' then
-    return nil
+    cache = {}
   end
   local count = cache[func_name]
   if count ~= nil then
     return tonumber(count)
   end
+
+  -- Not cached — trigger async fetch via find-function-dependents
+  -- Use a local guard to avoid duplicate fetches for the same function
+  if M._refcount_pending and M._refcount_pending[func_name] then
+    return nil
+  end
+  if not M._refcount_pending then
+    M._refcount_pending = {}
+  end
+  M._refcount_pending[func_name] = true
+
+  vim.schedule(function()
+    local tool_path = vim.fn['genero_tools#config#get']('genero_tools_path')
+    if not tool_path or tool_path == '' then
+      M._refcount_pending[func_name] = nil
+      return
+    end
+    local escaped = vim.fn['genero_tools#command#escape_arg'](func_name)
+    local cmd = tool_path .. ' find-function-dependents ' .. escaped
+    local output = vim.fn.system(cmd)
+    if vim.v.shell_error == 0 and output and output ~= '' then
+      local decode_ok, data = pcall(vim.fn.json_decode, output)
+      if decode_ok and type(data) == 'table' then
+        -- Write directly to the VimScript refcount cache
+        local rc = vim.g.genero_tools_refcount_cache or {}
+        rc[func_name] = #data
+        vim.g.genero_tools_refcount_cache = rc
+      end
+    end
+    M._refcount_pending[func_name] = nil
+  end)
+
   return nil
 end
 
