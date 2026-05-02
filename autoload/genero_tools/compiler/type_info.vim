@@ -196,7 +196,8 @@ function! s:lookup_variable(word, bufnr, line) abort
 endfunction
 
 " Resolve a record field access: given 'field_name' on a line like 'l_rec.field_name',
-" find the DEFINE for l_rec, check if it's a RECORD with fields, and return the field type
+" find the DEFINE for l_rec, check if it's a RECORD with fields or RECORD LIKE table.*,
+" and return the field type
 " Returns: {'type': 'STRING', 'record': 'l_rec'} or {}
 function! s:resolve_record_field(word, bufnr, line) abort
   let line_text = getline(a:line)
@@ -216,20 +217,33 @@ function! s:resolve_record_field(word, bufnr, line) abort
     return {}
   endif
 
-  " Check if it has parsed fields
+  " Case 1: Inline RECORD with parsed fields
   let fields = get(define_info, 'fields', [])
-  if empty(fields)
+  if !empty(fields)
+    for field in fields
+      if field.name ==? a:word
+        let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
+        return {'type': clean_type, 'record': record_var}
+      endif
+    endfor
     return {}
   endif
 
-  " Find the matching field
-  for field in fields
-    if field.name ==? a:word
-      " Strip any END RECORD that leaked into the type
-      let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
-      return {'type': clean_type, 'record': record_var}
+  " Case 2: RECORD LIKE table.* — resolve via schema lookup
+  let type_str = get(define_info, 'type', '')
+  if type_str =~? '\<RECORD\s\+LIKE\s\+'
+    let like_ref = substitute(type_str, '\c.*LIKE\s\+', '', '')
+    let like_ref = substitute(like_ref, '\s*$', '', '')
+    " like_ref is now 'table_name.*' — replace * with the field name
+    let table_name = substitute(like_ref, '\.\*\s*$', '', '')
+    if !empty(table_name)
+      let schema = s:resolve_like_cached(table_name . '.' . a:word)
+      if !empty(schema) && !has_key(schema, 'error')
+        let resolved_type = s:translate_type(get(schema, 'type', a:word))
+        return {'type': resolved_type, 'record': record_var}
+      endif
     endif
-  endfor
+  endif
 
   return {}
 endfunction
@@ -410,11 +424,11 @@ function! s:collect_define_statement(lines, start_idx) abort
 
     let upper_line = toupper(line)
 
-    " Track RECORD...END RECORD blocks
+    " Track inline RECORD...END RECORD blocks (not RECORD LIKE which is a schema ref)
     " Check END RECORD first to avoid double-counting (END RECORD contains RECORD)
     if upper_line =~# '^END\s\+RECORD'
       let in_record -= 1
-    elseif upper_line =~# '\<RECORD\>'
+    elseif upper_line =~# '\<RECORD\>' && upper_line !~# '\<RECORD\s\+LIKE\>'
       let in_record += 1
     endif
 
@@ -470,8 +484,9 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
 
   " Check if this DEFINE contains an inline RECORD block for our variable
   " Pattern: varname [DYNAMIC ARRAY OF] RECORD ... END RECORD
+  " Excludes RECORD LIKE (which is a schema reference, not inline fields)
   let record_pattern = '\c\<\(' . a:var_pattern . '\)\>\s\+\(DYNAMIC\s\+ARRAY\s\+OF\s\+\)\?\(ARRAY\s*\[[^\]]*\]\s\+OF\s\+\)\?\s*RECORD\>'
-  if text =~? record_pattern
+  if text =~? record_pattern && text !~? '\c\<RECORD\s\+LIKE\>'
     " Extract the variable name
     let var_name = matchstr(text, '\c\<\(' . a:var_pattern . '\)\>\ze\s\+\(DYNAMIC\|ARRAY\|RECORD\)')
     if empty(var_name)
