@@ -166,8 +166,15 @@ function! s:lookup_variable(word, bufnr, line) abort
   if !empty(record_field)
     call genero_tools#compiler#type_info#clear_extmarks()
     let display = record_field.type
-    " Safety: ensure type doesn't contain END RECORD or get truncated at commas in parens
+    " Safety: ensure type doesn't contain END RECORD
     let display = substitute(display, '\c\s*END\s\+RECORD.*$', '', '')
+
+    " If we have a resolved type (from LIKE reference), show both
+    let resolved = get(record_field, 'resolved_type', '')
+    if !empty(resolved)
+      let display .= ' → ' . resolved
+    endif
+
     if !empty(record_field.record)
       let display .= '  (' . record_field.record . '.' . a:word . ')'
     endif
@@ -199,8 +206,8 @@ endfunction
 
 " Resolve a record field access: given 'field_name' on a line like 'l_rec.field_name',
 " find the DEFINE for l_rec, check if it's a RECORD with fields or RECORD LIKE table.*,
-" and return the field type
-" Returns: {'type': 'STRING', 'record': 'l_rec'} or {}
+" and return the field type. For LIKE fields, also resolves the actual type.
+" Returns: {'type': 'STRING', 'record': 'l_rec', 'like_ref': '', 'resolved_type': ''} or {}
 function! s:resolve_record_field(word, bufnr, line) abort
   let line_text = getline(a:line)
 
@@ -225,6 +232,18 @@ function! s:resolve_record_field(word, bufnr, line) abort
     for field in fields
       if field.name ==? a:word
         let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
+
+        " If the field type is a LIKE reference, resolve it
+        if clean_type =~? '^LIKE\s\+'
+          let like_ref = substitute(clean_type, '\c^LIKE\s\+', '', '')
+          let like_ref = substitute(like_ref, '\s*$', '', '')
+          let schema = s:resolve_like_cached(like_ref)
+          if !empty(schema) && !has_key(schema, 'error')
+            let resolved = s:translate_type(get(schema, 'type', ''))
+            return {'type': clean_type, 'record': record_var, 'resolved_type': resolved}
+          endif
+        endif
+
         return {'type': clean_type, 'record': record_var}
       endif
     endfor
@@ -239,10 +258,11 @@ function! s:resolve_record_field(word, bufnr, line) abort
     " like_ref is now 'table_name.*' — replace * with the field name
     let table_name = substitute(like_ref, '\.\*\s*$', '', '')
     if !empty(table_name)
-      let schema = s:resolve_like_cached(table_name . '.' . a:word)
+      let full_ref = table_name . '.' . a:word
+      let schema = s:resolve_like_cached(full_ref)
       if !empty(schema) && !has_key(schema, 'error')
-        let resolved_type = s:translate_type(get(schema, 'type', a:word))
-        return {'type': resolved_type, 'record': record_var}
+        let resolved_type = s:translate_type(get(schema, 'type', ''))
+        return {'type': 'LIKE ' . full_ref, 'record': record_var, 'resolved_type': resolved_type}
       endif
     endif
   endif
