@@ -85,16 +85,24 @@ local function is_nonempty_list(data)
 end
 
 -- Get list-file-functions for a file path (handles path normalization)
+-- Tries normalized path first, then falls back to just the filename
 local function get_file_functions(file_path)
   local rel = vim_call("genero_tools#normalize_file_path", file_path)
-  if not rel or rel == "" then
-    return nil
+  if rel and rel ~= "" then
+    local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { rel })
+    if result and result.success == 1 and is_nonempty_list(result.data) then
+      return result.data
+    end
   end
-  local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { rel })
-  if not result or result.success ~= 1 or not is_nonempty_list(result.data) then
-    return nil
+
+  -- Fallback: try with just the filename (./filename.4gl)
+  local basename = "./" .. vim.fn.fnamemodify(file_path, ":t")
+  local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { basename })
+  if result and result.success == 1 and is_nonempty_list(result.data) then
+    return result.data
   end
-  return result.data
+
+  return nil
 end
 
 -- Detect module for a file (single-module only, returns nil for multi-module)
@@ -120,7 +128,7 @@ local function detect_module(file_path)
     return data
   elseif type(data) == "table" then
     -- Only accept single-module results
-    if data[1] and not data[2] then
+    if data[1] ~= nil and data[2] == nil then
       local item = data[1]
       if type(item) == "table" then
         return item.name or item.module or nil
@@ -144,19 +152,6 @@ function M.file_functions()
   end
 
   local file_path = vim.fn.expand("%:p")
-  local rel = vim_call("genero_tools#normalize_file_path", file_path)
-  vim.notify("DEBUG file_functions: file=" .. (file_path or "nil") .. " rel=" .. (rel or "nil"), vim.log.levels.INFO)
-
-  local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { rel })
-  if not result then
-    vim.notify("DEBUG: execute_shell returned nil", vim.log.levels.ERROR)
-    return
-  end
-  vim.notify("DEBUG: success=" .. tostring(result.success) .. " data_type=" .. type(result.data), vim.log.levels.INFO)
-  if type(result.data) == "table" then
-    vim.notify("DEBUG: data[1]=" .. tostring(result.data[1] ~= nil) .. " #=" .. vim.inspect(#result.data), vim.log.levels.INFO)
-  end
-
   local funcs = get_file_functions(file_path)
 
   if not funcs then
