@@ -180,10 +180,10 @@ function M.breadcrumb()
   local func_name = M._find_enclosing_function()
 
   local has_module = module_name and module_name ~= ''
-  local has_file = has_module and file ~= ''
+  local has_file = file ~= ''
   local has_func = func_name and func_name ~= ''
 
-  if not has_module and not has_func then
+  if not has_file then
     return ''
   end
 
@@ -197,32 +197,22 @@ function M.breadcrumb()
     end
     result = result .. '%#GeneroLualineModule# ' .. display_module .. ' '
 
-    if has_file then
-      -- Arrow: module bg → file bg
-      result = result .. '%#GeneroSepModuleFile#%*'
-    elseif has_func then
-      -- Arrow: module bg → function bg
-      result = result .. '%#GeneroSepModuleFunc#%*'
-    else
-      -- Arrow: module bg → statusline bg
-      result = result .. '%#GeneroSepModuleEnd#%*'
-    end
+    -- Arrow: module bg → file bg
+    result = result .. '%#GeneroSepModuleFile#%*'
   end
 
-  -- File (medium)
-  if has_file then
-    result = result .. '%#GeneroLualineFile# ' .. file .. ' '
+  -- File (medium) — always shown
+  result = result .. '%#GeneroLualineFile# ' .. file .. ' '
 
-    if has_func then
-      -- Arrow: file bg → function bg
-      result = result .. '%#GeneroSepFileFunc#%*'
-    else
-      -- Arrow: file bg → statusline bg
-      result = result .. '%#GeneroSepFileEnd#%*'
-    end
+  if has_func then
+    -- Arrow: file bg → function bg
+    result = result .. '%#GeneroSepFileFunc#%*'
+  else
+    -- Arrow: file bg → statusline bg
+    result = result .. '%#GeneroSepFileEnd#%*'
   end
 
-  -- Function (brightest)
+  -- Function (brightest) — only when cursor is inside a function
   if has_func then
     result = result .. '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' '
     -- Arrow: function bg → statusline bg
