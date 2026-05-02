@@ -215,11 +215,40 @@ function M.breadcrumb()
   -- Function (brightest) — only when cursor is inside a function
   if has_func then
     result = result .. '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' '
-    -- Arrow: function bg → statusline bg
-    result = result .. '%#GeneroSepFuncEnd#%*'
+
+    -- Reference count (dimmer than function name, appended after it)
+    local ref_count = M._get_refcount(func_name)
+    if ref_count then
+      result = result .. '%#GeneroSepFuncRef#%*'
+      local ref_text = ref_count == 1 and '1 ref' or ref_count .. ' refs'
+      result = result .. '%#GeneroLualineRefCount# ' .. ref_text .. ' '
+      result = result .. '%#GeneroSepRefEnd#%*'
+    else
+      -- Arrow: function bg → statusline bg
+      result = result .. '%#GeneroSepFuncEnd#%*'
+    end
   end
 
   return result
+end
+
+-- Get reference count for a function from the refcount cache
+-- Returns count (number) or nil if not cached yet
+function M._get_refcount(func_name)
+  if not func_name or func_name == '' then
+    return nil
+  end
+  local ok, cache = pcall(function()
+    return vim.g.genero_tools_refcount_cache
+  end)
+  if not ok or not cache or type(cache) ~= 'table' then
+    return nil
+  end
+  local count = cache[func_name]
+  if count ~= nil then
+    return tonumber(count)
+  end
+  return nil
 end
 
 -- Find the enclosing function name by scanning upward from cursor
@@ -407,6 +436,25 @@ function M.setup_highlights()
   -- Function → statusline end
   vim.api.nvim_set_hl(0, 'GeneroSepFuncEnd', {
     fg = '#0d3b66',  -- Function bg
+    bg = 'NONE',
+  })
+
+  -- Reference count highlight: subdued, less bright than function name
+  vim.api.nvim_set_hl(0, 'GeneroLualineRefCount', {
+    bg = '#1a2332',  -- Dark muted blue
+    fg = '#5b7a99',  -- Subdued blue-gray text
+    italic = true,
+  })
+
+  -- Function → RefCount
+  vim.api.nvim_set_hl(0, 'GeneroSepFuncRef', {
+    fg = '#0d3b66',  -- Function bg
+    bg = '#1a2332',  -- RefCount bg
+  })
+
+  -- RefCount → statusline end
+  vim.api.nvim_set_hl(0, 'GeneroSepRefEnd', {
+    fg = '#1a2332',  -- RefCount bg
     bg = 'NONE',
   })
 
