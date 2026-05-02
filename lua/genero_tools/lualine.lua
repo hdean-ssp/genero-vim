@@ -169,7 +169,8 @@ function M.function_name()
   return '%#GeneroLualineFunctionName# ' .. word .. ' %*'
 end
 
--- Breadcrumb: show module.m3 > file.4gl > ƒ function_name
+-- Breadcrumb: show module.m3  file.4gl  ƒ function_name
+-- Powerline arrows () create seamless transitions between sections
 -- Module and file always show when module is detected
 -- Function name only shows when cursor is inside a function
 -- Colors: dimmest (module) → medium (file) → brightest (function)
@@ -178,33 +179,57 @@ function M.breadcrumb()
   local file = vim.fn.expand('%:t')
   local func_name = M._find_enclosing_function()
 
-  local parts = {}
+  local has_module = module_name and module_name ~= ''
+  local has_file = has_module and file ~= ''
+  local has_func = func_name and func_name ~= ''
 
-  -- Module (dimmest) — always show if detected
-  if module_name and module_name ~= '' then
-    -- Append .m3 if not already present
+  if not has_module and not has_func then
+    return ''
+  end
+
+  local result = ''
+
+  -- Module (dimmest)
+  if has_module then
     local display_module = module_name
     if not display_module:match('%.m[34]$') then
       display_module = display_module .. '.m3'
     end
-    table.insert(parts, '%#GeneroLualineModule# ' .. display_module .. ' %*')
+    result = result .. '%#GeneroLualineModule# ' .. display_module .. ' '
+
+    if has_file then
+      -- Arrow: module bg → file bg
+      result = result .. '%#GeneroSepModuleFile#%*'
+    elseif has_func then
+      -- Arrow: module bg → function bg
+      result = result .. '%#GeneroSepModuleFunc#%*'
+    else
+      -- Arrow: module bg → statusline bg
+      result = result .. '%#GeneroSepModuleEnd#%*'
+    end
   end
 
-  -- File (medium) — show when module is known (otherwise lualine_b already shows it)
-  if module_name and module_name ~= '' and file ~= '' then
-    table.insert(parts, '%#GeneroLualineFile# ' .. file .. ' %*')
+  -- File (medium)
+  if has_file then
+    result = result .. '%#GeneroLualineFile# ' .. file .. ' '
+
+    if has_func then
+      -- Arrow: file bg → function bg
+      result = result .. '%#GeneroSepFileFunc#%*'
+    else
+      -- Arrow: file bg → statusline bg
+      result = result .. '%#GeneroSepFileEnd#%*'
+    end
   end
 
-  -- Function (brightest) — only when cursor is inside a function
-  if func_name and func_name ~= '' then
-    table.insert(parts, '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*')
+  -- Function (brightest)
+  if has_func then
+    result = result .. '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' '
+    -- Arrow: function bg → statusline bg
+    result = result .. '%#GeneroSepFuncEnd#%*'
   end
 
-  if #parts == 0 then
-    return ''
-  end
-
-  return table.concat(parts, ' > ')
+  return result
 end
 
 -- Find the enclosing function name by scanning upward from cursor
@@ -361,6 +386,38 @@ function M.setup_highlights()
     bg = '#1e1e2e',  -- Very dark
     fg = '#6b7280',  -- Dim gray text
     italic = true,
+  })
+
+  -- Powerline arrow separators (fg = prev bg, bg = next bg)
+  -- Module → File
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleFile', {
+    fg = '#1e1e2e',  -- Module bg
+    bg = '#1e293b',  -- File bg
+  })
+  -- Module → Function (when no file section)
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleFunc', {
+    fg = '#1e1e2e',  -- Module bg
+    bg = '#0d3b66',  -- Function bg
+  })
+  -- Module → statusline end
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleEnd', {
+    fg = '#1e1e2e',  -- Module bg
+    bg = 'NONE',
+  })
+  -- File → Function
+  vim.api.nvim_set_hl(0, 'GeneroSepFileFunc', {
+    fg = '#1e293b',  -- File bg
+    bg = '#0d3b66',  -- Function bg
+  })
+  -- File → statusline end
+  vim.api.nvim_set_hl(0, 'GeneroSepFileEnd', {
+    fg = '#1e293b',  -- File bg
+    bg = 'NONE',
+  })
+  -- Function → statusline end
+  vim.api.nvim_set_hl(0, 'GeneroSepFuncEnd', {
+    fg = '#0d3b66',  -- Function bg
+    bg = 'NONE',
   })
 
   -- SVN added highlight: green background
