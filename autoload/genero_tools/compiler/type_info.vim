@@ -19,6 +19,10 @@ let s:timer_id = -1
 let s:schema_float_win = -1
 let s:schema_float_buf = -1
 
+" Per-buffer DEFINE cache: avoids rescanning for the same variable
+" Key: bufnr, Value: {'tick': changedtick, 'defines': {var_name: define_info}}
+let s:define_cache = {}
+
 " Initialize the type info system
 function! genero_tools#compiler#type_info#init() abort
   if !has('nvim')
@@ -251,12 +255,41 @@ function! s:resolve_record_field(word, bufnr, line) abort
 endfunction
 
 " Search for a DEFINE statement for the given variable name
+" Uses per-buffer lazy cache: results are cached on first lookup and
+" invalidated when the buffer changes (changedtick)
 " Strategy:
 "   1. If cursor is on a FUNCTION definition line, search downward (params are defined below)
 "   2. Otherwise search upward from cursor line, stop at FUNCTION boundary
 "   3. Fall back to module-level defines at top of file
 " Returns: {'type': 'INTEGER', 'line': 42, 'scope': 'local'} or {}
 function! s:find_define(word, bufnr, cursor_line) abort
+  " Check per-buffer cache
+  let tick = getbufvar(a:bufnr, 'changedtick', 0)
+  let cache_key = a:bufnr
+
+  if has_key(s:define_cache, cache_key)
+    let buf_cache = s:define_cache[cache_key]
+    if buf_cache.tick == tick && has_key(buf_cache.defines, a:word)
+      return buf_cache.defines[a:word]
+    elseif buf_cache.tick != tick
+      " Buffer changed — clear this buffer's cache
+      let s:define_cache[cache_key] = {'tick': tick, 'defines': {}}
+    endif
+  else
+    let s:define_cache[cache_key] = {'tick': tick, 'defines': {}}
+  endif
+
+  " Do the actual scan
+  let result = s:find_define_scan(a:word, a:bufnr, a:cursor_line)
+
+  " Cache the result (even empty results, to avoid rescanning)
+  let s:define_cache[cache_key].defines[a:word] = result
+
+  return result
+endfunction
+
+" Actual DEFINE scanning logic (called by find_define on cache miss)
+function! s:find_define_scan(word, bufnr, cursor_line) abort
   let lines = getbufline(a:bufnr, 1, '$')
   if empty(lines)
     return {}
@@ -1424,7 +1457,7 @@ function! genero_tools#compiler#type_info#clear_extmarks() abort
   endtry
 endfunction
 
-" Full clear — extmarks, tracking, and pending timer
+" Full clear — extmarks, tracking, pending timer, and define cache
 function! genero_tools#compiler#type_info#clear() abort
   if s:timer_id != -1
     call timer_stop(s:timer_id)
@@ -1434,4 +1467,5 @@ function! genero_tools#compiler#type_info#clear() abort
   let s:last_word = ''
   let s:last_bufnr = -1
   let s:last_line = -1
+  let s:define_cache = {}
 endfunction
