@@ -19,10 +19,6 @@ let s:timer_id = -1
 let s:schema_float_win = -1
 let s:schema_float_buf = -1
 
-" Per-buffer DEFINE cache: avoids rescanning for the same variable
-" Key: bufnr, Value: {'tick': changedtick, 'defines': {var_name: define_info}}
-let s:define_cache = {}
-
 " Initialize the type info system
 function! genero_tools#compiler#type_info#init() abort
   if !has('nvim')
@@ -255,40 +251,36 @@ function! s:resolve_record_field(word, bufnr, line) abort
 endfunction
 
 " Search for a DEFINE statement for the given variable name
-" Uses per-buffer lazy cache: results are cached on first lookup and
-" invalidated when the buffer changes (changedtick)
-" Strategy:
-"   1. If cursor is on a FUNCTION definition line, search downward (params are defined below)
-"   2. Otherwise search upward from cursor line, stop at FUNCTION boundary
-"   3. Fall back to module-level defines at top of file
+" Uses the main genero_tools cache for consistency with function lookups.
+" Cache key: 'define:<bufnr>:<changedtick>:<word>'
+" Smart search direction based on variable prefix:
+"   m_  → module-level (search from top of file first)
+"   gl_ → global (search from top of file first)
+"   others → local first (search upward from cursor), then module-level
 " Returns: {'type': 'INTEGER', 'line': 42, 'scope': 'local'} or {}
 function! s:find_define(word, bufnr, cursor_line) abort
-  " Check per-buffer cache
+  " Check main cache
   let tick = getbufvar(a:bufnr, 'changedtick', 0)
-  let cache_key = a:bufnr
-
-  if has_key(s:define_cache, cache_key)
-    let buf_cache = s:define_cache[cache_key]
-    if buf_cache.tick == tick && has_key(buf_cache.defines, a:word)
-      return buf_cache.defines[a:word]
-    elseif buf_cache.tick != tick
-      " Buffer changed — clear this buffer's cache
-      let s:define_cache[cache_key] = {'tick': tick, 'defines': {}}
-    endif
-  else
-    let s:define_cache[cache_key] = {'tick': tick, 'defines': {}}
+  let cache_key = 'define:' . a:bufnr . ':' . tick . ':' . a:word
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached) && has_key(cached, 'data')
+    return cached.data
   endif
 
   " Do the actual scan
   let result = s:find_define_scan(a:word, a:bufnr, a:cursor_line)
 
-  " Cache the result (even empty results, to avoid rescanning)
-  let s:define_cache[cache_key].defines[a:word] = result
+  " Cache the result in the main cache (even empty results)
+  call genero_tools#cache#set(cache_key, {'success': 1, 'data': result, 'timestamp': localtime()})
 
   return result
 endfunction
 
 " Actual DEFINE scanning logic (called by find_define on cache miss)
+" Uses smart search direction based on variable naming convention:
+"   m_ prefix → module variable, search module-level defines first
+"   gl_ prefix → global variable, search module-level defines first
+"   others → search local scope first (upward from cursor)
 function! s:find_define_scan(word, bufnr, cursor_line) abort
   let lines = getbufline(a:bufnr, 1, '$')
   if empty(lines)
@@ -310,20 +302,39 @@ function! s:find_define_scan(word, bufnr, cursor_line) abort
     endif
   endif
 
-  " Phase 1: Search upward from cursor line for a local DEFINE
-  " Stop at the enclosing FUNCTION line (don't cross function boundaries)
-  let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
-  if !empty(found)
-    let found.scope = 'local'
-    return found
-  endif
+  " Smart search order based on variable naming convention
+  let is_module_var = a:word =~? '^m_'
+  let is_global_var = a:word =~? '^gl_'
 
-  " Phase 2: Search module-level defines at the top of the file
-  " These are DEFINE statements before the first FUNCTION keyword
-  let found = s:search_module_defines(lines, var_pattern)
-  if !empty(found)
-    let found.scope = 'module'
-    return found
+  if is_module_var || is_global_var
+    " Module/global variables: search module-level defines first (top of file)
+    " This is faster for large files since module defines are near the top
+    let found = s:search_module_defines(lines, var_pattern)
+    if !empty(found)
+      let found.scope = is_global_var ? 'global' : 'module'
+      return found
+    endif
+
+    " Fall back to local search in case naming convention wasn't followed
+    let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
+    if !empty(found)
+      let found.scope = 'local'
+      return found
+    endif
+  else
+    " Local variables: search upward from cursor first (closest scope)
+    let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
+    if !empty(found)
+      let found.scope = 'local'
+      return found
+    endif
+
+    " Fall back to module-level defines
+    let found = s:search_module_defines(lines, var_pattern)
+    if !empty(found)
+      let found.scope = 'module'
+      return found
+    endif
   endif
 
   return {}
@@ -1457,7 +1468,7 @@ function! genero_tools#compiler#type_info#clear_extmarks() abort
   endtry
 endfunction
 
-" Full clear — extmarks, tracking, pending timer, and define cache
+" Full clear — extmarks, tracking, and pending timer
 function! genero_tools#compiler#type_info#clear() abort
   if s:timer_id != -1
     call timer_stop(s:timer_id)
@@ -1467,5 +1478,4 @@ function! genero_tools#compiler#type_info#clear() abort
   let s:last_word = ''
   let s:last_bufnr = -1
   let s:last_line = -1
-  let s:define_cache = {}
 endfunction
