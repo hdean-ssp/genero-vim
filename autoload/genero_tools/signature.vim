@@ -343,7 +343,7 @@ function! genero_tools#signature#format_complete_info(func_obj) abort
   let name = get(a:func_obj, 'name', '?')
   let param_count = genero_tools#signature#param_count(a:func_obj)
   let return_count = genero_tools#signature#return_count(a:func_obj)
-  let file = get(a:func_obj, 'file', '?')
+  let file = get(a:func_obj, 'path', get(a:func_obj, 'file_path', get(a:func_obj, 'file', '?')))
   let line_start = get(a:func_obj, 'line_start', '?')
   let line_end = get(a:func_obj, 'line_end', '?')
   

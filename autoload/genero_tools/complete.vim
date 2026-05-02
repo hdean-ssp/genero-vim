@@ -326,70 +326,103 @@ function! s:detect_file_module(file_path) abort
 endfunction
 
 " Get project-wide completions (original behavior)
+" search-functions returns JSON array, not tab-separated text
 function! s:get_project_wide_completions(base, current_file) abort
   try
     let completions = []
     
-    " Search project-wide functions using query.sh with completion format
-    let format = genero_tools#format#get_completion_format()
-    let result = genero_tools#format#execute_with_format('search-functions', [a:base], format)
+    " Search project-wide functions using query.sh
+    let result = genero_tools#command#execute_shell('search-functions', [a:base])
     
     if !result.success
       return []
     endif
     
-    " Result data is now a formatted string with tab-separated values
-    let output = result.data
+    let data = result.data
     
-    if type(output) != type('')
-      return []
+    " Handle JSON array response
+    if type(data) == type([])
+      let matches = []
+      for func in data
+        if type(func) != type({}) || !has_key(func, 'name')
+          continue
+        endif
+        if func.name !~? '^' . a:base
+          continue
+        endif
+        call add(matches, func)
+      endfor
+      
+      " Limit to 20 results
+      let limited = matches[0:19]
+      
+      for func in limited
+        let sig = get(func, 'signature', '')
+        let file = get(func, 'path', get(func, 'file_path', ''))
+        let short_file = fnamemodify(file, ':t')
+        let menu = short_file
+        let info = sig
+        
+        call add(completions, {
+          \ 'word': func.name,
+          \ 'abbr': func.name,
+          \ 'menu': menu,
+          \ 'info': info,
+          \ 'kind': 'f',
+          \ 'icase': 1,
+          \ 'dup': 1
+          \ })
+      endfor
+      
+      return completions
     endif
     
-    " Parse tab-separated completion format
-    let matches = []
-    for line in split(output, "\n")
-      if empty(line)
-        continue
-      endif
-      
-      let parts = split(line, "\t")
-      if len(parts) < 3
-        continue
-      endif
-      
-      let word = parts[0]
-      let menu = parts[1]
-      let info = parts[2]
-      
-      " Only include functions matching the base
-      if word !~? '^' . a:base
-        continue
-      endif
-      
-      call add(matches, {
-        \ 'word': word,
-        \ 'menu': menu,
-        \ 'info': info
-      \ })
-    endfor
-    
-    " Limit to 20 results
-    let limited_matches = matches[0:19]
-    
-    " Format completions for Vim
-    for item in limited_matches
-      call add(completions, {
-        \ 'word': item.word,
-        \ 'abbr': item.word,
-        \ 'menu': item.menu,
-        \ 'info': item.info,
-        \ 'kind': 'f',
-        \ 'icase': 1,
-        \ 'dup': 1
+    " Fallback: handle as tab-separated string (legacy format support)
+    if type(data) == type('')
+      let matches = []
+      for line in split(data, "\n")
+        if empty(line)
+          continue
+        endif
+        
+        let parts = split(line, "\t")
+        if len(parts) < 3
+          continue
+        endif
+        
+        let word = parts[0]
+        let menu = parts[1]
+        let info = parts[2]
+        
+        if word !~? '^' . a:base
+          continue
+        endif
+        
+        call add(matches, {
+          \ 'word': word,
+          \ 'menu': menu,
+          \ 'info': info
         \ })
-    endfor
+      endfor
+      
+      let limited_matches = matches[0:19]
+      
+      for item in limited_matches
+        call add(completions, {
+          \ 'word': item.word,
+          \ 'abbr': item.word,
+          \ 'menu': item.menu,
+          \ 'info': item.info,
+          \ 'kind': 'f',
+          \ 'icase': 1,
+          \ 'dup': 1
+          \ })
+      endfor
+      
+      return completions
+    endif
     
-    return completions
+    return []
   catch
     return []
   endtry

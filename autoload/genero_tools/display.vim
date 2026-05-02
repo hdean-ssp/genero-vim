@@ -56,12 +56,16 @@ function! genero_tools#display#quickfix(formatted, result) abort
   
   if a:result.success && type(a:result.data) == type([])
     for item in a:result.data
-      if type(item) == type({}) && has_key(item, 'file') && has_key(item, 'line')
-        call add(qf_list, {
-          \ 'filename': item.file,
-          \ 'lnum': item.line,
-          \ 'text': get(item, 'name', '') . ' - ' . get(item, 'signature', '')
-          \ })
+      if type(item) == type({})
+        let l:file = get(item, 'path', get(item, 'file_path', get(item, 'file', '')))
+        let l:line = get(item, 'line_start', get(item, 'line_number', get(item, 'line', 0)))
+        if !empty(l:file) && l:line > 0
+          call add(qf_list, {
+            \ 'filename': l:file,
+            \ 'lnum': l:line,
+            \ 'text': get(item, 'name', '') . ' - ' . get(item, 'signature', '')
+            \ })
+        endif
       endif
     endfor
   endif
@@ -218,12 +222,18 @@ function! genero_tools#display#format_item(item) abort
       call add(parts, a:item.name)
     endif
     
-    if has_key(a:item, 'file')
+    if has_key(a:item, 'path')
+      call add(parts, 'File: ' . a:item.path)
+    elseif has_key(a:item, 'file_path')
+      call add(parts, 'File: ' . a:item.file_path)
+    elseif has_key(a:item, 'file')
       call add(parts, 'File: ' . a:item.file)
     endif
     
     if has_key(a:item, 'line_start')
       call add(parts, 'Line: ' . a:item.line_start)
+    elseif has_key(a:item, 'line_number')
+      call add(parts, 'Line: ' . a:item.line_number)
     elseif has_key(a:item, 'line')
       call add(parts, 'Line: ' . a:item.line)
     endif
