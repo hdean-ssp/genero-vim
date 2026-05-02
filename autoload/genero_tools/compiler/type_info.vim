@@ -225,7 +225,9 @@ function! s:resolve_record_field(word, bufnr, line) abort
   " Find the matching field
   for field in fields
     if field.name ==? a:word
-      return {'type': field.type, 'record': record_var}
+      " Strip any END RECORD that leaked into the type
+      let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
+      return {'type': clean_type, 'record': record_var}
     endif
   endfor
 
@@ -558,6 +560,8 @@ function! s:parse_record_fields(fields_text) abort
     let field_type = matchstr(chunk, '^\s*\w\+\s\+\zs.*')
     let field_type = substitute(field_type, '^\s*\|\s*$', '', 'g')
     let field_type = substitute(field_type, '\s\+', ' ', 'g')
+    " Strip any END RECORD that leaked into the type
+    let field_type = substitute(field_type, '\c\s*END\s\+RECORD.*$', '', '')
 
     " Skip if field_name looks like a keyword (safety check)
     if field_name =~? '^\(END\|RECORD\|DEFINE\|FUNCTION\|LET\|CALL\|IF\|FOR\|WHILE\|RETURN\)$'
@@ -787,7 +791,8 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
     " Show fields in floating window (same format as schema columns)
     let float_columns = []
     for field in fields
-      call add(float_columns, {'name': field.name, 'type': field.type})
+      let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
+      call add(float_columns, {'name': field.name, 'type': clean_type})
     endfor
     call s:show_schema_float(float_columns, a:word . '  (' . col_count . ' fields)')
     return
