@@ -971,6 +971,31 @@ map("n", "<leader>tf", "<cmd>ToggleTerm direction=float<CR>", { noremap = true, 
 map("n", "<leader>th", "<cmd>ToggleTerm direction=horizontal<CR>", { noremap = true, silent = true, desc = "Horizontal terminal" })
 map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { noremap = true, silent = true, desc = "Vertical terminal" })
 
+-- Kiro AI assistant terminal (dedicated vertical split)
+-- Uses ToggleTerm instance #9 so it doesn't conflict with regular terminals
+local kiro_term = nil
+local function toggle_kiro()
+  if not kiro_term then
+    local Terminal = require("toggleterm.terminal").Terminal
+    kiro_term = Terminal:new({
+      cmd = "kiro-cli",
+      direction = "vertical",
+      count = 9,
+      close_on_exit = false,
+      on_open = function(term)
+        -- Send the current file as context on first open
+        local file = vim.fn.expand("%:t")
+        if file ~= "" then
+          term:send("I'm working on " .. file)
+        end
+      end,
+    })
+  end
+  kiro_term:toggle()
+end
+
+map("n", "<leader>tk", toggle_kiro, { noremap = true, silent = true, desc = "Kiro AI terminal" })
+
 -- Clear search highlight
 map("n", "<Esc>", ":nohlsearch<CR>", opts)
 
@@ -1034,6 +1059,7 @@ if is_nvim_010_plus then
     { "<leader>tf", desc = "Float terminal" },
     { "<leader>th", desc = "Horizontal terminal" },
     { "<leader>tv", desc = "Vertical terminal" },
+    { "<leader>tk", desc = "Kiro AI terminal" },
 
     { "<leader>b", group = "Buffers" },
     { "<leader>bd", ":bdelete<CR>", desc = "Delete buffer" },
@@ -1092,6 +1118,7 @@ else
       f = { "Float terminal" },
       h = { "Horizontal terminal" },
       v = { "Vertical terminal" },
+      k = { "Kiro AI terminal" },
     },
     b = {
       name = "+Buffers",
@@ -1187,6 +1214,7 @@ TERMINAL:
   Space+tf        - Open floating terminal
   Space+th        - Open horizontal terminal
   Space+tv        - Open vertical terminal
+  Space+tk        - Open Kiro AI terminal (vertical split)
   Esc             - Exit terminal mode (inside terminal)
   Ctrl+h/j/k/l   - Navigate away from terminal
 

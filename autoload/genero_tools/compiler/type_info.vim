@@ -527,7 +527,7 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
 endfunction
 
 " Parse RECORD field definitions from the text between RECORD and END RECORD
-" Fields are separated by commas or newlines: field1 TYPE, field2 TYPE
+" Fields are separated by commas: field1 TYPE, field2 TYPE (last field has no comma)
 " Returns: [{'name': 'field1', 'type': 'STRING'}, ...]
 function! s:parse_record_fields(fields_text) abort
   let fields = []
@@ -535,8 +535,7 @@ function! s:parse_record_fields(fields_text) abort
     return fields
   endif
 
-  " Split by comma (fields may be comma-separated or one per line)
-  " The collected text has newlines replaced with spaces, so commas are the delimiter
+  " Split by comma
   let chunks = split(a:fields_text, ',')
 
   for chunk in chunks
@@ -544,6 +543,9 @@ function! s:parse_record_fields(fields_text) abort
     " Strip comments
     let chunk = substitute(chunk, '\s*[#].*$', '', '')
     let chunk = substitute(chunk, '\s*--.*$', '', '')
+
+    " Strip any trailing END RECORD that leaked in
+    let chunk = substitute(chunk, '\c\s*END\s\+RECORD.*$', '', '')
 
     if empty(chunk)
       continue
@@ -554,6 +556,11 @@ function! s:parse_record_fields(fields_text) abort
     let field_type = matchstr(chunk, '^\s*\w\+\s\+\zs.*')
     let field_type = substitute(field_type, '^\s*\|\s*$', '', 'g')
     let field_type = substitute(field_type, '\s\+', ' ', 'g')
+
+    " Skip if field_name looks like a keyword (safety check)
+    if field_name =~? '^\(END\|RECORD\|DEFINE\|FUNCTION\|LET\|CALL\|IF\|FOR\|WHILE\|RETURN\)$'
+      continue
+    endif
 
     if !empty(field_name) && !empty(field_type)
       call add(fields, {'name': field_name, 'type': field_type})
