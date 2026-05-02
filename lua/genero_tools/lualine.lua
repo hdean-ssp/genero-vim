@@ -233,48 +233,65 @@ function M._get_cached_module()
     return cached.value
   end
 
-  -- Try to detect module (uses query.sh, but result is cached for 5 min)
-  local ok, telescope = pcall(require, 'genero_tools.telescope')
-  if not ok then
-    module_cache[file_path] = { value = '', time = os.time() }
-    return ''
-  end
-
-  -- Schedule the detection so it doesn't block statusline rendering
-  -- For now, return empty and populate async on next call
+  -- Schedule detection so it doesn't block statusline rendering
+  -- First call returns empty, result populates on next lualine refresh (~1s)
   if not cached then
     module_cache[file_path] = { value = '', time = os.time() - module_cache_ttl + 5 }
-    -- Trigger detection in background (will be available on next statusline refresh)
     vim.schedule(function()
-      local funcs_ok, funcs_result = pcall(vim.fn['genero_tools#command#execute_shell'],
-        'list-file-functions', { vim.fn['genero_tools#normalize_file_path'](file_path) })
-      if not funcs_ok or not funcs_result or funcs_result.success ~= 1 then
+      -- Reuse telescope's detect_module which has the basename fallback
+      local ok, telescope = pcall(require, 'genero_tools.telescope')
+      if not ok then
         module_cache[file_path] = { value = '', time = os.time() }
         return
       end
-      local data = funcs_result.data
-      if type(data) ~= 'table' or not data[1] then
+      -- telescope.detect_module is local, so call module_functions' logic inline
+      -- Step 1: get a function name from this file
+      local basename = './' .. vim.fn.fnamemodify(file_path, ':t')
+      local rel = vim.fn['genero_tools#normalize_file_path'](file_path)
+
+      local funcs_result = nil
+      -- Try normalized path first
+      local ok1, r1 = pcall(vim.fn['genero_tools#command#execute_shell'], 'list-file-functions', { rel })
+      if ok1 and r1 and r1.success == 1 and type(r1.data) == 'table' and r1.data[1] then
+        funcs_result = r1
+      else
+        -- Fallback: basename only
+        local ok2, r2 = pcall(vim.fn['genero_tools#command#execute_shell'], 'list-file-functions', { basename })
+        if ok2 and r2 and r2.success == 1 and type(r2.data) == 'table' and r2.data[1] then
+          funcs_result = r2
+        end
+      end
+
+      if not funcs_result then
         module_cache[file_path] = { value = '', time = os.time() }
         return
       end
-      local func_name = type(data[1]) == 'table' and data[1].name or ''
+
+      local func_name = type(funcs_result.data[1]) == 'table' and funcs_result.data[1].name or ''
       if func_name == '' then
         module_cache[file_path] = { value = '', time = os.time() }
         return
       end
+
+      -- Step 2: find module for this function
       local mod_ok, mod_result = pcall(vim.fn['genero_tools#command#execute_shell'],
         'find-module-for-function', { func_name })
       if not mod_ok or not mod_result or mod_result.success ~= 1 or not mod_result.data then
         module_cache[file_path] = { value = '', time = os.time() }
         return
       end
+
       local mod_data = mod_result.data
       local module_name = ''
-      if type(mod_data) == 'string' then
+      if type(mod_data) == 'string' and mod_data ~= '' then
         module_name = mod_data
-      elseif type(mod_data) == 'table' and mod_data[1] and not mod_data[2] then
-        local item = mod_data[1]
-        module_name = type(item) == 'table' and (item.name or item.module or '') or tostring(item)
+      elseif type(mod_data) == 'table' then
+        local count = 0
+        for _ in pairs(mod_data) do count = count + 1 end
+        if count == 1 and mod_data[1] then
+          local item = mod_data[1]
+          module_name = type(item) == 'table' and (item.name or item.module or '') or tostring(item)
+        end
       end
       module_cache[file_path] = { value = module_name, time = os.time() }
     end)
