@@ -144,6 +144,19 @@ function M.file_functions()
   end
 
   local file_path = vim.fn.expand("%:p")
+  local rel = vim_call("genero_tools#normalize_file_path", file_path)
+  vim.notify("DEBUG file_functions: file=" .. (file_path or "nil") .. " rel=" .. (rel or "nil"), vim.log.levels.INFO)
+
+  local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { rel })
+  if not result then
+    vim.notify("DEBUG: execute_shell returned nil", vim.log.levels.ERROR)
+    return
+  end
+  vim.notify("DEBUG: success=" .. tostring(result.success) .. " data_type=" .. type(result.data), vim.log.levels.INFO)
+  if type(result.data) == "table" then
+    vim.notify("DEBUG: data[1]=" .. tostring(result.data[1] ~= nil) .. " #=" .. vim.inspect(#result.data), vim.log.levels.INFO)
+  end
+
   local funcs = get_file_functions(file_path)
 
   if not funcs then
