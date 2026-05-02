@@ -92,12 +92,30 @@ local function is_nonempty_list(data)
   return false
 end
 
+-- Cache for query results (avoids repeated shell calls and progress message interference)
+local query_cache = {}
+local query_cache_ttl = 3600  -- 1 hour
+
+local function cached_execute(command, args)
+  local cache_key = command .. ":" .. table.concat(args, ",")
+  local cached = query_cache[cache_key]
+  if cached and os.time() - cached.time < query_cache_ttl then
+    return cached.result
+  end
+
+  local result = vim_call("genero_tools#command#execute_shell", command, args)
+  if result and result.success == 1 then
+    query_cache[cache_key] = { result = result, time = os.time() }
+  end
+  return result
+end
+
 -- Get list-file-functions for a file path (handles path normalization)
 -- Tries normalized path first, then falls back to just the filename
 local function get_file_functions(file_path)
   local rel = vim_call("genero_tools#normalize_file_path", file_path)
   if rel and rel ~= "" then
-    local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { rel })
+    local result = cached_execute("list-file-functions", { rel })
     if result and result.success == 1 and is_nonempty_list(result.data) then
       return result.data
     end
@@ -105,7 +123,7 @@ local function get_file_functions(file_path)
 
   -- Fallback: try with just the filename (./filename.4gl)
   local basename = "./" .. vim.fn.fnamemodify(file_path, ":t")
-  local result = vim_call("genero_tools#command#execute_shell", "list-file-functions", { basename })
+  local result = cached_execute("list-file-functions", { basename })
   if result and result.success == 1 and is_nonempty_list(result.data) then
     return result.data
   end
@@ -126,7 +144,7 @@ local function detect_module(file_path)
     return nil
   end
 
-  local result = vim_call("genero_tools#command#execute_shell", "find-module-for-function", { func_name })
+  local result = cached_execute("find-module-for-function", { func_name })
   if not result or result.success ~= 1 or not result.data then
     return nil
   end
@@ -212,7 +230,7 @@ function M.module_functions()
     return
   end
 
-  local result = vim_call("genero_tools#command#execute_shell", "find-functions-in-module", { module_name })
+  local result = cached_execute("find-functions-in-module", { module_name })
   if not result or result.success ~= 1 or not is_nonempty_list(result.data) then
     vim.notify("No functions found in module: " .. module_name, vim.log.levels.WARN)
     return
@@ -339,7 +357,7 @@ function M.module_files()
     return
   end
 
-  local result = vim_call("genero_tools#command#execute_shell", "find-functions-in-module", { module_name })
+  local result = cached_execute("find-functions-in-module", { module_name })
   if not result or result.success ~= 1 or not is_nonempty_list(result.data) then
     vim.notify("No files found in module: " .. module_name, vim.log.levels.WARN)
     return
