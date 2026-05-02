@@ -547,6 +547,7 @@ endfunction
 
 " Parse RECORD field definitions from the text between RECORD and END RECORD
 " Fields are separated by commas: field1 TYPE, field2 TYPE (last field has no comma)
+" Handles types with commas inside parentheses: DECIMAL(10,3), VARCHAR(50,2)
 " Returns: [{'name': 'field1', 'type': 'STRING'}, ...]
 function! s:parse_record_fields(fields_text) abort
   let fields = []
@@ -557,8 +558,8 @@ function! s:parse_record_fields(fields_text) abort
   " Strip END RECORD and anything after it before splitting
   let clean = substitute(a:fields_text, '\c\s*END\s\+RECORD.*$', '', '')
 
-  " Split by comma
-  let chunks = split(clean, ',')
+  " Split by commas that are NOT inside parentheses
+  let chunks = s:split_ignoring_parens(clean)
 
   for chunk in chunks
     let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
@@ -589,6 +590,36 @@ function! s:parse_record_fields(fields_text) abort
   endfor
 
   return fields
+endfunction
+
+" Split a string by commas, but ignore commas inside parentheses
+" e.g. 'a INTEGER, b DECIMAL(10,3), c STRING' → ['a INTEGER', 'b DECIMAL(10,3)', 'c STRING']
+function! s:split_ignoring_parens(text) abort
+  let chunks = []
+  let current = ''
+  let depth = 0
+
+  for i in range(len(a:text))
+    let ch = a:text[i]
+    if ch ==# '('
+      let depth += 1
+      let current .= ch
+    elseif ch ==# ')'
+      let depth -= 1
+      let current .= ch
+    elseif ch ==# ',' && depth == 0
+      call add(chunks, current)
+      let current = ''
+    else
+      let current .= ch
+    endif
+  endfor
+
+  if !empty(current)
+    call add(chunks, current)
+  endif
+
+  return chunks
 endfunction
 
 " ============================================================================
