@@ -111,6 +111,56 @@ function M.show_telescope(func_name, data)
     and "1 reference to " .. func_name
     or count .. " references to " .. func_name
 
+  -- Custom previewer that positions the view at the function definition line
+  -- Shows ~10 lines of context above the FUNCTION line (often comments/docs)
+  local ref_previewer = previewers.new_buffer_previewer({
+    title = "Reference",
+    define_preview = function(self, entry, status)
+      local filepath = entry.filename
+      if not filepath or vim.fn.filereadable(filepath) ~= 1 then
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { "  File not found: " .. (filepath or "?") })
+        return
+      end
+
+      -- Read file content
+      local lines = vim.fn.readfile(filepath)
+      if not lines or #lines == 0 then
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { "  Empty file" })
+        return
+      end
+
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+
+      -- Set filetype for syntax highlighting
+      local ext = vim.fn.fnamemodify(filepath, ":e")
+      local ft_map = { ["4gl"] = "fgl", per = "fgl", m3 = "make", m4 = "make" }
+      local ft = ft_map[ext] or ext
+      pcall(vim.api.nvim_buf_set_option, self.state.bufnr, "filetype", ft)
+
+      -- Position view: show 10 lines before the function line for context
+      local target_line = entry.lnum or 1
+      local context_above = 10
+      local scroll_to = math.max(1, target_line - context_above)
+
+      -- Schedule the scroll so the preview window is ready
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(self.state.bufnr) and self.state.winid and vim.api.nvim_win_is_valid(self.state.winid) then
+          -- Set cursor to the function line
+          local line_count = vim.api.nvim_buf_line_count(self.state.bufnr)
+          local cursor_line = math.min(target_line, line_count)
+          pcall(vim.api.nvim_win_set_cursor, self.state.winid, { cursor_line, 0 })
+          -- Scroll so context_above lines are visible above
+          vim.api.nvim_win_call(self.state.winid, function()
+            vim.cmd("normal! zt")
+            if scroll_to < target_line then
+              vim.cmd("normal! " .. context_above .. "k" .. context_above .. "j")
+            end
+          end)
+        end
+      end)
+    end,
+  })
+
   pickers.new({}, {
     prompt_title = title,
     finder = finders.new_table({
@@ -127,7 +177,7 @@ function M.show_telescope(func_name, data)
       end,
     }),
     sorter = conf.values.generic_sorter({}),
-    previewer = previewers.vim_buffer_cat.new({}),
+    previewer = ref_previewer,
     attach_mappings = function(prompt_bufnr, map)
       actions.select_default:replace(function()
         actions.close(prompt_bufnr)
