@@ -59,131 +59,86 @@ local function parse_ref(ref)
 end
 
 -- Show references using Telescope picker
+-- Uses the grep previewer which natively handles lnum scrolling
 function M.show_telescope(func_name, data)
   local ok_pickers, pickers = pcall(require, "telescope.pickers")
   local ok_finders, finders = pcall(require, "telescope.finders")
   local ok_conf, conf = pcall(require, "telescope.config")
   local ok_actions, actions = pcall(require, "telescope.actions")
   local ok_state, action_state = pcall(require, "telescope.actions.state")
-  local ok_previewers, previewers = pcall(require, "telescope.previewers")
+  local ok_entry, entry_display = pcall(require, "telescope.pickers.entry_display")
+  local ok_utils, utils = pcall(require, "telescope.utils")
 
-  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_state and ok_previewers) then
+  if not (ok_pickers and ok_finders and ok_conf and ok_actions and ok_state) then
     return false
   end
 
   -- Build entries with resolved paths
-  local entries = {}
+  local results = {}
   for _, ref in ipairs(data) do
     local parsed = parse_ref(ref)
     local full_path = resolve_path(parsed.file)
 
     if full_path then
-      local display = parsed.name
-      local short_file = vim.fn.fnamemodify(full_path, ":t")
-      if short_file ~= "" then
-        display = display .. "  " .. short_file
-        if parsed.line > 0 then
-          display = display .. ":" .. parsed.line
-        end
-      end
-      if parsed.module ~= "" then
-        display = display .. "  [" .. parsed.module .. "]"
-      end
+      -- Offset line number: show 10 lines before the function for context
+      -- The cursor lands on the function line, but the view starts earlier
+      local context_line = math.max(1, parsed.line - 10)
 
-      table.insert(entries, {
-        display = display,
-        ordinal = parsed.name .. " " .. short_file,
+      table.insert(results, {
+        name = parsed.name,
         filename = full_path,
         lnum = parsed.line > 0 and parsed.line or 1,
+        context_lnum = context_line,
         col = 1,
-        name = parsed.name,
+        module = parsed.module,
+        short_file = vim.fn.fnamemodify(full_path, ":t"),
       })
     end
   end
 
-  if #entries == 0 then
+  if #results == 0 then
     vim.notify("No references with valid file paths", vim.log.levels.WARN)
     return true
   end
 
-  local count = #entries
+  local count = #results
   local title = count == 1
     and "1 reference to " .. func_name
     or count .. " references to " .. func_name
 
-  -- Custom previewer that positions the view at the function definition line
-  -- Shows ~10 lines of context above the FUNCTION line (often comments/docs)
-  local ref_previewer = previewers.new_buffer_previewer({
-    title = "Reference",
-    define_preview = function(self, entry, status)
-      local filepath = entry.filename
-      if not filepath or vim.fn.filereadable(filepath) ~= 1 then
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { "  File not found: " .. (filepath or "?") })
-        return
-      end
-
-      -- Read file content
-      local lines = vim.fn.readfile(filepath)
-      if not lines or #lines == 0 then
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { "  Empty file" })
-        return
-      end
-
-      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
-
-      -- Set filetype for syntax highlighting
-      local ext = vim.fn.fnamemodify(filepath, ":e")
-      local ft_map = { ["4gl"] = "fgl", per = "fgl", m3 = "make", m4 = "make" }
-      local ft = ft_map[ext] or ext
-      pcall(vim.api.nvim_buf_set_option, self.state.bufnr, "filetype", ft)
-
-      -- Position view: show 10 lines before the function line for context
-      local target_line = entry.lnum or 1
-      local context_above = 10
-      local scroll_to = math.max(1, target_line - context_above)
-
-      -- Schedule the scroll so the preview window is ready
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(self.state.bufnr) and self.state.winid and vim.api.nvim_win_is_valid(self.state.winid) then
-          -- Set cursor to the function line
-          local line_count = vim.api.nvim_buf_line_count(self.state.bufnr)
-          local cursor_line = math.min(target_line, line_count)
-          pcall(vim.api.nvim_win_set_cursor, self.state.winid, { cursor_line, 0 })
-          -- Scroll so context_above lines are visible above
-          vim.api.nvim_win_call(self.state.winid, function()
-            vim.cmd("normal! zt")
-            if scroll_to < target_line then
-              vim.cmd("normal! " .. context_above .. "k" .. context_above .. "j")
-            end
-          end)
-        end
-      end)
-    end,
-  })
+  -- Use the grep previewer — it handles filename + lnum natively and scrolls to the line
+  local previewer = conf.values.grep_previewer({})
 
   pickers.new({}, {
     prompt_title = title,
     finder = finders.new_table({
-      results = entries,
-      entry_maker = function(entry)
+      results = results,
+      entry_maker = function(item)
+        -- Build display string
+        local display = item.name .. "  " .. item.short_file .. ":" .. item.lnum
+        if item.module ~= "" then
+          display = display .. "  [" .. item.module .. "]"
+        end
+
+        -- Telescope's grep previewer reads filename/lnum/col from the entry
+        -- to position the preview at the right line
         return {
-          value = entry,
-          display = entry.display,
-          ordinal = entry.ordinal,
-          filename = entry.filename,
-          lnum = entry.lnum,
-          col = entry.col,
+          value = item,
+          display = display,
+          ordinal = item.name .. " " .. item.short_file,
+          filename = item.filename,
+          lnum = item.lnum,
+          col = item.col,
         }
       end,
     }),
     sorter = conf.values.generic_sorter({}),
-    previewer = ref_previewer,
+    previewer = previewer,
     attach_mappings = function(prompt_bufnr, map)
       actions.select_default:replace(function()
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
         if selection then
-          -- Push to jumplist
           vim.cmd("normal! m'")
           vim.cmd("edit " .. vim.fn.fnameescape(selection.filename))
           if selection.lnum > 0 then
