@@ -161,6 +161,28 @@ function! s:lookup_variable(word, bufnr, line) abort
     return
   endif
 
+  " Check if word is a record field access (e.g., l_rec.field_name — cursor on field_name)
+  let record_field = s:resolve_record_field(a:word, a:bufnr, a:line)
+  if !empty(record_field)
+    call genero_tools#compiler#type_info#clear_extmarks()
+    let display = s:translate_type(record_field.type)
+    if !empty(record_field.record)
+      let display .= '  (' . record_field.record . '.' . a:word . ')'
+    endif
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ◇ ' . display . ' ', 'GeneroTypeInfoVar']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+    let s:last_word = a:word
+    let s:last_bufnr = a:bufnr
+    let s:last_line = a:line
+    return
+  endif
+
   " No DEFINE found — try schema lookup (table.column or table name)
   " This also handles hovering on table/column names inside DEFINE type references
   let schema_info = s:lookup_schema(a:word, a:line)
@@ -171,6 +193,43 @@ function! s:lookup_variable(word, bufnr, line) abort
   let s:last_word = a:word
   let s:last_bufnr = a:bufnr
   let s:last_line = a:line
+endfunction
+
+" Resolve a record field access: given 'field_name' on a line like 'l_rec.field_name',
+" find the DEFINE for l_rec, check if it's a RECORD with fields, and return the field type
+" Returns: {'type': 'STRING', 'record': 'l_rec'} or {}
+function! s:resolve_record_field(word, bufnr, line) abort
+  let line_text = getline(a:line)
+
+  " Look for pattern: something.word (word is the field name)
+  let pattern = '\c\(\w\+\)\.' . escape(a:word, '\') . '\>'
+  let match = matchlist(line_text, pattern)
+  if empty(match)
+    return {}
+  endif
+
+  let record_var = match[1]
+
+  " Look up the record variable's DEFINE
+  let define_info = s:find_define(record_var, a:bufnr, a:line)
+  if empty(define_info)
+    return {}
+  endif
+
+  " Check if it has parsed fields
+  let fields = get(define_info, 'fields', [])
+  if empty(fields)
+    return {}
+  endif
+
+  " Find the matching field
+  for field in fields
+    if field.name ==? a:word
+      return {'type': field.type, 'record': record_var}
+    endif
+  endfor
+
+  return {}
 endfunction
 
 " Search for a DEFINE statement for the given variable name
@@ -330,10 +389,12 @@ endfunction
 
 " Collect a full DEFINE statement that may span multiple lines
 " Lines ending with comma indicate continuation
+" Also handles RECORD...END RECORD blocks
 function! s:collect_define_statement(lines, start_idx) abort
   let total = len(a:lines)
   let result = ''
   let i = a:start_idx
+  let in_record = 0
 
   while i < total
     let line = substitute(a:lines[i], '^\s*', '', '')
@@ -345,7 +406,28 @@ function! s:collect_define_statement(lines, start_idx) abort
       continue
     endif
 
+    let upper_line = toupper(line)
+
+    " Track RECORD...END RECORD blocks
+    if upper_line =~# '\<RECORD\>'
+      let in_record += 1
+    endif
+    if upper_line =~# '^END\s\+RECORD'
+      let in_record -= 1
+    endif
+
     let result .= ' ' . line
+
+    " If we just closed the last RECORD block, we're done
+    if upper_line =~# '^END\s\+RECORD' && in_record <= 0
+      break
+    endif
+
+    " If inside a RECORD block, keep collecting
+    if in_record > 0
+      let i += 1
+      continue
+    endif
 
     " If line ends with comma, the DEFINE continues
     if line =~# ',\s*$'
@@ -372,45 +454,67 @@ function! s:collect_define_statement(lines, start_idx) abort
 endfunction
 
 " Parse a DEFINE statement text to find a specific variable and its type
-" Parse a DEFINE statement text to find a specific variable and its type
 " Handles: DEFINE var1 TYPE, var2 TYPE, var3 LIKE table.column
+" Handles: DEFINE var RECORD ... END RECORD (inline records)
+" Handles: DEFINE var DYNAMIC ARRAY OF RECORD ... END RECORD
 " Strips inline comments (#SR-1234, -- comment, etc.)
 " Returns: {'type': 'INTEGER', 'line': N} or {}
+" For RECORD types, also returns 'fields': [{'name': 'f1', 'type': 'STRING'}, ...]
 function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
   let text = a:define_text
 
   " Remove the DEFINE keyword
   let text = substitute(text, '\c^\s*DEFINE\s\+', '', '')
 
-  " Split by comma to get individual variable declarations
+  " Check if this DEFINE contains an inline RECORD block for our variable
+  " Pattern: varname [DYNAMIC ARRAY OF] RECORD ... END RECORD
+  let record_pattern = '\c\<\(' . a:var_pattern . '\)\>\s\+\(DYNAMIC\s\+ARRAY\s\+OF\s\+\)\?\(ARRAY\s*\[[^\]]*\]\s\+OF\s\+\)\?\s*RECORD\>'
+  if text =~? record_pattern
+    " Extract the variable name
+    let var_name = matchstr(text, '\c\<\(' . a:var_pattern . '\)\>\ze\s\+\(DYNAMIC\|ARRAY\|RECORD\)')
+    if empty(var_name)
+      let var_name = matchstr(text, '\c\<\(' . a:var_pattern . '\)\>')
+    endif
+
+    " Extract the prefix (DYNAMIC ARRAY OF, etc.)
+    let prefix = matchstr(text, '\c\<' . var_name . '\>\s\+\zs\(DYNAMIC\s\+ARRAY\s\+OF\s\+\|ARRAY\s*\[[^\]]*\]\s\+OF\s\+\)\ze\s*RECORD')
+    let prefix = substitute(prefix, '\s\+', ' ', 'g')
+
+    " Extract fields between RECORD and END RECORD
+    let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.\{-}\ze\s*END\s\+RECORD')
+    let fields = s:parse_record_fields(fields_text)
+
+    let type_str = prefix . 'RECORD'
+    let result = {'type': type_str, 'line': a:line_nr}
+    if !empty(fields)
+      let result.fields = fields
+    endif
+    return result
+  endif
+
+  " Standard non-RECORD parsing: split by comma
   let chunks = split(text, ',')
 
   for chunk in chunks
     let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
 
     " Strip inline comments before matching variable name
-    " This prevents #SR-1234 in a DEFINE comment from matching
     let code_part = substitute(chunk, '\s*[#].*$', '', '')
     let code_part = substitute(code_part, '\s*--.*$', '', '')
     let code_part = substitute(code_part, '\s*{[^}]*}.*$', '', '')
 
     " Check if the FIRST WORD of the chunk (the variable name) matches our pattern
-    " This prevents matching table/column names in the type portion (e.g. LIKE account.acc_code)
     let var_name = matchstr(code_part, '^\s*\zs\w\+')
     if var_name =~? a:var_pattern
       " Extract the type — everything after the variable name
       let type_match = matchstr(chunk, '\c\<' . '\S\+' . '\>\s\+\zs.*')
       if !empty(type_match)
-        " Strip inline comments: # or -- to end of string
+        " Strip inline comments
         let type_str = substitute(type_match, '\s*[#].*$', '', '')
         let type_str = substitute(type_str, '\s*--.*$', '', '')
-        " Strip curly-brace comments: { ... }
         let type_str = substitute(type_str, '\s*{[^}]*}.*$', '', '')
-        " Clean up whitespace
         let type_str = substitute(type_str, '^\s*\|\s*$', '', 'g')
-        " Collapse internal whitespace runs
         let type_str = substitute(type_str, '\s\+', ' ', 'g')
-        " Remove trailing comma if present
         let type_str = substitute(type_str, ',\s*$', '', '')
         if !empty(type_str)
           return {'type': type_str, 'line': a:line_nr}
@@ -420,6 +524,43 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
   endfor
 
   return {}
+endfunction
+
+" Parse RECORD field definitions from the text between RECORD and END RECORD
+" Fields are separated by commas or newlines: field1 TYPE, field2 TYPE
+" Returns: [{'name': 'field1', 'type': 'STRING'}, ...]
+function! s:parse_record_fields(fields_text) abort
+  let fields = []
+  if empty(a:fields_text)
+    return fields
+  endif
+
+  " Split by comma (fields may be comma-separated or one per line)
+  " The collected text has newlines replaced with spaces, so commas are the delimiter
+  let chunks = split(a:fields_text, ',')
+
+  for chunk in chunks
+    let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
+    " Strip comments
+    let chunk = substitute(chunk, '\s*[#].*$', '', '')
+    let chunk = substitute(chunk, '\s*--.*$', '', '')
+
+    if empty(chunk)
+      continue
+    endif
+
+    " Extract field_name and type
+    let field_name = matchstr(chunk, '^\s*\zs\w\+')
+    let field_type = matchstr(chunk, '^\s*\w\+\s\+\zs.*')
+    let field_type = substitute(field_type, '^\s*\|\s*$', '', 'g')
+    let field_type = substitute(field_type, '\s\+', ' ', 'g')
+
+    if !empty(field_name) && !empty(field_type)
+      call add(fields, {'name': field_name, 'type': field_type})
+    endif
+  endfor
+
+  return fields
 endfunction
 
 " ============================================================================
@@ -556,6 +697,7 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
   let type_str = a:define_info.type
   let def_line = a:define_info.line
   let scope = get(a:define_info, 'scope', 'local')
+  let fields = get(a:define_info, 'fields', [])
 
   " If type is a LIKE reference, resolve it
   let schema = {}
@@ -611,6 +753,34 @@ function! s:show_variable_type(bufnr, line, word, define_info) abort
       let float_title = table . '.*  (' . col_count . ' columns)'
       call s:show_schema_float(columns, float_title)
     endif
+    return
+  endif
+
+  " Inline RECORD (parsed from DEFINE ... RECORD ... END RECORD) → show fields popup
+  if !empty(fields)
+    let col_count = len(fields)
+    let summary = type_str . ' (' . col_count . ' fields)'
+    if scope == 'module'
+      let summary .= '  (module)'
+    elseif scope == 'param'
+      let summary .= '  (param)'
+    endif
+
+    try
+      call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:line - 1, 0, {
+        \ 'virt_text': [['  ◇ ' . summary . ' ', 'GeneroTypeInfoVar']],
+        \ 'virt_text_pos': 'eol',
+        \ 'priority': 30
+        \ })
+    catch
+    endtry
+
+    " Show fields in floating window (same format as schema columns)
+    let float_columns = []
+    for field in fields
+      call add(float_columns, {'name': field.name, 'type': field.type})
+    endfor
+    call s:show_schema_float(float_columns, a:word . '  (' . col_count . ' fields)')
     return
   endif
 
