@@ -47,7 +47,15 @@ local function resolve_path(file)
   if vim.fn.filereadable(candidate) == 1 then
     return candidate
   end
-  return file
+  -- Try relative to current file's directory (query.sh paths are relative to codebase)
+  local current_dir = vim.fn.expand("%:p:h")
+  if current_dir ~= "" then
+    local candidate2 = current_dir .. "/" .. clean
+    if vim.fn.filereadable(candidate2) == 1 then
+      return candidate2
+    end
+  end
+  return nil
 end
 
 -- Read a single line from a file
@@ -127,8 +135,12 @@ local function detect_module(file_path)
   if type(data) == "string" and data ~= "" then
     return data
   elseif type(data) == "table" then
-    -- Only accept single-module results
-    if data[1] ~= nil and data[2] == nil then
+    -- Count entries to check for single vs multi module
+    local count = 0
+    for _ in pairs(data) do
+      count = count + 1
+    end
+    if count == 1 and data[1] then
       local item = data[1]
       if type(item) == "table" then
         return item.name or item.module or nil
@@ -136,6 +148,7 @@ local function detect_module(file_path)
         return item
       end
     end
+    -- Multi-module — can't narrow scope
   end
   return nil
 end

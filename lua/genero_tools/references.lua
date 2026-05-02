@@ -16,26 +16,36 @@ local function resolve_path(file)
   end
 
   -- Strip leading ./
-  if file:sub(1, 2) == "./" then
-    file = file:sub(3)
+  local clean = file
+  if clean:sub(1, 2) == "./" then
+    clean = clean:sub(3)
   end
 
   -- Try relative to codebase root
-  local root = vim.fn["genero_tools#codebase#get_root"]()
-  if root and root ~= "" then
-    local candidate = root .. "/" .. file
+  local ok, root = pcall(vim.fn["genero_tools#codebase#get_root"])
+  if ok and root and root ~= "" then
+    local candidate = root .. "/" .. clean
     if vim.fn.filereadable(candidate) == 1 then
       return candidate
     end
   end
 
   -- Try relative to CWD
-  local candidate = vim.fn.getcwd() .. "/" .. file
+  local candidate = vim.fn.getcwd() .. "/" .. clean
   if vim.fn.filereadable(candidate) == 1 then
     return candidate
   end
 
-  return file
+  -- Try relative to current file's directory
+  local current_dir = vim.fn.expand("%:p:h")
+  if current_dir ~= "" then
+    local candidate2 = current_dir .. "/" .. clean
+    if vim.fn.filereadable(candidate2) == 1 then
+      return candidate2
+    end
+  end
+
+  return nil
 end
 
 -- Extract fields from a reference entry
