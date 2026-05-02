@@ -595,6 +595,49 @@ local plugins = {
     end,
   },
 
+  -- Highlight TODO/FIX/BUG/TMP keywords in comments
+  -- Also registers a custom keyword for the current user's temp code tag (#TMP<initials>)
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      -- Build user-specific temp tag: hdean → TMPHD
+      local user = os.getenv("USER") or ""
+      local user_tag = "TMP" .. string.upper(string.sub(user, 1, 2))
+
+      require("todo-comments").setup({
+        signs = true,
+        sign_priority = 8,
+        keywords = {
+          FIX =  { icon = " ", color = "error", alt = { "FIXME", "FIXIT", "ISSUE" } },
+          TODO = { icon = " ", color = "info" },
+          HACK = { icon = " ", color = "warning" },
+          WARN = { icon = " ", color = "warning", alt = { "WARNING" } },
+          NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+          BUG =  { icon = " ", color = "error" },
+          TMP =  { icon = " ", color = "warning", alt = { user_tag } },
+        },
+        merge_keywords = false,
+        highlight = {
+          multiline = false,
+          before = "",
+          keyword = "wide",
+          after = "fg",
+          pattern = [[.*<(KEYWORDS)\s*]],
+          comments_only = false,  -- Also highlight in code, not just comments (for #TMP tags)
+        },
+        search = {
+          command = "rg",
+          args = {
+            "--color=never", "--no-heading", "--with-filename",
+            "--line-number", "--column", "--hidden",
+          },
+          pattern = [[\b(KEYWORDS)\b]],
+        },
+      })
+    end,
+  },
+
   -- Toggle terminal (in-buffer terminal with hotkey)
   {
     "akinsho/toggleterm.nvim",
