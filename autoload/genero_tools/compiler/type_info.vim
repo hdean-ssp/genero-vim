@@ -481,13 +481,9 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
     let prefix = substitute(prefix, '\s\+', ' ', 'g')
 
     " Extract fields between RECORD and END RECORD
-    let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.\{-}\ze\s*END\s\+RECORD')
-    " Safety: if regex didn't match (END RECORD missing or malformed), try harder
-    if empty(fields_text)
-      " Fall back: take everything after RECORD, strip END RECORD if present
-      let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.*')
-      let fields_text = substitute(fields_text, '\c\s*END\s\+RECORD.*$', '', '')
-    endif
+    " Take everything after RECORD, then strip END RECORD and anything after it
+    let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.*')
+    let fields_text = substitute(fields_text, '\c\s*END\s\+RECORD.*$', '', '')
     let fields = s:parse_record_fields(fields_text)
 
     let type_str = prefix . 'RECORD'
