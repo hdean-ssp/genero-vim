@@ -165,7 +165,9 @@ function! s:lookup_variable(word, bufnr, line) abort
   let record_field = s:resolve_record_field(a:word, a:bufnr, a:line)
   if !empty(record_field)
     call genero_tools#compiler#type_info#clear_extmarks()
-    let display = s:translate_type(record_field.type)
+    let display = record_field.type
+    " Safety: ensure type doesn't contain END RECORD or get truncated at commas in parens
+    let display = substitute(display, '\c\s*END\s\+RECORD.*$', '', '')
     if !empty(record_field.record)
       let display .= '  (' . record_field.record . '.' . a:word . ')'
     endif
