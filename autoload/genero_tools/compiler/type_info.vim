@@ -537,6 +537,8 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
         let type_str = substitute(type_str, '^\s*\|\s*$', '', 'g')
         let type_str = substitute(type_str, '\s\+', ' ', 'g')
         let type_str = substitute(type_str, ',\s*$', '', '')
+        " Strip END RECORD that may be appended to the last field in a RECORD block
+        let type_str = substitute(type_str, '\c\s*END\s\+RECORD.*$', '', '')
         if !empty(type_str)
           return {'type': type_str, 'line': a:line_nr}
         endif
