@@ -82,6 +82,7 @@ command! GeneroTypeInfo call genero_tools#compiler#type_info#manual()
 " Navigation commands
 command! -nargs=? GeneroGotoDefinition call genero_tools#navigation#goto_definition(<q-args>)
 command! -nargs=? GeneroPeekDefinition call genero_tools#navigation#peek_definition(<q-args>)
+command! -nargs=? GeneroFindReferences call genero_tools#references#find(<q-args>)
 
 " Register snippet commands (Neovim only)
 if has('nvim')

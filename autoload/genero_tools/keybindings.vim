@@ -45,6 +45,11 @@ function! genero_tools#keybindings#register() abort
     if empty(maparg('<leader>gd', 'n'))
       nnoremap <silent> <leader>gd :GeneroDebugStreamToggle<CR>
     endif
+
+    " Find references (Neovim only — uses floating window)
+    if empty(maparg('gr', 'n'))
+      nnoremap <silent> gr :GeneroFindReferences<CR>
+    endif
   endif
   
   " Snippet placeholder navigation (Neovim only)

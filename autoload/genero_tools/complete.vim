@@ -154,7 +154,7 @@ function! genero_tools#complete#get_snippet_completions(base) abort
   endtry
 endfunction
 
-" Get completions from external files (project-wide)
+" Get completions from external files (module-scoped then project-wide fallback)
 function! genero_tools#complete#get_external_completions(base) abort
   try
     if len(a:base) < 2
@@ -163,6 +163,172 @@ function! genero_tools#complete#get_external_completions(base) abort
     
     let completions = []
     let current_file = expand('%:p')
+
+    " Try module-scoped completions first
+    let module_completions = s:get_module_scoped_completions(a:base, current_file)
+    if !empty(module_completions)
+      return module_completions
+    endif
+    
+    " Fall back to project-wide search
+    return s:get_project_wide_completions(a:base, current_file)
+  catch
+    return []
+  endtry
+endfunction
+
+" Get completions scoped to the current file's module
+" Returns empty list if module can't be determined (multi-module or unknown)
+function! s:get_module_scoped_completions(base, current_file) abort
+  try
+    " Detect module for current file (cached per file)
+    let module_name = s:detect_file_module(a:current_file)
+    if empty(module_name)
+      return []
+    endif
+
+    " Get all functions in this module
+    let cache_key = 'find-functions-in-module:' . module_name
+    let cached = genero_tools#cache#get(cache_key)
+    let module_functions = []
+
+    if !empty(cached) && has_key(cached, 'success') && cached.success
+      let module_functions = cached.data
+    else
+      let result = genero_tools#command#execute_shell('find-functions-in-module', [module_name])
+      if result.success && type(result.data) == type([])
+        call genero_tools#cache#set(cache_key, result)
+        let module_functions = result.data
+      endif
+    endif
+
+    if empty(module_functions) || type(module_functions) != type([])
+      return []
+    endif
+
+    " Filter to matching functions
+    let completions = []
+    for func in module_functions
+      if type(func) != type({}) || !has_key(func, 'name')
+        continue
+      endif
+      if func.name !~? '^' . a:base
+        continue
+      endif
+
+      " Skip functions from the current file (already shown by current-file completions)
+      let func_file = get(func, 'file', get(func, 'file_path', get(func, 'path', '')))
+      let current_tail = fnamemodify(a:current_file, ':t')
+      if !empty(func_file) && fnamemodify(func_file, ':t') ==# current_tail
+        continue
+      endif
+
+      let param_count = genero_tools#signature#param_count(func)
+      let return_count = genero_tools#signature#return_count(func)
+      let complete_info = genero_tools#signature#format_complete_info(func)
+
+      let menu_label = '[' . module_name . '] (' . param_count . ' params)'
+      if return_count > 0
+        let menu_label .= ' -> ' . return_count . ' return'
+        if return_count != 1
+          let menu_label .= 's'
+        endif
+      endif
+
+      call add(completions, {
+        \ 'word': func.name,
+        \ 'abbr': func.name,
+        \ 'menu': menu_label,
+        \ 'info': complete_info,
+        \ 'kind': 'f',
+        \ 'icase': 1,
+        \ 'dup': 1
+        \ })
+    endfor
+
+    " Limit results
+    return completions[0:19]
+  catch
+    return []
+  endtry
+endfunction
+
+" Detect the module for a file by querying find-module-for-function
+" Returns the module name if exactly one module is found, empty string otherwise
+" Result is cached per file path for the session
+function! s:detect_file_module(file_path) abort
+  " Check per-file module cache
+  let cache_key = 'file-module:' . a:file_path
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached) && has_key(cached, 'module')
+    return cached.module
+  endif
+
+  " Get a function name from this file to query its module
+  let file_rel = genero_tools#normalize_file_path(a:file_path)
+  let func_cache_key = 'list-file-functions:' . file_rel
+  let func_cached = genero_tools#cache#get(func_cache_key)
+  let functions = []
+
+  if !empty(func_cached) && has_key(func_cached, 'data')
+    let functions = func_cached.data
+  else
+    let result = genero_tools#command#execute_shell('list-file-functions', [file_rel])
+    if result.success && type(result.data) == type([])
+      let functions = result.data
+    endif
+  endif
+
+  if empty(functions) || type(functions) != type([])
+    call genero_tools#cache#set(cache_key, {'module': '', 'timestamp': localtime()})
+    return ''
+  endif
+
+  " Use the first function to detect the module
+  let first_func = functions[0]
+  let func_name = type(first_func) == type({}) ? get(first_func, 'name', '') : ''
+  if empty(func_name)
+    call genero_tools#cache#set(cache_key, {'module': '', 'timestamp': localtime()})
+    return ''
+  endif
+
+  " Query find-module-for-function
+  let mod_result = genero_tools#command#execute_shell('find-module-for-function', [func_name])
+  if !mod_result.success || empty(mod_result.data)
+    call genero_tools#cache#set(cache_key, {'module': '', 'timestamp': localtime()})
+    return ''
+  endif
+
+  let mod_data = mod_result.data
+
+  " If result is a string, use it directly
+  if type(mod_data) == type('')
+    let module_name = mod_data
+  " If result is a list, only use it if exactly one module (avoid ambiguity)
+  elseif type(mod_data) == type([])
+    if len(mod_data) == 1
+      let item = mod_data[0]
+      let module_name = type(item) == type({}) ? get(item, 'name', get(item, 'module', '')) : string(item)
+    else
+      " Multiple modules — can't narrow scope, fall back to project-wide
+      call genero_tools#cache#set(cache_key, {'module': '', 'timestamp': localtime()})
+      return ''
+    endif
+  " If result is a dict, extract the module name
+  elseif type(mod_data) == type({})
+    let module_name = get(mod_data, 'name', get(mod_data, 'module', ''))
+  else
+    let module_name = ''
+  endif
+
+  call genero_tools#cache#set(cache_key, {'module': module_name, 'timestamp': localtime()})
+  return module_name
+endfunction
+
+" Get project-wide completions (original behavior)
+function! s:get_project_wide_completions(base, current_file) abort
+  try
+    let completions = []
     
     " Search project-wide functions using query.sh with completion format
     let format = genero_tools#format#get_completion_format()

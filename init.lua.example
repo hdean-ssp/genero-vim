@@ -796,9 +796,10 @@ map("n", "<leader>su", ":GeneroUnifiedSignsToggle<CR>", opts)
 -- Debug streaming (toggle on/off)
 map("n", "<leader>gd", ":GeneroDebugStreamToggle<CR>", opts)
 
--- Go to definition / Peek definition
+-- Go to definition / Peek definition / Find references
 map("n", "gd", ":GeneroGotoDefinition<CR>", { noremap = true, silent = true, desc = "Go to definition" })
 map("n", "gp", ":GeneroPeekDefinition<CR>", { noremap = true, silent = true, desc = "Peek definition" })
+map("n", "gr", ":GeneroFindReferences<CR>", { noremap = true, silent = true, desc = "Find references" })
 
 -- Snippet commands (Neovim only with LuaSnip)
 map("n", "<leader>sl", ":GeneroSnippetList<CR>", opts)
@@ -959,6 +960,7 @@ if is_nvim_010_plus then
     { "<leader>gs", ":GeneroFunctionSignature<CR>", desc = "Get function signature" },
     { "<leader>gm", ":GeneroFileMetadata<CR>", desc = "Get file metadata" },
     { "<leader>gd", ":GeneroDebugStreamToggle<CR>", desc = "Toggle debug stream" },
+    { "<leader>gr", ":GeneroFindReferences<CR>", desc = "Find references" },
 
     { "<leader>h", group = "Hints" },
     { "<leader>hn", ":GeneroNextHint<CR>", desc = "Next hint" },
@@ -1009,6 +1011,7 @@ else
       s = { ":GeneroFunctionSignature<CR>", "Get function signature" },
       m = { ":GeneroFileMetadata<CR>", "Get file metadata" },
       d = { ":GeneroDebugStreamToggle<CR>", "Toggle debug stream" },
+      r = { ":GeneroFindReferences<CR>", "Find references" },
     },
     h = {
       name = "+Hints",
@@ -1067,6 +1070,7 @@ NAVIGATION:
   ]] / [[         - Next/previous temp code tag (#TMP<initials>)
   gd              - Go to definition (jump to function/variable source)
   gp              - Peek definition (preview in floating window)
+  gr              - Find references (show all callers in popup)
   Ctrl+h/j/k/l    - Navigate between windows
   Space+bd        - Delete current buffer
 
@@ -1076,6 +1080,7 @@ GENERO TOOLS:
   Space+gs        - Get function signature
   Space+gm        - Get file metadata
   Space+gd        - Toggle debug stream (real-time file monitoring)
+  Space+gr        - Find references (show all callers in popup)
 
 CODE HINTS:
   Space+hl        - List all hints in file
@@ -1156,6 +1161,7 @@ COMMANDS:
   :GeneroFirstError           - Jump to first error
   :GeneroLastError            - Jump to last error
   :GeneroLookup               - Lookup function definition
+  :GeneroFindReferences       - Find all callers of a function (popup)
   :GeneroListFunctions        - List functions in file
   :GeneroListModuleFiles      - List files in module
   :GeneroFunctionSignature    - Get function signature
@@ -1198,6 +1204,8 @@ FEATURES:
   • Quote matching highlights
   • Breadcrumb: current function name in statusline
   • Reference count on FUNCTION lines
+  • Find references: show all callers in a popup (gr or Space+gr)
+  • Module-scoped autocomplete (narrows suggestions to current module when possible)
   • Auto-close blocks (IF→END IF, FOR→END FOR, etc.)
   • Inline diagnostics: errors always visible, warnings on cursor line
   • Code hints with current-line-only expansion
@@ -1214,6 +1222,7 @@ TIPS:
   • Use ]d/[d to navigate errors, ]h/[h for hints, ]b/[b for buffers
   • Use ]]/[[ to jump between your temp code tags (#TMP<initials>)
   • gd jumps to definition, gp peeks without leaving current position
+  • gr shows all callers of a function — press Enter to jump to one
   • Hover on a function call to see its signature
   • Hover on a variable to see its type (resolves LIKE references)
   • Hover on a table name to see all columns in a floating window
