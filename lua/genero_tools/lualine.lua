@@ -169,14 +169,49 @@ function M.function_name()
   return '%#GeneroLualineFunctionName# ' .. word .. ' %*'
 end
 
--- Breadcrumb: show module > file > function by scanning upward from cursor
--- Module detection is cached per file (no shell calls on every cursor move)
--- Respects END FUNCTION boundaries — returns empty if cursor is between functions
+-- Breadcrumb: show module.m3 > file.4gl > ƒ function_name
+-- Module and file always show when module is detected
+-- Function name only shows when cursor is inside a function
+-- Colors: dimmest (module) → medium (file) → brightest (function)
 function M.breadcrumb()
+  local module_name = M._get_cached_module()
+  local file = vim.fn.expand('%:t')
+  local func_name = M._find_enclosing_function()
+
+  local parts = {}
+
+  -- Module (dimmest) — always show if detected
+  if module_name and module_name ~= '' then
+    -- Append .m3 if not already present
+    local display_module = module_name
+    if not display_module:match('%.m[34]$') then
+      display_module = display_module .. '.m3'
+    end
+    table.insert(parts, '%#GeneroLualineModule# ' .. display_module .. ' %*')
+  end
+
+  -- File (medium) — show when module is known (otherwise lualine_b already shows it)
+  if module_name and module_name ~= '' and file ~= '' then
+    table.insert(parts, '%#GeneroLualineFile# ' .. file .. ' %*')
+  end
+
+  -- Function (brightest) — only when cursor is inside a function
+  if func_name and func_name ~= '' then
+    table.insert(parts, '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*')
+  end
+
+  if #parts == 0 then
+    return ''
+  end
+
+  return table.concat(parts, ' > ')
+end
+
+-- Find the enclosing function name by scanning upward from cursor
+-- Returns function name or nil if cursor is between/outside functions
+function M._find_enclosing_function()
   local row = vim.api.nvim_win_get_cursor(0)[1]
 
-  -- Find enclosing function name
-  local func_name = nil
   for i = row, 1, -1 do
     local line = vim.fn.getline(i)
     local trimmed = line:match('^%s*(.*)')
@@ -185,37 +220,21 @@ function M.breadcrumb()
     end
     local upper = trimmed:upper()
 
+    -- Hit END FUNCTION before finding opener = between functions
     if upper:match('^END%s+FUNCTION') or upper:match('^END%s+MAIN') or upper:match('^END%s+REPORT') then
-      break
+      return nil
     end
 
     if upper:match('^FUNCTION%s') then
-      func_name = trimmed:match('^%w+%s+([%w_]+)')
-      break
+      return trimmed:match('^%w+%s+([%w_]+)')
     elseif upper:match('^MAIN') and not upper:match('^MAIN%s*%(') then
-      func_name = 'MAIN'
-      break
+      return 'MAIN'
     elseif upper:match('^REPORT%s') then
-      func_name = trimmed:match('^%w+%s+([%w_]+)')
-      break
+      return trimmed:match('^%w+%s+([%w_]+)')
     end
   end
 
-  if not func_name then
-    return ''
-  end
-
-  -- Build breadcrumb: module > file > function (module only if single-module)
-  local file = vim.fn.expand('%:t')
-  local module_name = M._get_cached_module()
-
-  if module_name and module_name ~= '' then
-    return '%#GeneroLualineCache# ' .. module_name .. ' %*'
-      .. ' > %#Comment# ' .. file .. ' %*'
-      .. ' > %#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*'
-  else
-    return '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*'
-  end
+  return nil
 end
 
 -- Module cache for breadcrumb (avoids shell calls on every statusline refresh)
@@ -324,11 +343,24 @@ function M.setup_highlights()
     italic = true,
   })
   
-  -- Function name highlight: cyan background
+  -- Function name highlight: bright cyan (brightest — innermost scope)
   vim.api.nvim_set_hl(0, 'GeneroLualineFunctionName', {
     bg = '#0d3b66',  -- Dark cyan
     fg = '#90e0ef',  -- Light cyan text
     bold = true,
+  })
+
+  -- File name highlight: medium (middle scope)
+  vim.api.nvim_set_hl(0, 'GeneroLualineFile', {
+    bg = '#1e293b',  -- Slate
+    fg = '#94a3b8',  -- Muted blue-gray text
+  })
+
+  -- Module name highlight: dim (outermost scope)
+  vim.api.nvim_set_hl(0, 'GeneroLualineModule', {
+    bg = '#1e1e2e',  -- Very dark
+    fg = '#6b7280',  -- Dim gray text
+    italic = true,
   })
 
   -- SVN added highlight: green background
