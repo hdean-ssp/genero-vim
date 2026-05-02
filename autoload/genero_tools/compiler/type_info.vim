@@ -57,12 +57,24 @@ function! genero_tools#compiler#type_info#do_lookup(word, bufnr, line) abort
     return
   endif
 
-  let upper = toupper(a:word)
-  if s:is_keyword(upper)
+  if s:cursor_in_comment(a:line)
     return
   endif
 
-  if s:cursor_in_comment(a:line)
+  " If cursor is anywhere on a FUNCTION definition line, show the function's
+  " own signature regardless of which word the cursor is on
+  let line_text = getline(a:line)
+  let trimmed = substitute(line_text, '^\s*', '', '')
+  if toupper(trimmed) =~# '^FUNCTION\>'
+    let func_name = matchstr(trimmed, '\c^FUNCTION\s\+\zs\w\+')
+    if !empty(func_name)
+      call s:lookup_function(func_name, a:bufnr, a:line)
+      return
+    endif
+  endif
+
+  let upper = toupper(a:word)
+  if s:is_keyword(upper)
     return
   endif
 

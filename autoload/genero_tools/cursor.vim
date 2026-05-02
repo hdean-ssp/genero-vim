@@ -72,7 +72,9 @@ function! genero_tools#cursor#on_moved() abort
     call genero_tools#compiler#type_info#on_word_changed(word, bufnr, current_line)
 
     " Schedule expensive lookup after 400ms
-    if !empty(word) && len(word) >= 3
+    " Allow short words on FUNCTION definition lines (signature shown for whole line)
+    let on_func_line = (toupper(substitute(getline(current_line), '^\s*', '', '')) =~# '^FUNCTION\>')
+    if !empty(word) && (len(word) >= 3 || on_func_line)
       let s:expensive_timer = timer_start(400, function('s:expensive_lookup', [word, bufnr, current_line]))
     endif
   endif
