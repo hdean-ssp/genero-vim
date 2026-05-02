@@ -372,13 +372,20 @@ require('lualine').setup({
 ### With which-key
 
 ```lua
+-- Neovim 0.10+ (which-key v3+)
 local wk = require('which-key')
-wk.register({
-  g = {
-    name = '+Genero-Tools',
-    s = { ':GeneroFunctionSignature<CR>', 'Get function signature' },
-  },
-}, { prefix = '<leader>' })
+wk.add({
+  { '<leader>g', group = 'Genero-Tools' },
+  { '<leader>gs', ':GeneroFunctionSignature<CR>', desc = 'Get function signature' },
+})
+
+-- Neovim 0.9.x (which-key v1.x)
+-- wk.register({
+--   g = {
+--     name = '+Genero-Tools',
+--     s = { ':GeneroFunctionSignature<CR>', 'Get function signature' },
+--   },
+-- }, { prefix = '<leader>' })
 ```
 
 ### With Telescope

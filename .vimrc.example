@@ -238,51 +238,97 @@ require('ibl').setup({
   scope = { enabled = true },
 })
 
-require('which-key').setup({
-  window = {
-    border = 'rounded',
-    position = 'bottom',
-  },
-})
+local nvim_ver_setup = vim.version()
+local is_010_plus_setup = nvim_ver_setup.major > 0 or nvim_ver_setup.minor >= 10
+
+if is_010_plus_setup then
+  require('which-key').setup({
+    preset = 'classic',
+    win = {
+      border = 'rounded',
+    },
+  })
+else
+  require('which-key').setup({
+    window = {
+      border = 'rounded',
+      position = 'bottom',
+    },
+  })
+end
 EOF
 
-  " Which-key descriptions
+  " Which-key descriptions (version-aware)
   lua << EOF
 local wk = require('which-key')
-wk.register({
-  c = {
-    name = '+Compiler',
-    a = { ':GeneroAutocompileEnable<CR>', 'Enable autocompile' },
-    d = { ':GeneroAutocompileDisable<CR>', 'Disable autocompile' },
-    c = { ':GeneroClearErrors<CR>', 'Clear errors' },
-  },
-  h = {
-    name = '+Hints',
-    n = { ':GeneroNextHint<CR>', 'Next hint' },
-    p = { ':GeneroPrevHint<CR>', 'Previous hint' },
-    l = { ':GeneroListHints<CR>', 'List all hints' },
-    d = { ':GeneroHintDetails<CR>', 'Hint details' },
-    f = { ':GeneroHintAutofix<CR>', 'Apply auto-fix' },
-  },
-  s = {
-    name = '+SVN/Signs',
-    v = { ':GeneroSVNToggle<CR>', 'Toggle SVN markers' },
-    r = { ':GeneroSVNRefresh<CR>', 'Refresh SVN markers' },
-    s = { ':GeneroSVNStatus<CR>', 'SVN status' },
-    u = { ':GeneroUnifiedSignsToggle<CR>', 'Toggle unified signs' },
-  },
-  sl = {
-    name = '+Snippets',
-    l = { ':GeneroSnippetList<CR>', 'List snippets' },
-    h = { ':GeneroSnippetHelp<CR>', 'Snippet help' },
-  },
-  b = {
-    name = '+Buffers',
-    n = { ':bnext<CR>', 'Next buffer' },
-    p = { ':bprev<CR>', 'Previous buffer' },
-    d = { ':bdelete<CR>', 'Delete buffer' },
-  },
-}, { prefix = '<leader>' })
+local nvim_ver = vim.version()
+local is_010_plus = nvim_ver.major > 0 or nvim_ver.minor >= 10
+
+if is_010_plus then
+  -- which-key v3+ API
+  wk.add({
+    { '<leader>c', group = 'Compiler' },
+    { '<leader>ca', ':GeneroAutocompileEnable<CR>', desc = 'Enable autocompile' },
+    { '<leader>cd', ':GeneroAutocompileDisable<CR>', desc = 'Disable autocompile' },
+    { '<leader>cc', ':GeneroClearErrors<CR>', desc = 'Clear errors' },
+
+    { '<leader>h', group = 'Hints' },
+    { '<leader>hn', ':GeneroNextHint<CR>', desc = 'Next hint' },
+    { '<leader>hp', ':GeneroPrevHint<CR>', desc = 'Previous hint' },
+    { '<leader>hl', ':GeneroListHints<CR>', desc = 'List all hints' },
+    { '<leader>hd', ':GeneroHintDetails<CR>', desc = 'Hint details' },
+    { '<leader>hf', ':GeneroHintAutofix<CR>', desc = 'Apply auto-fix' },
+
+    { '<leader>s', group = 'SVN/Signs' },
+    { '<leader>sv', ':GeneroSVNToggle<CR>', desc = 'Toggle SVN markers' },
+    { '<leader>sr', ':GeneroSVNRefresh<CR>', desc = 'Refresh SVN markers' },
+    { '<leader>ss', ':GeneroSVNStatus<CR>', desc = 'SVN status' },
+    { '<leader>su', ':GeneroUnifiedSignsToggle<CR>', desc = 'Toggle unified signs' },
+    { '<leader>sl', ':GeneroSnippetList<CR>', desc = 'List snippets' },
+    { '<leader>sh', ':GeneroSnippetHelp<CR>', desc = 'Snippet help' },
+
+    { '<leader>b', group = 'Buffers' },
+    { '<leader>bn', ':bnext<CR>', desc = 'Next buffer' },
+    { '<leader>bp', ':bprev<CR>', desc = 'Previous buffer' },
+    { '<leader>bd', ':bdelete<CR>', desc = 'Delete buffer' },
+  })
+else
+  -- which-key v1.x API
+  wk.register({
+    c = {
+      name = '+Compiler',
+      a = { ':GeneroAutocompileEnable<CR>', 'Enable autocompile' },
+      d = { ':GeneroAutocompileDisable<CR>', 'Disable autocompile' },
+      c = { ':GeneroClearErrors<CR>', 'Clear errors' },
+    },
+    h = {
+      name = '+Hints',
+      n = { ':GeneroNextHint<CR>', 'Next hint' },
+      p = { ':GeneroPrevHint<CR>', 'Previous hint' },
+      l = { ':GeneroListHints<CR>', 'List all hints' },
+      d = { ':GeneroHintDetails<CR>', 'Hint details' },
+      f = { ':GeneroHintAutofix<CR>', 'Apply auto-fix' },
+    },
+    s = {
+      name = '+SVN/Signs',
+      v = { ':GeneroSVNToggle<CR>', 'Toggle SVN markers' },
+      r = { ':GeneroSVNRefresh<CR>', 'Refresh SVN markers' },
+      s = { ':GeneroSVNStatus<CR>', 'SVN status' },
+      u = { ':GeneroUnifiedSignsToggle<CR>', 'Toggle unified signs' },
+    },
+    sl = {
+      name = '+Snippets',
+      l = { ':GeneroSnippetList<CR>', 'List snippets' },
+      h = { ':GeneroSnippetHelp<CR>', 'Snippet help' },
+    },
+    b = {
+      name = '+Buffers',
+      n = { ':bnext<CR>', 'Next buffer' },
+      p = { ':bprev<CR>', 'Previous buffer' },
+      d = { ':bdelete<CR>', 'Delete buffer' },
+    },
+  }, { prefix = '<leader>' })
+end
 EOF
 endif
 

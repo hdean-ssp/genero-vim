@@ -1,5 +1,14 @@
--- Modern Neovim 0.9.5 Configuration for Genero Development
+-- Modern Neovim Configuration for Genero Development
+-- Compatible with Neovim 0.9.x through 0.11.x
 -- Copy this to ~/.config/nvim/init.lua and adjust paths as needed
+
+-- ============================================================================
+-- VERSION DETECTION
+-- ============================================================================
+
+-- Detect Neovim version once for use throughout the config
+local nvim_version = vim.version()
+local is_nvim_010_plus = nvim_version.major > 0 or nvim_version.minor >= 10
 
 -- ============================================================================
 -- LEADER KEY
@@ -205,7 +214,8 @@ vim.g.genero_tools_config = {
 -- ============================================================================
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+local uv = vim.uv or vim.loop  -- vim.uv on 0.10+, vim.loop on 0.9.x
+if not uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",
@@ -314,13 +324,11 @@ local plugins = {
   },
 
   -- Notification system
-  -- IMPORTANT: v3.13.1 is the last release compatible with Neovim 0.9.x
-  -- v3.13.4+ uses vim.version.ge() which only exists in Neovim 0.10+
-  -- The old "version = 0.4.*" pin was invalid (no such release exists) and
-  -- caused lazy.nvim to pull latest master, which broke on 0.9.x
+  -- v3.13.1 is the last release compatible with Neovim 0.9.x
+  -- v3.14.x+ requires Neovim 0.10+ but fixes animation bugs on 0.11
   {
     "rcarriga/nvim-notify",
-    tag = "v3.13.1",
+    tag = not is_nvim_010_plus and "v3.13.1" or nil,  -- pin on 0.9, use latest on 0.10+
     config = function()
       require("notify").setup({
         background_colour = "#000000",
@@ -335,7 +343,7 @@ local plugins = {
         level = 2,
         minimum_width = 50,
         render = "default",
-        stages = "fade_in_slide_out",
+        stages = "static",  -- "static" avoids animation math bugs across all versions
         timeout = 3000,
         top_down = true,
       })
@@ -344,10 +352,11 @@ local plugins = {
   },
 
   -- Floating Window UI for commands
-  -- noice.nvim itself supports Neovim 0.9+; the error was from nvim-notify (fixed above)
+  -- noice.nvim supports Neovim 0.9+; pin to v4.5.2 on 0.9.x for stability,
+  -- use latest on 0.10+ to avoid deprecated API warnings
   {
     "folke/noice.nvim",
-    tag = "v4.5.2",
+    tag = not is_nvim_010_plus and "v4.5.2" or nil,
     dependencies = {
       "MunifTanjim/nui.nvim",
       "rcarriga/nvim-notify",
@@ -395,55 +404,82 @@ local plugins = {
   },
 
   -- Helpful command hints
-  -- Pinned to v1.x for Neovim 0.9.5 compatibility
-  -- Version 2.0+ requires Neovim 0.10+
+  -- v1.x uses wk.register() API; v3.x uses wk.add() API
+  -- Pin to v1.x on Neovim 0.9.x, use latest on 0.10+
   {
     "folke/which-key.nvim",
-    version = "v1.*",
+    version = not is_nvim_010_plus and "v1.*" or nil,
     config = function()
-      require("which-key").setup({
-        plugins = {
-          marks = true,
-          registers = true,
-          spelling = {
-            enabled = true,
-            suggestions = 9,
+      local wk = require("which-key")
+
+      if is_nvim_010_plus then
+        -- which-key v3+ API (Neovim 0.10+)
+        wk.setup({
+          preset = "classic",
+          icons = {
+            breadcrumb = "»",
+            separator = "➜",
+            group = "+",
           },
-          presets = {
-            operators = true,
-            motions = true,
-            text_objects = true,
-            windows = true,
-            nav = true,
-            z = true,
-            g = true,
+          win = {
+            border = "rounded",
+            padding = { 2, 2, 2, 2 },
           },
-        },
-        icons = {
-          breadcrumb = "»",
-          separator = "➜",
-          group = "+",
-        },
-        popup_mappings = {
-          scroll_down = "<c-d>",
-          scroll_up = "<c-u>",
-        },
-        window = {
-          border = "rounded",
-          position = "bottom",
-          margin = { 1, 0, 1, 0 },
-          padding = { 2, 2, 2, 2 },
-          winblend = 0,
-        },
-        layout = {
-          height = { min = 4, max = 25 },
-          width = { min = 20, max = 50 },
-          spacing = 3,
-          align = "left",
-        },
-        show_help = true,
-        show_keys = true,
-      })
+          layout = {
+            height = { min = 4, max = 25 },
+            width = { min = 20, max = 50 },
+            spacing = 3,
+            align = "left",
+          },
+          show_help = true,
+          show_keys = true,
+        })
+      else
+        -- which-key v1.x API (Neovim 0.9.x)
+        wk.setup({
+          plugins = {
+            marks = true,
+            registers = true,
+            spelling = {
+              enabled = true,
+              suggestions = 9,
+            },
+            presets = {
+              operators = true,
+              motions = true,
+              text_objects = true,
+              windows = true,
+              nav = true,
+              z = true,
+              g = true,
+            },
+          },
+          icons = {
+            breadcrumb = "»",
+            separator = "➜",
+            group = "+",
+          },
+          popup_mappings = {
+            scroll_down = "<c-d>",
+            scroll_up = "<c-u>",
+          },
+          window = {
+            border = "rounded",
+            position = "bottom",
+            margin = { 1, 0, 1, 0 },
+            padding = { 2, 2, 2, 2 },
+            winblend = 0,
+          },
+          layout = {
+            height = { min = 4, max = 25 },
+            width = { min = 20, max = 50 },
+            spacing = 3,
+            align = "left",
+          },
+          show_help = true,
+          show_keys = true,
+        })
+      end
     end,
   },
 
@@ -900,59 +936,109 @@ map("n", "#", "#zzzv", opts)
 
 local wk = require("which-key")
 
-wk.register({
-  c = {
-    name = "+Compiler",
-    a = { ":GeneroAutocompileEnable<CR>", "Enable autocompile" },
-    d = { ":GeneroAutocompileDisable<CR>", "Disable autocompile" },
-    c = { ":GeneroClearErrors<CR>", "Clear errors" },
-    e = { "Show errors only" },
-    w = { "Show warnings only" },
-    x = { "Show all diagnostics" },
-  },
-  f = {
-    name = "+Find/Search",
-    w = { "Search word under cursor" },
-    g = { "Live grep" },
-    f = { "Find files" },
-    b = { "Search buffers" },
-  },
-  g = {
-    name = "+Genero-Tools",
-    l = { ":GeneroLookup<CR>", "Lookup function" },
-    f = { ":GeneroListFunctions<CR>", "List functions in file" },
-    s = { ":GeneroFunctionSignature<CR>", "Get function signature" },
-    m = { ":GeneroFileMetadata<CR>", "Get file metadata" },
-    d = { ":GeneroDebugStreamToggle<CR>", "Toggle debug stream" },
-  },
-  h = {
-    name = "+Hints",
-    n = { ":GeneroNextHint<CR>", "Next hint" },
-    p = { ":GeneroPrevHint<CR>", "Previous hint" },
-    l = { ":GeneroListHints<CR>", "List all hints" },
-    d = { ":GeneroHintDetails<CR>", "Hint details" },
-    f = { ":GeneroHintAutofix<CR>", "Apply auto-fix" },
-  },
-  s = {
-    name = "+SVN/Signs/Snippets",
-    v = { ":GeneroSVNToggle<CR>", "Toggle SVN markers" },
-    r = { ":GeneroSVNRefresh<CR>", "Refresh SVN markers" },
-    s = { ":GeneroSVNStatus<CR>", "SVN status" },
-    u = { ":GeneroUnifiedSignsToggle<CR>", "Toggle unified signs" },
-    l = { ":GeneroSnippetList<CR>", "List snippets" },
-    h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
-  },
-  t = {
-    name = "+Terminal",
-    f = { "Float terminal" },
-    h = { "Horizontal terminal" },
-    v = { "Vertical terminal" },
-  },
-  b = {
-    name = "+Buffers",
-    d = { ":bdelete<CR>", "Delete buffer" },
-  },
-}, { prefix = "<leader>" })
+if is_nvim_010_plus then
+  -- which-key v3+ uses wk.add() with a flat list
+  wk.add({
+    { "<leader>c", group = "Compiler" },
+    { "<leader>ca", ":GeneroAutocompileEnable<CR>", desc = "Enable autocompile" },
+    { "<leader>cd", ":GeneroAutocompileDisable<CR>", desc = "Disable autocompile" },
+    { "<leader>cc", ":GeneroClearErrors<CR>", desc = "Clear errors" },
+    { "<leader>ce", desc = "Show errors only" },
+    { "<leader>cw", desc = "Show warnings only" },
+    { "<leader>cx", desc = "Show all diagnostics" },
+
+    { "<leader>f", group = "Find/Search" },
+    { "<leader>fw", desc = "Search word under cursor" },
+    { "<leader>fg", desc = "Live grep" },
+    { "<leader>ff", desc = "Find files" },
+    { "<leader>fb", desc = "Search buffers" },
+
+    { "<leader>g", group = "Genero-Tools" },
+    { "<leader>gl", ":GeneroLookup<CR>", desc = "Lookup function" },
+    { "<leader>gf", ":GeneroListFunctions<CR>", desc = "List functions in file" },
+    { "<leader>gs", ":GeneroFunctionSignature<CR>", desc = "Get function signature" },
+    { "<leader>gm", ":GeneroFileMetadata<CR>", desc = "Get file metadata" },
+    { "<leader>gd", ":GeneroDebugStreamToggle<CR>", desc = "Toggle debug stream" },
+
+    { "<leader>h", group = "Hints" },
+    { "<leader>hn", ":GeneroNextHint<CR>", desc = "Next hint" },
+    { "<leader>hp", ":GeneroPrevHint<CR>", desc = "Previous hint" },
+    { "<leader>hl", ":GeneroListHints<CR>", desc = "List all hints" },
+    { "<leader>hd", ":GeneroHintDetails<CR>", desc = "Hint details" },
+    { "<leader>hf", ":GeneroHintAutofix<CR>", desc = "Apply auto-fix" },
+
+    { "<leader>s", group = "SVN/Signs/Snippets" },
+    { "<leader>sv", ":GeneroSVNToggle<CR>", desc = "Toggle SVN markers" },
+    { "<leader>sr", ":GeneroSVNRefresh<CR>", desc = "Refresh SVN markers" },
+    { "<leader>ss", ":GeneroSVNStatus<CR>", desc = "SVN status" },
+    { "<leader>su", ":GeneroUnifiedSignsToggle<CR>", desc = "Toggle unified signs" },
+    { "<leader>sl", ":GeneroSnippetList<CR>", desc = "List snippets" },
+    { "<leader>sh", ":GeneroSnippetHelp<CR>", desc = "Snippet help" },
+
+    { "<leader>t", group = "Terminal" },
+    { "<leader>tf", desc = "Float terminal" },
+    { "<leader>th", desc = "Horizontal terminal" },
+    { "<leader>tv", desc = "Vertical terminal" },
+
+    { "<leader>b", group = "Buffers" },
+    { "<leader>bd", ":bdelete<CR>", desc = "Delete buffer" },
+  })
+else
+  -- which-key v1.x uses wk.register()
+  wk.register({
+    c = {
+      name = "+Compiler",
+      a = { ":GeneroAutocompileEnable<CR>", "Enable autocompile" },
+      d = { ":GeneroAutocompileDisable<CR>", "Disable autocompile" },
+      c = { ":GeneroClearErrors<CR>", "Clear errors" },
+      e = { "Show errors only" },
+      w = { "Show warnings only" },
+      x = { "Show all diagnostics" },
+    },
+    f = {
+      name = "+Find/Search",
+      w = { "Search word under cursor" },
+      g = { "Live grep" },
+      f = { "Find files" },
+      b = { "Search buffers" },
+    },
+    g = {
+      name = "+Genero-Tools",
+      l = { ":GeneroLookup<CR>", "Lookup function" },
+      f = { ":GeneroListFunctions<CR>", "List functions in file" },
+      s = { ":GeneroFunctionSignature<CR>", "Get function signature" },
+      m = { ":GeneroFileMetadata<CR>", "Get file metadata" },
+      d = { ":GeneroDebugStreamToggle<CR>", "Toggle debug stream" },
+    },
+    h = {
+      name = "+Hints",
+      n = { ":GeneroNextHint<CR>", "Next hint" },
+      p = { ":GeneroPrevHint<CR>", "Previous hint" },
+      l = { ":GeneroListHints<CR>", "List all hints" },
+      d = { ":GeneroHintDetails<CR>", "Hint details" },
+      f = { ":GeneroHintAutofix<CR>", "Apply auto-fix" },
+    },
+    s = {
+      name = "+SVN/Signs/Snippets",
+      v = { ":GeneroSVNToggle<CR>", "Toggle SVN markers" },
+      r = { ":GeneroSVNRefresh<CR>", "Refresh SVN markers" },
+      s = { ":GeneroSVNStatus<CR>", "SVN status" },
+      u = { ":GeneroUnifiedSignsToggle<CR>", "Toggle unified signs" },
+      l = { ":GeneroSnippetList<CR>", "List snippets" },
+      h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
+    },
+    t = {
+      name = "+Terminal",
+      f = { "Float terminal" },
+      h = { "Horizontal terminal" },
+      v = { "Vertical terminal" },
+    },
+    b = {
+      name = "+Buffers",
+      d = { ":bdelete<CR>", "Delete buffer" },
+    },
+  }, { prefix = "<leader>" })
+end
 
 -- ============================================================================
 -- HELPFUL COMMANDS & AUTOCMDS
