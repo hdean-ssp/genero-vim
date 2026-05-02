@@ -1139,6 +1139,12 @@ GENERO TOOLS:
   Space+gd        - Toggle debug stream (real-time file monitoring)
   Space+gr        - Find references (show all callers in popup)
 
+TELESCOPE PICKERS (Neovim only):
+  Space+gF        - File functions (Telescope picker with preview)
+  Space+gM        - Module functions (all functions in current module)
+  Space+gS        - Module sibling files (switch between files in module)
+  Space+cD        - Compiler diagnostics (errors/warnings with preview)
+
 CODE HINTS:
   Space+hl        - List all hints in file
   Space+hd        - Show hint details
@@ -1218,7 +1224,13 @@ COMMANDS:
   :GeneroFirstError           - Jump to first error
   :GeneroLastError            - Jump to last error
   :GeneroLookup               - Lookup function definition
-  :GeneroFindReferences       - Find all callers of a function (popup)
+  :GeneroFindReferences       - Find all callers of a function (Telescope)
+  :GeneroFileFunctions        - File functions picker (Telescope)
+  :GeneroModuleFunctions      - Module functions picker (Telescope)
+  :GeneroModuleFiles          - Switch between module sibling files
+  :GeneroDiagnostics          - Compiler diagnostics picker (Telescope)
+  :GeneroDiagnosticsErrors    - Errors only (Telescope)
+  :GeneroDiagnosticsWarnings  - Warnings only (Telescope)
   :GeneroListFunctions        - List functions in file
   :GeneroListModuleFiles      - List files in module
   :GeneroFunctionSignature    - Get function signature
@@ -1255,20 +1267,23 @@ COMMANDS:
 
 FEATURES:
   • Go to definition (gd) and peek definition (gp)
+  • Find references via Telescope picker with file preview (gr)
   • Function signature and variable type hover (virtual text)
   • Schema/table/column lookup with floating window
   • Block matching highlights (IF/END IF, ELSE, CASE/WHEN)
   • Quote matching highlights
-  • Breadcrumb: current function name in statusline
-  • Reference count on FUNCTION lines
-  • Find references: show all callers in a popup (gr or Space+gr)
-  • Module-scoped autocomplete (narrows suggestions to current module when possible)
+  • Statusline breadcrumb: module.m3  file.4gl  ƒ function  refs
+  • Reference count on FUNCTION lines (virtual text + statusline)
+  • Module-scoped autocomplete (narrows suggestions to current module)
+  • Telescope pickers: file functions, module functions, module files, diagnostics
+  • TODO/BUG/FIX/TMP keyword highlighting (todo-comments.nvim)
+  • User-specific temp tag highlighting (#TMP<initials> from $USER)
   • Auto-close blocks (IF→END IF, FOR→END FOR, etc.)
   • Inline diagnostics: errors always visible, warnings on cursor line
   • Code hints with current-line-only expansion
   • Compiler integration with error/warning signs
   • Autocompile on save
-  • SVN diff markers in sign column
+  • SVN diff markers in sign column (auto-refresh on focus)
   • Code snippets (Neovim + LuaSnip)
   • In-buffer terminal (toggleterm, login shell)
   • Fuzzy search across project (Telescope with grep fallback)
@@ -1279,12 +1294,16 @@ TIPS:
   • Use ]d/[d to navigate errors, ]h/[h for hints, ]b/[b for buffers
   • Use ]]/[[ to jump between your temp code tags (#TMP<initials>)
   • gd jumps to definition, gp peeks without leaving current position
-  • gr shows all callers of a function — press Enter to jump to one
+  • gr shows all callers of a function in Telescope with file preview
+  • Space+gF picks functions in current file, Space+gM for whole module
+  • Space+gS switches between sibling files in the same module
+  • Space+cD browses compiler errors/warnings with Telescope preview
   • Hover on a function call to see its signature
   • Hover on a variable to see its type (resolves LIKE references)
   • Hover on a table name to see all columns in a floating window
   • Press Ctrl+\ to quickly open/close a terminal
   • Cursor on a word? Press Space+fw to search the whole project for it
+  • :TodoTelescope searches all TODO/BUG/FIX/TMP tags across the project
   ]==])
 end, {})
 

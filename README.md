@@ -2,7 +2,7 @@
 
 A Vim plugin for Genero development with code navigation, intelligent autocomplete, and compiler integration. Optimized for large-scale codebases (thousands of files, 6M+ LOC).
 
-**Compatibility:** Vim 7+, Vim 8+, and Neovim 0.4+
+**Compatibility:** Vim 7+, Vim 8+, Neovim 0.9.x–0.11.x
 
 ## Quick Start (2 Minutes)
 
@@ -29,30 +29,37 @@ A Vim plugin for Genero development with code navigation, intelligent autocomple
    Ctrl+,          Previous error
    Ctrl+.          Next error
    Ctrl+N          Autocomplete (insert mode)
+   gd              Go to definition
+   gp              Peek definition
+   gr              Find references (Telescope)
+   <space>gF       File functions (Telescope)
+   <space>gM       Module functions (Telescope)
    <space>gl       Lookup function
-   <space>gf       List functions in file
-   <space>gs       Get function signature
    ```
 
 See [SETUP.md](SETUP.md) for detailed installation and first-time setup.
 
 ## Features
 
-- **Code Navigation** - Function lookup, module exploration, file metadata
-- **Intelligent Autocomplete** - Function and module name completion with signatures
-- **Compiler Integration** - Real-time error/warning parsing with quickfix navigation
+- **Code Navigation** - Function lookup, go to definition, peek definition, find references
+- **Telescope Integration** - Pickers for file functions, module functions, module files, diagnostics, and references — all with file preview
+- **Intelligent Autocomplete** - Module-scoped function completion with signatures, falls back to project-wide search
+- **Compiler Integration** - Real-time error/warning parsing with quickfix and Telescope navigation
   - Support for `.4gl`, `.m3`, `.m4` files (fglcomp) and `.per` files (fglform)
   - Sign column indicators and syntax highlighting
   - Autocompile on save (configurable)
+- **Statusline Breadcrumb** - Shows `module.m3  file.4gl  ƒ function  refs` with powerline arrows and scope-based coloring
 - **Code Hints** - Real-time code quality warnings (fully configurable)
   - Whitespace, formatting, naming, and structure issues
   - Auto-fix suggestions for common issues
   - Display in sign column and/or virtual text (Neovim)
+- **Keyword Highlighting** - TODO, BUG, FIX, HACK, WARN, NOTE, TMP tags highlighted in code and comments, plus user-specific temp tags (#TMP<initials> from $USER)
 - **Code Snippets** (Neovim only) - Intelligent snippet expansion with smart parameter population
-- **SVN Integration** - Visual diff markers for added/modified/deleted lines
+- **SVN Integration** - Visual diff markers for added/modified/deleted lines, auto-refresh on focus
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Unified Sign Column** - Combines compiler and SVN markers in one column (space-efficient)
 - **Neovim Enhancements** (optional) - Async operations, floating windows, modern UI
+- **Neovim 0.9–0.11 Compatible** - Version-aware config handles API changes across Neovim versions
 - **Zero Configuration** - Works out-of-the-box with sensible defaults
 
 ## Keybindings
@@ -65,13 +72,22 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 | `Ctrl+,` | Jump to previous error |
 | `Ctrl+.` | Jump to next error |
 | `Ctrl+N` | Trigger autocomplete (insert mode) |
+| `gd` | Go to definition |
+| `gp` | Peek definition (floating preview) |
+| `gr` | Find references (Telescope picker) |
 | `<space>ca` | Enable autocompile on save |
 | `<space>cd` | Disable autocompile on save |
 | `<space>cc` | Clear error markers |
+| `<space>cD` | Compiler diagnostics (Telescope) |
 | `<space>gl` | Lookup function definition |
 | `<space>gf` | List functions in file |
 | `<space>gs` | Get function signature |
 | `<space>gm` | Get file metadata |
+| `<space>gr` | Find references |
+| `<space>gF` | File functions (Telescope picker) |
+| `<space>gM` | Module functions (Telescope picker) |
+| `<space>gS` | Module sibling files |
+| `<space>gd` | Toggle debug stream |
 | `<space>hn` | Jump to next hint |
 | `<space>hp` | Jump to previous hint |
 | `<space>hl` | List all hints |
@@ -83,9 +99,17 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 | `<space>su` | Toggle unified signs (compiler + SVN) |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
+| `<space>fw` | Search word under cursor (Telescope) |
+| `<space>fg` | Live grep (Telescope) |
+| `<space>ff` | Find files (Telescope) |
+| `<space>fb` | Search buffers (Telescope) |
 | `<space>bn` | Next buffer |
 | `<space>bp` | Previous buffer |
 | `<space>bd` | Delete buffer |
+| `]d` / `[d` | Next/previous error |
+| `]h` / `[h` | Next/previous hint |
+| `]b` / `[b` | Next/previous buffer |
+| `]]` / `[[` | Next/previous temp code tag (#TMP) |
 | `Ctrl+h/j/k/l` | Navigate between windows |
 | `gcc` | Toggle comment on line (Neovim) |
 | `gbc` | Toggle block comment (Neovim) |
@@ -98,6 +122,9 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 
 ```vim
 :GeneroLookup [function_name]           " Find function definition
+:GeneroGotoDefinition [function_name]   " Jump to function definition
+:GeneroPeekDefinition [function_name]   " Preview function in floating window
+:GeneroFindReferences [function_name]   " Find all callers (Telescope picker)
 :GeneroListFunctions [file_path]        " List functions in file
 :GeneroListModuleFiles [module_name]    " List files in module
 :GeneroFunctionSignature [function_name] " Get function signature
@@ -106,7 +133,18 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 :GeneroClearCache                       " Clear result cache
 :GeneroCompleteEnable                   " Enable autocomplete
 :GeneroCompleteDisable                  " Disable autocomplete
-:GeneroHelp                             " Show keybindings and commands (from .vimrc.example)
+:GeneroHelp                             " Show keybindings and commands
+```
+
+### Telescope Picker Commands (Neovim only)
+
+```vim
+:GeneroFileFunctions                    " Pick functions in current file
+:GeneroModuleFunctions                  " Pick functions in current module
+:GeneroModuleFiles                      " Switch between module sibling files
+:GeneroDiagnostics                      " Browse all compiler errors/warnings
+:GeneroDiagnosticsErrors                " Browse errors only
+:GeneroDiagnosticsWarnings              " Browse warnings only
 ```
 
 ### Compiler Commands
