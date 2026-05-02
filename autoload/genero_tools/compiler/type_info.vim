@@ -513,8 +513,8 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
     return result
   endif
 
-  " Standard non-RECORD parsing: split by comma
-  let chunks = split(text, ',')
+  " Standard non-RECORD parsing: split by comma (respecting parentheses)
+  let chunks = s:split_ignoring_parens(text)
 
   for chunk in chunks
     let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
