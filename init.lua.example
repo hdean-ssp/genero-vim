@@ -844,6 +844,12 @@ map("n", "gd", ":GeneroGotoDefinition<CR>", { noremap = true, silent = true, des
 map("n", "gp", ":GeneroPeekDefinition<CR>", { noremap = true, silent = true, desc = "Peek definition" })
 map("n", "gr", ":GeneroFindReferences<CR>", { noremap = true, silent = true, desc = "Find references" })
 
+-- Telescope pickers
+map("n", "<leader>gF", ":GeneroFileFunctions<CR>", { noremap = true, silent = true, desc = "File functions (Telescope)" })
+map("n", "<leader>gM", ":GeneroModuleFunctions<CR>", { noremap = true, silent = true, desc = "Module functions (Telescope)" })
+map("n", "<leader>gS", ":GeneroModuleFiles<CR>", { noremap = true, silent = true, desc = "Module sibling files" })
+map("n", "<leader>cD", ":GeneroDiagnostics<CR>", { noremap = true, silent = true, desc = "Diagnostics (Telescope)" })
+
 -- Snippet commands (Neovim only with LuaSnip)
 map("n", "<leader>sl", ":GeneroSnippetList<CR>", opts)
 map("n", "<leader>sh", ":GeneroSnippetHelp<CR>", opts)
@@ -990,6 +996,7 @@ if is_nvim_010_plus then
     { "<leader>ce", desc = "Show errors only" },
     { "<leader>cw", desc = "Show warnings only" },
     { "<leader>cx", desc = "Show all diagnostics" },
+    { "<leader>cD", ":GeneroDiagnostics<CR>", desc = "Diagnostics (Telescope)" },
 
     { "<leader>f", group = "Find/Search" },
     { "<leader>fw", desc = "Search word under cursor" },
@@ -1004,6 +1011,9 @@ if is_nvim_010_plus then
     { "<leader>gm", ":GeneroFileMetadata<CR>", desc = "Get file metadata" },
     { "<leader>gd", ":GeneroDebugStreamToggle<CR>", desc = "Toggle debug stream" },
     { "<leader>gr", ":GeneroFindReferences<CR>", desc = "Find references" },
+    { "<leader>gF", ":GeneroFileFunctions<CR>", desc = "File functions (Telescope)" },
+    { "<leader>gM", ":GeneroModuleFunctions<CR>", desc = "Module functions (Telescope)" },
+    { "<leader>gS", ":GeneroModuleFiles<CR>", desc = "Module sibling files" },
 
     { "<leader>h", group = "Hints" },
     { "<leader>hn", ":GeneroNextHint<CR>", desc = "Next hint" },
@@ -1039,6 +1049,7 @@ else
       e = { "Show errors only" },
       w = { "Show warnings only" },
       x = { "Show all diagnostics" },
+      D = { ":GeneroDiagnostics<CR>", "Diagnostics (Telescope)" },
     },
     f = {
       name = "+Find/Search",
@@ -1055,6 +1066,9 @@ else
       m = { ":GeneroFileMetadata<CR>", "Get file metadata" },
       d = { ":GeneroDebugStreamToggle<CR>", "Toggle debug stream" },
       r = { ":GeneroFindReferences<CR>", "Find references" },
+      F = { ":GeneroFileFunctions<CR>", "File functions (Telescope)" },
+      M = { ":GeneroModuleFunctions<CR>", "Module functions (Telescope)" },
+      S = { ":GeneroModuleFiles<CR>", "Module sibling files" },
     },
     h = {
       name = "+Hints",

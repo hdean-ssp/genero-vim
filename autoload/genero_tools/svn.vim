@@ -74,13 +74,44 @@ function! genero_tools#svn#setup_autocommand() abort
     autocmd!
     
     " Load SVN signs when entering a buffer (for genero files)
-    autocmd BufEnter *.fgl,*.4gl call genero_tools#svn#load_signs_for_buffer(bufnr('%'))
+    autocmd BufEnter *.fgl,*.4gl,*.per,*.m3,*.m4 call genero_tools#svn#load_signs_for_buffer(bufnr('%'))
     
     " Update SVN signs on file save if auto_update is enabled
     if genero_tools#config#get('svn_auto_update')
       autocmd BufWritePost * call genero_tools#svn#on_file_save()
     endif
+
+    " Refresh SVN markers when Neovim regains focus (catches external svn update/commit)
+    " Debounced: invalidates cache so next BufEnter fetches fresh data
+    if genero_tools#config#get('svn_auto_update')
+      autocmd FocusGained * call s:on_focus_gained()
+    endif
   augroup END
+endfunction
+
+" Handle FocusGained: invalidate SVN cache for current buffer so next
+" BufEnter picks up any external changes (svn update, etc.)
+let s:focus_timer = -1
+function! s:on_focus_gained() abort
+  if !genero_tools#config#get('svn_enabled')
+    return
+  endif
+  " Debounce: wait 500ms before refreshing (avoids rapid-fire on window manager events)
+  if s:focus_timer != -1
+    call timer_stop(s:focus_timer)
+  endif
+  let s:focus_timer = timer_start(500, function('s:refresh_current_buffer'))
+endfunction
+
+function! s:refresh_current_buffer(timer_id) abort
+  let s:focus_timer = -1
+  let file_path = expand('%:p')
+  if empty(file_path)
+    return
+  endif
+  " Invalidate cache so the next load fetches fresh SVN data
+  call genero_tools#svn#cache_invalidate(file_path)
+  call genero_tools#svn#load_signs_for_buffer(bufnr('%'))
 endfunction
 
 " Load SVN signs for a buffer (called on file entry)

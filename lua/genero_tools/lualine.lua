@@ -169,14 +169,14 @@ function M.function_name()
   return '%#GeneroLualineFunctionName# ' .. word .. ' %*'
 end
 
--- Breadcrumb: show the enclosing function name by scanning upward from cursor
--- Lightweight — no shell calls, just a buffer scan
+-- Breadcrumb: show module > file > function by scanning upward from cursor
+-- Module detection is cached per file (no shell calls on every cursor move)
 -- Respects END FUNCTION boundaries — returns empty if cursor is between functions
 function M.breadcrumb()
   local row = vim.api.nvim_win_get_cursor(0)[1]
 
-  -- Scan upward to find the enclosing FUNCTION/MAIN/REPORT
-  -- but also track if we cross an END FUNCTION first (meaning we're outside any function)
+  -- Find enclosing function name
+  local func_name = nil
   for i = row, 1, -1 do
     local line = vim.fn.getline(i)
     local trimmed = line:match('^%s*(.*)')
@@ -185,26 +185,64 @@ function M.breadcrumb()
     end
     local upper = trimmed:upper()
 
-    -- If we hit END FUNCTION/MAIN/REPORT before finding an opener, we're between functions
     if upper:match('^END%s+FUNCTION') or upper:match('^END%s+MAIN') or upper:match('^END%s+REPORT') then
-      return ''
+      break
     end
 
     if upper:match('^FUNCTION%s') then
-      local name = trimmed:match('^%w+%s+([%w_]+)')
-      if name then
-        return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
-      end
+      func_name = trimmed:match('^%w+%s+([%w_]+)')
+      break
     elseif upper:match('^MAIN') and not upper:match('^MAIN%s*%(') then
-      return '%#GeneroLualineFunctionName# ƒ MAIN %*'
+      func_name = 'MAIN'
+      break
     elseif upper:match('^REPORT%s') then
-      local name = trimmed:match('^%w+%s+([%w_]+)')
-      if name then
-        return '%#GeneroLualineFunctionName# ƒ ' .. name .. ' %*'
-      end
+      func_name = trimmed:match('^%w+%s+([%w_]+)')
+      break
     end
   end
 
+  if not func_name then
+    return ''
+  end
+
+  -- Build breadcrumb: module > file > function (module only if single-module)
+  local file = vim.fn.expand('%:t')
+  local module_name = M._get_cached_module()
+
+  if module_name and module_name ~= '' then
+    return '%#GeneroLualineCache# ' .. module_name .. ' %*'
+      .. ' > %#Comment# ' .. file .. ' %*'
+      .. ' > %#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*'
+  else
+    return '%#GeneroLualineFunctionName# ƒ ' .. func_name .. ' %*'
+  end
+end
+
+-- Module cache for breadcrumb (avoids shell calls on every statusline refresh)
+local module_cache = {}
+local module_cache_ttl = 300  -- 5 minutes
+
+function M._get_cached_module()
+  local file_path = vim.fn.expand('%:p')
+  if file_path == '' then
+    return ''
+  end
+
+  local cached = module_cache[file_path]
+  if cached and os.time() - cached.time < module_cache_ttl then
+    return cached.value
+  end
+
+  -- Try to get from VimScript cache (populated by autocomplete module detection)
+  local cache_key = 'file-module:' .. file_path
+  local ok, vim_cached = pcall(vim.fn['genero_tools#cache#get'], cache_key)
+  if ok and vim_cached and type(vim_cached) == 'table' and vim_cached.module then
+    module_cache[file_path] = { value = vim_cached.module, time = os.time() }
+    return vim_cached.module
+  end
+
+  -- Not yet detected — return empty (will populate when autocomplete runs)
+  module_cache[file_path] = { value = '', time = os.time() }
   return ''
 end
 

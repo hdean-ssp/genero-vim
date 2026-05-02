@@ -50,6 +50,20 @@ function! genero_tools#keybindings#register() abort
     if empty(maparg('gr', 'n'))
       nnoremap <silent> gr :GeneroFindReferences<CR>
     endif
+
+    " Telescope pickers (Neovim only)
+    if empty(maparg('<leader>gF', 'n'))
+      nnoremap <silent> <leader>gF :GeneroFileFunctions<CR>
+    endif
+    if empty(maparg('<leader>gM', 'n'))
+      nnoremap <silent> <leader>gM :GeneroModuleFunctions<CR>
+    endif
+    if empty(maparg('<leader>gS', 'n'))
+      nnoremap <silent> <leader>gS :GeneroModuleFiles<CR>
+    endif
+    if empty(maparg('<leader>cD', 'n'))
+      nnoremap <silent> <leader>cD :GeneroDiagnostics<CR>
+    endif
   endif
   
   " Snippet placeholder navigation (Neovim only)

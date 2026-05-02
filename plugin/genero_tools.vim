@@ -84,6 +84,16 @@ command! -nargs=? GeneroGotoDefinition call genero_tools#navigation#goto_definit
 command! -nargs=? GeneroPeekDefinition call genero_tools#navigation#peek_definition(<q-args>)
 command! -nargs=? GeneroFindReferences call genero_tools#references#find(<q-args>)
 
+" Telescope picker commands (Neovim only)
+if has('nvim')
+  command! GeneroFileFunctions lua require('genero_tools.telescope').file_functions()
+  command! GeneroModuleFunctions lua require('genero_tools.telescope').module_functions()
+  command! GeneroModuleFiles lua require('genero_tools.telescope').module_files()
+  command! GeneroDiagnostics lua require('genero_tools.telescope').diagnostics('all')
+  command! GeneroDiagnosticsErrors lua require('genero_tools.telescope').diagnostics('errors')
+  command! GeneroDiagnosticsWarnings lua require('genero_tools.telescope').diagnostics('warnings')
+endif
+
 " Register snippet commands (Neovim only)
 if has('nvim')
   command! GeneroSnippetList call genero_tools#snippets#list()
