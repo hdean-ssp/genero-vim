@@ -1,7 +1,7 @@
 " Genero-Tools Plugin - Find References
-" Shows all callers of a function in a floating window with jump-to-location
+" Shows all callers of a function via Telescope picker (with file preview)
+" Falls back to a floating window if Telescope is not available
 " Leverages find-function-dependents (same data as refcount, but displayed)
-" Neovim only — uses floating windows
 
 let s:ref_win = -1
 let s:ref_buf = -1
@@ -39,13 +39,22 @@ function! genero_tools#references#find(...) abort
     return
   endif
 
-  " Store reference data for jump-to-location
+  " Try Telescope picker first (Neovim + Telescope available)
+  if has('nvim')
+    try
+      let data_json = json_encode(data)
+      let handled = luaeval('require("genero_tools.references").find(_A[1], _A[2])', [func_name, data_json])
+      if handled
+        return
+      endif
+    catch
+      " Telescope not available or error — fall through to floating window
+    endtry
+  endif
+
+  " Fallback: floating window
   let s:ref_data = data
-
-  " Build display lines
   let lines = s:format_references(func_name, data)
-
-  " Show in floating window
   call s:show_references_window(lines, func_name, len(data))
 endfunction
 
