@@ -85,10 +85,10 @@ function! s:format_references(func_name, data) abort
   for ref in a:data
     let idx += 1
 
-    " Extract fields — adapt to whatever JSON structure query.sh returns
+    " Extract fields — query.sh returns: name, signature, path, line_number
     let caller_name = get(ref, 'name', get(ref, 'function', get(ref, 'caller', '?')))
-    let file = get(ref, 'file', get(ref, 'file_path', get(ref, 'path', '')))
-    let line_nr = get(ref, 'line', get(ref, 'line_start', ''))
+    let file = get(ref, 'path', get(ref, 'file', get(ref, 'file_path', '')))
+    let line_nr = get(ref, 'line_number', get(ref, 'line', get(ref, 'line_start', '')))
     let module = get(ref, 'module', '')
 
     " Handle line as dict (some query.sh responses use {start, end})
@@ -190,8 +190,8 @@ function! genero_tools#references#jump_to_reference() abort
   endif
 
   let ref = s:ref_data[ref_index]
-  let file = get(ref, 'file', get(ref, 'file_path', get(ref, 'path', '')))
-  let line_nr = get(ref, 'line', get(ref, 'line_start', 0))
+  let file = get(ref, 'path', get(ref, 'file', get(ref, 'file_path', '')))
+  let line_nr = get(ref, 'line_number', get(ref, 'line', get(ref, 'line_start', 0)))
 
   " Handle line as dict
   if type(line_nr) == type({})

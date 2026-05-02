@@ -38,12 +38,14 @@ local function resolve_path(file)
   return file
 end
 
--- Extract fields from a reference entry (handles varying JSON shapes from query.sh)
+-- Extract fields from a reference entry
+-- query.sh find-function-dependents returns: name, signature, path, line_number
 local function parse_ref(ref)
   local name = ref.name or ref["function"] or ref.caller or "?"
-  local file = ref.file or ref.file_path or ref.path or ""
-  local line = ref.line or ref.line_start or 0
+  local file = ref.path or ref.file or ref.file_path or ""
+  local line = ref.line_number or ref.line or ref.line_start or 0
   local module = ref.module or ""
+  local signature = ref.signature or ""
 
   -- Handle line as table {start, end}
   if type(line) == "table" then
@@ -55,6 +57,7 @@ local function parse_ref(ref)
     file = file,
     line = tonumber(line) or 0,
     module = module,
+    signature = signature,
   }
 end
 
