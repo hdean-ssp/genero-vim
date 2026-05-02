@@ -978,17 +978,10 @@ local function toggle_kiro()
   if not kiro_term then
     local Terminal = require("toggleterm.terminal").Terminal
     kiro_term = Terminal:new({
-      cmd = "kiro-cli",
+      cmd = "bash --login -c 'kiro-cli || echo \"kiro-cli not found or exited. Install with: npm install -g @anthropic-ai/kiro-cli\"; exec bash --login'",
       direction = "vertical",
       count = 9,
       close_on_exit = false,
-      on_open = function(term)
-        -- Send the current file as context on first open
-        local file = vim.fn.expand("%:t")
-        if file ~= "" then
-          term:send("I'm working on " .. file)
-        end
-      end,
     })
   end
   kiro_term:toggle()

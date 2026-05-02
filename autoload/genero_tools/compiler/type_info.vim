@@ -409,11 +409,11 @@ function! s:collect_define_statement(lines, start_idx) abort
     let upper_line = toupper(line)
 
     " Track RECORD...END RECORD blocks
-    if upper_line =~# '\<RECORD\>'
-      let in_record += 1
-    endif
+    " Check END RECORD first to avoid double-counting (END RECORD contains RECORD)
     if upper_line =~# '^END\s\+RECORD'
       let in_record -= 1
+    elseif upper_line =~# '\<RECORD\>'
+      let in_record += 1
     endif
 
     let result .= ' ' . line
@@ -482,6 +482,12 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
 
     " Extract fields between RECORD and END RECORD
     let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.\{-}\ze\s*END\s\+RECORD')
+    " Safety: if regex didn't match (END RECORD missing or malformed), try harder
+    if empty(fields_text)
+      " Fall back: take everything after RECORD, strip END RECORD if present
+      let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.*')
+      let fields_text = substitute(fields_text, '\c\s*END\s\+RECORD.*$', '', '')
+    endif
     let fields = s:parse_record_fields(fields_text)
 
     let type_str = prefix . 'RECORD'
