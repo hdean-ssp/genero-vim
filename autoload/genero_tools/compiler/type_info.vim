@@ -211,8 +211,9 @@ endfunction
 function! s:resolve_record_field(word, bufnr, line) abort
   let line_text = getline(a:line)
 
-  " Look for pattern: something.word (word is the field name)
-  let pattern = '\c\(\w\+\)\.' . escape(a:word, '\') . '\>'
+  " Look for pattern: something.word or something[index].word
+  " Handles: l_rec.field, l_arr[1].field, l_arr[i].field, l_arr[i,j].field
+  let pattern = '\c\(\w\+\)\(\[[^\]]*\]\)*\.' . escape(a:word, '\') . '\>'
   let match = matchlist(line_text, pattern)
   if empty(match)
     return {}
