@@ -233,17 +233,55 @@ function M._get_cached_module()
     return cached.value
   end
 
-  -- Try to get from VimScript cache (populated by autocomplete module detection)
-  local cache_key = 'file-module:' .. file_path
-  local ok, vim_cached = pcall(vim.fn['genero_tools#cache#get'], cache_key)
-  if ok and vim_cached and type(vim_cached) == 'table' and vim_cached.module then
-    module_cache[file_path] = { value = vim_cached.module, time = os.time() }
-    return vim_cached.module
+  -- Try to detect module (uses query.sh, but result is cached for 5 min)
+  local ok, telescope = pcall(require, 'genero_tools.telescope')
+  if not ok then
+    module_cache[file_path] = { value = '', time = os.time() }
+    return ''
   end
 
-  -- Not yet detected — return empty (will populate when autocomplete runs)
-  module_cache[file_path] = { value = '', time = os.time() }
-  return ''
+  -- Schedule the detection so it doesn't block statusline rendering
+  -- For now, return empty and populate async on next call
+  if not cached then
+    module_cache[file_path] = { value = '', time = os.time() - module_cache_ttl + 5 }
+    -- Trigger detection in background (will be available on next statusline refresh)
+    vim.schedule(function()
+      local funcs_ok, funcs_result = pcall(vim.fn['genero_tools#command#execute_shell'],
+        'list-file-functions', { vim.fn['genero_tools#normalize_file_path'](file_path) })
+      if not funcs_ok or not funcs_result or funcs_result.success ~= 1 then
+        module_cache[file_path] = { value = '', time = os.time() }
+        return
+      end
+      local data = funcs_result.data
+      if type(data) ~= 'table' or not data[1] then
+        module_cache[file_path] = { value = '', time = os.time() }
+        return
+      end
+      local func_name = type(data[1]) == 'table' and data[1].name or ''
+      if func_name == '' then
+        module_cache[file_path] = { value = '', time = os.time() }
+        return
+      end
+      local mod_ok, mod_result = pcall(vim.fn['genero_tools#command#execute_shell'],
+        'find-module-for-function', { func_name })
+      if not mod_ok or not mod_result or mod_result.success ~= 1 or not mod_result.data then
+        module_cache[file_path] = { value = '', time = os.time() }
+        return
+      end
+      local mod_data = mod_result.data
+      local module_name = ''
+      if type(mod_data) == 'string' then
+        module_name = mod_data
+      elseif type(mod_data) == 'table' and mod_data[1] and not mod_data[2] then
+        local item = mod_data[1]
+        module_name = type(item) == 'table' and (item.name or item.module or '') or tostring(item)
+      end
+      module_cache[file_path] = { value = module_name, time = os.time() }
+    end)
+    return ''
+  end
+
+  return cached.value
 end
 
 -- Setup highlight groups for lualine
