@@ -973,6 +973,7 @@ map("n", "<leader>tv", "<cmd>ToggleTerm direction=vertical<CR>", { noremap = tru
 
 -- Kiro AI assistant terminal (dedicated vertical split)
 -- Uses ToggleTerm instance #9 so it doesn't conflict with regular terminals
+-- Mouse is disabled in this terminal so URLs can be selected/copied normally
 local kiro_term = nil
 local function toggle_kiro()
   if not kiro_term then
@@ -982,6 +983,11 @@ local function toggle_kiro()
       direction = "vertical",
       count = 9,
       close_on_exit = false,
+      on_open = function(term)
+        -- Disable mouse in this terminal so URLs can be selected with the mouse
+        vim.api.nvim_buf_set_option(term.bufnr, "mousescroll", "")
+        vim.cmd("setlocal mouse=")
+      end,
     })
   end
   kiro_term:toggle()

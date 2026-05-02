@@ -541,17 +541,17 @@ function! s:parse_record_fields(fields_text) abort
     return fields
   endif
 
+  " Strip END RECORD and anything after it before splitting
+  let clean = substitute(a:fields_text, '\c\s*END\s\+RECORD.*$', '', '')
+
   " Split by comma
-  let chunks = split(a:fields_text, ',')
+  let chunks = split(clean, ',')
 
   for chunk in chunks
     let chunk = substitute(chunk, '^\s*\|\s*$', '', 'g')
     " Strip comments
     let chunk = substitute(chunk, '\s*[#].*$', '', '')
     let chunk = substitute(chunk, '\s*--.*$', '', '')
-
-    " Strip any trailing END RECORD that leaked in
-    let chunk = substitute(chunk, '\c\s*END\s\+RECORD.*$', '', '')
 
     if empty(chunk)
       continue
