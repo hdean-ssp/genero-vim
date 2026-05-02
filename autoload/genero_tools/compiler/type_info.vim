@@ -958,13 +958,13 @@ endfunction
 
 function! genero_tools#compiler#type_info#manual() abort
   if !has('nvim')
-    echom '[type_info] Neovim required for virtual text'
+    call genero_tools#error#warn('type_info', 'Neovim required for virtual text')
     return
   endif
 
   let word = expand('<cword>')
   if empty(word)
-    echom '[type_info] No word under cursor'
+    call genero_tools#error#warn('type_info', 'No word under cursor')
     return
   endif
 
@@ -973,40 +973,40 @@ function! genero_tools#compiler#type_info#manual() abort
   let s:last_line = -1
 
   let is_func = s:word_is_function_call(word, line('.'))
-  echom '[type_info] Word: ' . word . ' | Is function call: ' . is_func
+  call genero_tools#error#debug('type_info', 'Word: ' . word . ' | Is function call: ' . is_func)
 
   if is_func
-    echom '[type_info] Looking up function via query.sh...'
+    call genero_tools#error#debug('type_info', 'Looking up function via query.sh...')
     let result = genero_tools#command#execute_shell('find-function', [word])
     if result.success && !empty(result.data)
-      echom '[type_info] Found function signature'
+      call genero_tools#error#debug('type_info', 'Found function signature')
       let cache_key = 'find-function:' . word
       call genero_tools#cache#set(cache_key, result)
       call s:show_function_signature(bufnr('%'), line('.'), word, result.data)
     else
-      echom '[type_info] Function not found, trying variable lookup...'
+      call genero_tools#error#debug('type_info', 'Function not found, trying variable lookup...')
       let define_info = s:find_define(word, bufnr('%'), line('.'))
       if !empty(define_info)
-        echom '[type_info] Found DEFINE: ' . define_info.type . ' (line ' . define_info.line . ', ' . define_info.scope . ')'
+        call genero_tools#error#debug('type_info', 'Found DEFINE: ' . define_info.type)
         call s:show_variable_type(bufnr('%'), line('.'), word, define_info)
       else
-        echom '[type_info] No DEFINE found for: ' . word
+        call genero_tools#error#debug('type_info', 'No DEFINE found for: ' . word)
       endif
     endif
   else
-    echom '[type_info] Looking up variable DEFINE...'
+    call genero_tools#error#debug('type_info', 'Looking up variable DEFINE...')
     let define_info = s:find_define(word, bufnr('%'), line('.'))
     if !empty(define_info)
-      echom '[type_info] Found DEFINE: ' . define_info.type . ' (line ' . define_info.line . ', ' . define_info.scope . ')'
+      call genero_tools#error#debug('type_info', 'Found DEFINE: ' . define_info.type)
       call s:show_variable_type(bufnr('%'), line('.'), word, define_info)
     else
-      echom '[type_info] No DEFINE found, trying function lookup...'
+      call genero_tools#error#debug('type_info', 'No DEFINE found, trying function lookup...')
       let result = genero_tools#command#execute_shell('find-function', [word])
       if result.success && !empty(result.data)
-        echom '[type_info] Found function signature'
+        call genero_tools#error#debug('type_info', 'Found function signature')
         call s:show_function_signature(bufnr('%'), line('.'), word, result.data)
       else
-        echom '[type_info] Nothing found for: ' . word
+        call genero_tools#error#debug('type_info', 'Nothing found for: ' . word)
       endif
     endif
   endif

@@ -142,12 +142,14 @@ vim.g.genero_tools_config = {
   -- Startup behavior
   startup_messages = "silent",          -- Message level: "silent", "normal", "verbose"
   
-  -- Query tool path (adjust if needed)
-  -- Default: uses BRODIR environment variable
-  -- genero_tools_path = (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh",
-  
-  -- Uncomment and adjust the line below if your query.sh is in a custom location
-  genero_tools_path = vim.fn.expand("~/personal/genero-tools/query.sh"),
+  -- Query tool path
+  -- Set this to the location of your genero-tools query.sh script
+  -- Common locations:
+  --   BRODIR-based: (os.getenv("BRODIR") or "/opt/brodir") .. "/etc/genero-tools/query.sh"
+  --   Home directory: vim.fn.expand("~/genero-tools/query.sh")
+  genero_tools_path = os.getenv("GENERO_TOOLS_PATH")
+    or (os.getenv("BRODIR") and os.getenv("BRODIR") .. "/etc/genero-tools/query.sh")
+    or vim.fn.expand("~/genero-tools/query.sh"),
   
   -- Display and features
   display_mode = "inline",  -- Use inline windows for results (valid modes: quickfix, popup, split, echo, inline)

@@ -261,24 +261,44 @@ function M._get_refcount(func_name)
   M._refcount_pending[func_name] = true
 
   vim.schedule(function()
-    local tool_path = vim.fn['genero_tools#config#get']('genero_tools_path')
-    if not tool_path or tool_path == '' then
+    local ok_path, tool_path = pcall(vim.fn['genero_tools#config#get'], 'genero_tools_path')
+    if not ok_path or not tool_path or tool_path == '' then
       M._refcount_pending[func_name] = nil
       return
     end
-    local escaped = vim.fn['genero_tools#command#escape_arg'](func_name)
-    local cmd = tool_path .. ' find-function-dependents ' .. escaped
-    local output = vim.fn.system(cmd)
-    if vim.v.shell_error == 0 and output and output ~= '' then
-      local decode_ok, data = pcall(vim.fn.json_decode, output)
-      if decode_ok and type(data) == 'table' then
-        -- Write directly to the VimScript refcount cache
-        local rc = vim.g.genero_tools_refcount_cache or {}
-        rc[func_name] = #data
-        vim.g.genero_tools_refcount_cache = rc
-      end
+    local ok_esc, escaped = pcall(vim.fn['genero_tools#command#escape_arg'], func_name)
+    if not ok_esc or not escaped then
+      M._refcount_pending[func_name] = nil
+      return
     end
-    M._refcount_pending[func_name] = nil
+    local cmd = tool_path .. ' find-function-dependents ' .. escaped
+
+    -- Use jobstart for async execution (non-blocking)
+    local output_lines = {}
+    vim.fn.jobstart(cmd, {
+      stdout_buffered = true,
+      on_stdout = function(_, data)
+        if data then
+          output_lines = data
+        end
+      end,
+      on_exit = function(_, exit_code)
+        M._refcount_pending[func_name] = nil
+        if exit_code ~= 0 then
+          return
+        end
+        local output = table.concat(output_lines, '\n')
+        if output == '' then
+          return
+        end
+        local decode_ok, data = pcall(vim.fn.json_decode, output)
+        if decode_ok and type(data) == 'table' then
+          local rc = vim.g.genero_tools_refcount_cache or {}
+          rc[func_name] = #data
+          vim.g.genero_tools_refcount_cache = rc
+        end
+      end,
+    })
   end)
 
   return nil
@@ -343,7 +363,8 @@ function M._get_cached_module()
       -- telescope.detect_module is local, so call module_functions' logic inline
       -- Step 1: get a function name from this file
       local basename = './' .. vim.fn.fnamemodify(file_path, ':t')
-      local rel = vim.fn['genero_tools#normalize_file_path'](file_path)
+      local ok_rel, rel = pcall(vim.fn['genero_tools#normalize_file_path'], file_path)
+      if not ok_rel then rel = basename end
 
       local funcs_result = nil
       -- Try normalized path first
