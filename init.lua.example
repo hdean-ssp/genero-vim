@@ -152,7 +152,7 @@ vim.g.genero_tools_config = {
     or vim.fn.expand("~/genero-tools/query.sh"),
   
   -- Display and features
-  display_mode = "inline",  -- Use inline windows for results (valid modes: quickfix, popup, split, echo, inline)
+  display_mode = "floating",  -- Use floating windows for results (valid modes: quickfix, floating, echo)
   snippets_enabled = true,
   snippet_engine = "luasnip",            -- Snippet engine: "luasnip", "vim-snipmate", "vim-vsnip"
   snippet_smart_expansion = true,        -- Enable async parameter population

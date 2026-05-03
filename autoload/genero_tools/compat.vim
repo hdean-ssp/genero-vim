@@ -10,12 +10,8 @@ function! genero_tools#compat#is_vim() abort
   return !has('nvim')
 endfunction
 
-" Track whether deprecation warning has been shown (once per session)
-let s:deprecation_warned = {}
-
 " Get supported display modes for current editor
 " Canonical modes: quickfix, floating (Neovim only), echo
-" Legacy modes still accepted but normalized: popup, inline, split
 function! genero_tools#compat#get_supported_display_modes() abort
   if genero_tools#compat#is_neovim()
     return ['quickfix', 'floating', 'echo']
@@ -24,24 +20,8 @@ function! genero_tools#compat#get_supported_display_modes() abort
   endif
 endfunction
 
-" Normalize display mode: map legacy names to canonical names
-" popup -> floating, inline -> floating, split -> floating
+" Normalize display mode: validate against canonical modes
 function! genero_tools#compat#normalize_display_mode(mode) abort
-  " Legacy mode mapping with one-time deprecation notice
-  if a:mode == 'popup' || a:mode == 'inline' || a:mode == 'split'
-    if !has_key(s:deprecation_warned, a:mode)
-      let s:deprecation_warned[a:mode] = 1
-      if genero_tools#config#get('debug_mode')
-        echom '[compat] Display mode "' . a:mode . '" is deprecated. Use "floating" (Neovim) or "echo" (Vim) instead.'
-      endif
-    endif
-    if genero_tools#compat#is_neovim()
-      return 'floating'
-    else
-      return 'echo'
-    endif
-  endif
-  
   if a:mode == 'floating'
     if genero_tools#compat#is_neovim()
       return 'floating'

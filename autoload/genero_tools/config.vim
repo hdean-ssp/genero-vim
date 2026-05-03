@@ -11,7 +11,7 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('cache_enabled', 1)
   call genero_tools#config#init_key('cache_ttl', 3600)
   call genero_tools#config#init_key('cache_max_size', 500)
-  call genero_tools#config#init_key('display_mode', 'quickfix')
+  call genero_tools#config#init_key('display_mode', 'floating')
   call genero_tools#config#init_key('keybindings_enabled', 1)
   call genero_tools#config#init_key('timeout', 10000)
   call genero_tools#config#init_key('async_enabled', 1)
@@ -57,12 +57,6 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('popup_auto_close_delay', 5000)
   
   " Feature-specific display mode overrides (Phase 1)
-  call genero_tools#config#init_key('compiler_display_mode', '')
-  call genero_tools#config#init_key('hints_display_mode', '')
-  call genero_tools#config#init_key('signatures_display_mode', '')
-  call genero_tools#config#init_key('progress_display_mode', '')
-  call genero_tools#config#init_key('debug_display_mode', '')
-  call genero_tools#config#init_key('error_display_mode', '')
   
   " Notification display options (Phase 1)
   call genero_tools#config#init_key('notify_enabled', 1)
@@ -136,7 +130,7 @@ function! genero_tools#config#get(key) abort
   elseif a:key == 'cache_max_size'
     return 500
   elseif a:key == 'display_mode'
-    return 'quickfix'
+    return 'floating'
   elseif a:key == 'keybindings_enabled'
     return 1
   elseif a:key == 'timeout'
@@ -229,18 +223,6 @@ function! genero_tools#config#get(key) abort
     return 0
   elseif a:key == 'lua_enabled'
     return has('nvim')
-  elseif a:key == 'compiler_display_mode'
-    return ''
-  elseif a:key == 'hints_display_mode'
-    return ''
-  elseif a:key == 'signatures_display_mode'
-    return ''
-  elseif a:key == 'progress_display_mode'
-    return ''
-  elseif a:key == 'debug_display_mode'
-    return ''
-  elseif a:key == 'error_display_mode'
-    return ''
   elseif a:key == 'notify_enabled'
     return 1
   elseif a:key == 'notify_duration'
@@ -359,10 +341,10 @@ function! genero_tools#config#validate() abort
   
   " Validate display_mode is supported
   let l:display_mode = genero_tools#config#get('display_mode')
-  let l:valid_modes = ['quickfix', 'popup', 'split', 'echo', 'inline']
+  let l:valid_modes = ['quickfix', 'floating', 'echo']
   if index(l:valid_modes, l:display_mode) == -1
-    call genero_tools#error#warn('config', 'invalid display_mode "' . l:display_mode . '", using quickfix')
-    let g:genero_tools_config.display_mode = 'quickfix'
+    call genero_tools#error#warn('config', 'invalid display_mode "' . l:display_mode . '", using floating')
+    let g:genero_tools_config.display_mode = 'floating'
   endif
   
   " Validate cache settings
@@ -458,16 +440,6 @@ function! genero_tools#config#validate() abort
     let g:genero_tools_config.autocomplete_delay = 500
   endif
   
-  " Validate feature-specific display modes (Phase 1)
-  for feature in ['compiler', 'signatures', 'progress', 'debug', 'error']
-    let mode_key = feature . '_display_mode'
-    let mode = genero_tools#config#get(mode_key)
-    
-    " Only validate if not empty (empty = inherit from global)
-    if !empty(mode)
-      let mode = genero_tools#compat#validate_display_mode(mode)
-      let g:genero_tools_config[mode_key] = mode
-    endif
   endfor
   
   " Validate notification options (Phase 1)

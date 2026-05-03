@@ -102,7 +102,7 @@ let g:genero_tools_config = {
   \ 'compiler_source_dir': '.',
   \ 'compiler_version': 'auto',
   \ 'genero_tools_path': $BRODIR . '/etc/genero-tools/query.sh',
-  \ 'display_mode': 'inline',
+  \ 'display_mode': 'floating',
   \ 'snippets_enabled': 1,
   \ 'snippet_engine': 'luasnip',
   \ 'snippet_smart_expansion': 1,
