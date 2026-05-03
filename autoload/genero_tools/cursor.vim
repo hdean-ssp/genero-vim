@@ -61,6 +61,14 @@ function! genero_tools#cursor#on_moved() abort
 
   " === EXPENSIVE operations (debounced, only if word changed) ===
 
+  " Word highlight needs to refresh on column changes too (moving into/out of strings)
+  let word_or_col_changed = word_changed || col_changed
+
+  if word_or_col_changed && has('nvim')
+    " Word highlight runs on every word/col change (cheap — scoped to function)
+    call genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
+  endif
+
   if word_changed && has('nvim')
     " Cancel pending expensive timer
     if s:expensive_timer != -1
@@ -70,9 +78,6 @@ function! genero_tools#cursor#on_moved() abort
 
     " Clear stale type info immediately
     call genero_tools#compiler#type_info#on_word_changed(word, bufnr, current_line)
-
-    " Highlight all occurrences of the word in current function scope
-    call genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
 
     " Schedule expensive lookup after 400ms
     " Allow short words on FUNCTION definition lines (signature shown for whole line)
