@@ -44,7 +44,7 @@ function! genero_tools#display#result(result, display_mode) abort
   if display_mode == 'quickfix'
     call genero_tools#display#quickfix(formatted, a:result)
   elseif display_mode == 'floating'
-    call genero_tools#display#floating(formatted)
+    call genero_tools#display#popup(formatted)
   else
     call genero_tools#display#echo(join(formatted, "\n"))
   endif
@@ -78,8 +78,8 @@ function! genero_tools#display#quickfix(formatted, result) abort
   silent! copen
 endfunction
 
-" Display in floating window (neovim only)
-function! genero_tools#display#floating(formatted) abort
+" Display in popup window (neovim only - large floating window)
+function! genero_tools#display#popup(formatted) abort
   if !has('nvim')
     call genero_tools#display#echo(join(a:formatted, "\n"))
     return
@@ -163,6 +163,20 @@ function! genero_tools#display#floating(formatted) abort
   endtry
 endfunction
 
+" Display in split window
+function! genero_tools#display#split(formatted) abort
+  " Create new split
+  new
+  
+  " Set buffer content
+  call append(0, a:formatted)
+  
+  " Set buffer options
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal nomodifiable
+endfunction
 
 " Display in command line (echo)
 function! genero_tools#display#echo(text) abort
@@ -268,7 +282,126 @@ function! genero_tools#display#format_item(item) abort
 endfunction
 
 
+" Display inline popup above cursor (works in both vim and neovim)
+function! genero_tools#display#inline(formatted) abort
+  " Don't display if there's no content
+  if empty(a:formatted)
+    return
+  endif
+  
+  " Check if all lines are just whitespace
+  let has_content = 0
+  for line in a:formatted
+    if line !~# '^\s*$'
+      let has_content = 1
+      break
+    endif
+  endfor
+  
+  if !has_content
+    return
+  endif
+  
+  " Limit to first few lines for inline display
+  let max_lines = 5
+  let display_lines = a:formatted[0:max_lines-1]
+  
+  if genero_tools#compat#is_neovim()
+    call genero_tools#display#inline_neovim(display_lines)
+  else
+    call genero_tools#display#inline_vim(display_lines)
+  endif
+endfunction
 
+" Inline popup for Neovim using floating window
+function! genero_tools#display#inline_neovim(lines) abort
+  if !has('nvim')
+    call genero_tools#display#inline_vim(a:lines)
+    return
+  endif
+  
+  try
+    " Create popup buffer
+    let buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(buf, 0, -1, v:false, a:lines)
+    
+    " Get configuration values
+    let border = genero_tools#config#get('floating_window_border')
+    let auto_close_delay = genero_tools#config#get('popup_auto_close_delay')
+    
+    " Calculate dimensions
+    let width = 0
+    for line in a:lines
+      let width = max([width, len(line)])
+    endfor
+    let width = min([width + 2, 100])
+    let height = len(a:lines)
+    
+    " Create floating window just above cursor
+    let opts = {
+      \ 'relative': 'cursor',
+      \ 'width': width,
+      \ 'height': height,
+      \ 'col': 0,
+      \ 'row': -height - 1,
+      \ 'anchor': 'SW',
+      \ 'style': 'minimal',
+      \ 'border': border
+      \ }
+    
+    let win = nvim_open_win(buf, v:false, opts)
+    
+    " Set buffer options
+    call nvim_buf_set_option(buf, 'modifiable', v:false)
+    
+    " Auto-close after configured delay
+    call timer_start(auto_close_delay, function('genero_tools#display#close_inline_window', [win]))
+  catch
+    " Fallback to echo
+    call genero_tools#display#echo(join(a:lines, "\n"))
+  endtry
+endfunction
+
+" Inline popup for Vim using echo with visual formatting
+function! genero_tools#display#inline_vim(lines) abort
+  try
+    " For classic Vim, use a simple echo-based popup that doesn't disrupt layout
+    " Format the output nicely
+    let formatted = []
+    call add(formatted, '┌' . repeat('─', 78) . '┐')
+    
+    for line in a:lines
+      let truncated = line[0:76]
+      let padding = repeat(' ', 78 - len(truncated))
+      call add(formatted, '│ ' . truncated . padding . ' │')
+    endfor
+    
+    call add(formatted, '└' . repeat('─', 78) . '┘')
+    
+    " Display using echo (non-intrusive)
+    call genero_tools#display#echo(join(formatted, "\n"))
+    
+  catch
+    " Fallback to simple echo
+    call genero_tools#display#echo(join(a:lines, "\n"))
+  endtry
+endfunction
+
+" Close inline window (Neovim)
+function! genero_tools#display#close_inline_window(win_id, timer_id) abort
+  if !has('nvim')
+    return
+  endif
+  
+  try
+    if nvim_win_is_valid(a:win_id)
+      call nvim_win_close(a:win_id, v:true)
+    endif
+  catch
+  endtry
+endfunction
+
+" Get error and warning counts for current buffer
 function! genero_tools#display#get_diagnostic_counts() abort
   let bufnr = bufnr('%')
   let errors = 0
@@ -322,10 +455,18 @@ function! genero_tools#display#setup_statusline() abort
   endif
 endfunction
 
-
 " Get effective display mode for a feature
-" Returns global display_mode (feature-specific overrides removed)
+" Returns feature-specific override if set, otherwise returns global display_mode
 function! genero_tools#display#get_mode(feature) abort
+  " Check for feature-specific override
+  let override_key = a:feature . '_display_mode'
+  let override = genero_tools#config#get(override_key)
+  
+  if !empty(override)
+    return override
+  endif
+  
+  " Fall back to global display_mode
   return genero_tools#config#get('display_mode')
 endfunction
 
@@ -344,9 +485,54 @@ function! genero_tools#display#notify(message, duration) abort
   " (echo messages disappear when user presses a key or after a short time naturally)
 endfunction
 
+" Neovim notification using floating window
+function! genero_tools#display#notify_neovim(message, duration) abort
+  if !has('nvim')
+    call genero_tools#display#notify_vim(a:message, a:duration)
+    return
+  endif
+  
+  try
+    let buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(buf, 0, -1, v:false, [a:message])
+    
+    let width = min([len(a:message) + 2, &columns - 4])
+    let height = 1
+    
+    let opts = {
+      \ 'relative': 'editor',
+      \ 'width': width,
+      \ 'height': height,
+      \ 'col': (&columns - width) / 2,
+      \ 'row': 1,
+      \ 'anchor': 'NW',
+      \ 'style': 'minimal',
+      \ 'border': 'rounded'
+      \ }
+    
+    let win = nvim_open_win(buf, v:false, opts)
+    
+    if a:duration > 0
+      call timer_start(a:duration, function('genero_tools#display#close_inline_window', [win]))
+    endif
+  catch
+    call genero_tools#display#echo(a:message)
+  endtry
+endfunction
 
+" Vim notification using echo
+function! genero_tools#display#notify_vim(message, duration) abort
+  call genero_tools#display#echo(a:message)
+  
+  if a:duration > 0 && has('timers')
+    call timer_start(a:duration, function('s:clear_notification'))
+  endif
+endfunction
 
 " Helper function to clear notification
+function! s:clear_notification(timer_id) abort
+  redraw
+endfunction
 
 " Display error with display mode support
 function! genero_tools#display#error(error_message, display_mode) abort
