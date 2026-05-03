@@ -201,8 +201,9 @@ function M.breadcrumb()
     result = result .. '%#GeneroSepModuleFile#%*'
   end
 
-  -- File (medium) — always shown
-  result = result .. '%#GeneroLualineFile# ' .. file .. ' '
+  -- File (medium) — always shown, with modified indicator
+  local modified = vim.bo.modified and ' ●' or ''
+  result = result .. '%#GeneroLualineFile# ' .. file .. modified .. ' '
 
   if has_func then
     -- Arrow: file bg → function bg

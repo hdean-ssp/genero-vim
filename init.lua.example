@@ -342,7 +342,7 @@ local plugins = {
         },
         sections = {
           lualine_a = { "mode" },
-          lualine_b = { "modified" },
+          lualine_b = {},
           lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.breadcrumb },
           lualine_x = { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "filetype",
             function() return os.getenv("DEVNAME") or "" end },
