@@ -35,6 +35,12 @@ function! genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
     return
   endif
 
+  " Skip if cursor is inside a comment or string
+  if s:in_comment_or_string(a:current_line)
+    let s:last_word = ''
+    return
+  endif
+
   let s:last_word = a:word
   let s:last_line = a:current_line
   let s:last_bufnr = a:bufnr
@@ -49,15 +55,24 @@ function! genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
   for i in range(len(lines))
     let line_nr = scope_start + i
     let line_text = lines[i]
-    let start = 0
 
+    " Skip comment lines entirely
+    let trimmed = substitute(line_text, '^\s*', '', '')
+    if trimmed =~# '^[#]' || trimmed =~# '^--' || trimmed =~# '^{'
+      continue
+    endif
+
+    " Get the code portion (strip inline comments)
+    let code_part = s:strip_strings_and_comments(line_text)
+
+    let start = 0
     while 1
-      let match_pos = matchstrpos(line_text, '\c' . pattern, start)
+      let match_pos = matchstrpos(code_part, '\c' . pattern, start)
       if empty(match_pos[0]) || match_pos[1] == -1
         break
       endif
 
-      " Don't highlight the word under the cursor itself (cursor already shows it)
+      " Don't highlight the word under the cursor itself
       if line_nr == a:current_line
         let start = match_pos[2]
         continue
@@ -152,4 +167,85 @@ function! genero_tools#word_highlight#clear() abort
   catch
   endtry
   let s:last_word = ''
+endfunction
+
+" Check if cursor position is inside a comment or string literal
+function! s:in_comment_or_string(line_nr) abort
+  let line_text = getline(a:line_nr)
+  let cursor_col = col('.')
+
+  " Full-line comments
+  let trimmed = substitute(line_text, '^\s*', '', '')
+  if trimmed =~# '^[#]' || trimmed =~# '^--' || trimmed =~# '^{'
+    return 1
+  endif
+
+  " Check if cursor is inside a string or after an inline comment
+  let in_string = 0
+  let string_char = ''
+  let i = 0
+  while i < len(line_text) && i < cursor_col - 1
+    let ch = line_text[i]
+
+    if in_string
+      if ch ==# string_char
+        let in_string = 0
+      endif
+    else
+      if ch ==# '"' || ch ==# "'"
+        let in_string = 1
+        let string_char = ch
+      elseif ch ==# '#'
+        " Rest of line is a comment
+        return 1
+      elseif i + 1 < len(line_text) && line_text[i : i + 1] ==# '--'
+        return 1
+      endif
+    endif
+
+    let i += 1
+  endwhile
+
+  return in_string
+endfunction
+
+" Strip string literals and inline comments from a line
+" Replaces string contents with spaces (preserves column positions)
+function! s:strip_strings_and_comments(line_text) abort
+  let result = ''
+  let in_string = 0
+  let string_char = ''
+  let i = 0
+
+  while i < len(a:line_text)
+    let ch = a:line_text[i]
+
+    if in_string
+      if ch ==# string_char
+        let in_string = 0
+        let result .= ' '
+      else
+        let result .= ' '
+      endif
+    else
+      if ch ==# '"' || ch ==# "'"
+        let in_string = 1
+        let string_char = ch
+        let result .= ' '
+      elseif ch ==# '#'
+        " Rest of line is a comment — pad with spaces
+        let result .= repeat(' ', len(a:line_text) - i)
+        break
+      elseif i + 1 < len(a:line_text) && a:line_text[i : i + 1] ==# '--'
+        let result .= repeat(' ', len(a:line_text) - i)
+        break
+      else
+        let result .= ch
+      endif
+    endif
+
+    let i += 1
+  endwhile
+
+  return result
 endfunction
