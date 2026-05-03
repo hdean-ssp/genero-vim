@@ -107,7 +107,8 @@ function! s:expensive_lookup(word, bufnr, line, timer_id) abort
   call genero_tools#compiler#type_info#do_lookup(a:word, a:bufnr, a:line)
 endfunction
 
-" InsertEnter — clear all visual overlays
+" InsertEnter — clear all visual overlays and reset word tracking
+" so returning to normal mode re-triggers the type info lookup
 function! genero_tools#cursor#on_insert_enter() abort
   if s:expensive_timer != -1
     call timer_stop(s:expensive_timer)
@@ -119,6 +120,7 @@ function! genero_tools#cursor#on_insert_enter() abort
     call genero_tools#compiler#inline_diagnostics#clear()
     call genero_tools#refcount#clear()
   endif
+  let s:last_word = ''
 endfunction
 
 " BufLeave — clear everything
