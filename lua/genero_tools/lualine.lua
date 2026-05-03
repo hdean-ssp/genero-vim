@@ -418,125 +418,137 @@ function M._get_cached_module()
   return cached.value
 end
 
+-- Helper: get a highlight group's fg or bg color as a hex string
+local function get_hl_color(group, attr)
+  local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
+  if not ok or not hl then
+    return nil
+  end
+  local val = hl[attr]
+  if not val then
+    return nil
+  end
+  return string.format('#%06x', val)
+end
+
+-- Helper: blend two hex colors (0.0 = color1, 1.0 = color2)
+local function blend(hex1, hex2, factor)
+  if not hex1 or not hex2 then
+    return hex1 or hex2 or '#1a1a2e'
+  end
+  local r1, g1, b1 = hex1:match('#(%x%x)(%x%x)(%x%x)')
+  local r2, g2, b2 = hex2:match('#(%x%x)(%x%x)(%x%x)')
+  if not r1 or not r2 then
+    return hex1
+  end
+  r1, g1, b1 = tonumber(r1, 16), tonumber(g1, 16), tonumber(b1, 16)
+  r2, g2, b2 = tonumber(r2, 16), tonumber(g2, 16), tonumber(b2, 16)
+  local r = math.floor(r1 + (r2 - r1) * factor)
+  local g = math.floor(g1 + (g2 - g1) * factor)
+  local b = math.floor(b1 + (b2 - b1) * factor)
+  return string.format('#%02x%02x%02x', r, g, b)
+end
+
 -- Setup highlight groups for lualine
+-- Derives breadcrumb colors from the active colorscheme so they adapt to any theme
 function M.setup_highlights()
+  -- Read base colors from the active theme
+  local normal_bg = get_hl_color('Normal', 'bg') or '#1a1a2e'
+  local normal_fg = get_hl_color('Normal', 'fg') or '#c0c0c0'
+  local func_fg = get_hl_color('Function', 'fg') or normal_fg
+  local comment_fg = get_hl_color('Comment', 'fg') or '#606060'
+  local string_fg = get_hl_color('String', 'fg') or func_fg
+
+  -- Build 4-level brightness gradient for breadcrumb sections:
+  -- module (dimmest) → file → function (brightest) → refcount (subdued)
+  local module_bg = blend(normal_bg, comment_fg, 0.08)
+  local module_fg = blend(comment_fg, normal_fg, 0.15)
+  local file_bg = blend(normal_bg, func_fg, 0.12)
+  local file_fg = blend(comment_fg, normal_fg, 0.45)
+  local func_bg = blend(normal_bg, func_fg, 0.20)
+  local func_fg_color = blend(func_fg, normal_fg, 0.6)
+  local ref_bg = blend(normal_bg, comment_fg, 0.05)
+  local ref_fg = blend(comment_fg, normal_fg, 0.1)
+
   -- Error highlight: dark red background, light text
   vim.api.nvim_set_hl(0, 'GeneroLualineError', {
-    bg = '#8b0000',  -- Dark red
+    bg = blend(normal_bg, '#ff0000', 0.3),
     fg = '#ffffff',
     bold = true,
   })
-  
+
   -- Warning highlight: dark yellow background, light text
   vim.api.nvim_set_hl(0, 'GeneroLualineWarning', {
-    bg = '#8b8b00',  -- Dark yellow
+    bg = blend(normal_bg, '#ffff00', 0.25),
     fg = '#ffffff',
     bold = true,
   })
-  
-  -- Function signature highlight: blue background
+
+  -- Function signature highlight
   vim.api.nvim_set_hl(0, 'GeneroLualineSignature', {
-    bg = '#1e3a8a',  -- Dark blue
-    fg = '#e0e7ff',  -- Light blue text
+    bg = blend(normal_bg, string_fg, 0.15),
+    fg = blend(string_fg, normal_fg, 0.5),
     italic = true,
   })
-  
-  -- Function name highlight: bright cyan (brightest — innermost scope)
+
+  -- Breadcrumb sections: dim → bright
   vim.api.nvim_set_hl(0, 'GeneroLualineFunctionName', {
-    bg = '#0d3b66',  -- Dark cyan
-    fg = '#90e0ef',  -- Light cyan text
+    bg = func_bg,
+    fg = func_fg_color,
     bold = true,
   })
 
-  -- File name highlight: medium (middle scope)
   vim.api.nvim_set_hl(0, 'GeneroLualineFile', {
-    bg = '#1e293b',  -- Slate
-    fg = '#94a3b8',  -- Muted blue-gray text
+    bg = file_bg,
+    fg = file_fg,
   })
 
-  -- Module name highlight: dim (outermost scope)
   vim.api.nvim_set_hl(0, 'GeneroLualineModule', {
-    bg = '#1e1e2e',  -- Very dark
-    fg = '#6b7280',  -- Dim gray text
+    bg = module_bg,
+    fg = module_fg,
     italic = true,
   })
 
   -- Powerline arrow separators (fg = prev bg, bg = next bg)
-  -- Module → File
-  vim.api.nvim_set_hl(0, 'GeneroSepModuleFile', {
-    fg = '#1e1e2e',  -- Module bg
-    bg = '#1e293b',  -- File bg
-  })
-  -- Module → Function (when no file section)
-  vim.api.nvim_set_hl(0, 'GeneroSepModuleFunc', {
-    fg = '#1e1e2e',  -- Module bg
-    bg = '#0d3b66',  -- Function bg
-  })
-  -- Module → statusline end
-  vim.api.nvim_set_hl(0, 'GeneroSepModuleEnd', {
-    fg = '#1e1e2e',  -- Module bg
-    bg = 'NONE',
-  })
-  -- File → Function
-  vim.api.nvim_set_hl(0, 'GeneroSepFileFunc', {
-    fg = '#1e293b',  -- File bg
-    bg = '#0d3b66',  -- Function bg
-  })
-  -- File → statusline end
-  vim.api.nvim_set_hl(0, 'GeneroSepFileEnd', {
-    fg = '#1e293b',  -- File bg
-    bg = 'NONE',
-  })
-  -- Function → statusline end
-  vim.api.nvim_set_hl(0, 'GeneroSepFuncEnd', {
-    fg = '#0d3b66',  -- Function bg
-    bg = 'NONE',
-  })
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleFile', { fg = module_bg, bg = file_bg })
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleFunc', { fg = module_bg, bg = func_bg })
+  vim.api.nvim_set_hl(0, 'GeneroSepModuleEnd', { fg = module_bg, bg = 'NONE' })
+  vim.api.nvim_set_hl(0, 'GeneroSepFileFunc', { fg = file_bg, bg = func_bg })
+  vim.api.nvim_set_hl(0, 'GeneroSepFileEnd', { fg = file_bg, bg = 'NONE' })
+  vim.api.nvim_set_hl(0, 'GeneroSepFuncEnd', { fg = func_bg, bg = 'NONE' })
 
-  -- Reference count highlight: subdued, less bright than function name
+  -- Reference count: subdued
   vim.api.nvim_set_hl(0, 'GeneroLualineRefCount', {
-    bg = '#1a2332',  -- Dark muted blue
-    fg = '#5b7a99',  -- Subdued blue-gray text
+    bg = ref_bg,
+    fg = ref_fg,
     italic = true,
   })
+  vim.api.nvim_set_hl(0, 'GeneroSepFuncRef', { fg = func_bg, bg = ref_bg })
+  vim.api.nvim_set_hl(0, 'GeneroSepRefEnd', { fg = ref_bg, bg = 'NONE' })
 
-  -- Function → RefCount
-  vim.api.nvim_set_hl(0, 'GeneroSepFuncRef', {
-    fg = '#0d3b66',  -- Function bg
-    bg = '#1a2332',  -- RefCount bg
-  })
-
-  -- RefCount → statusline end
-  vim.api.nvim_set_hl(0, 'GeneroSepRefEnd', {
-    fg = '#1a2332',  -- RefCount bg
-    bg = 'NONE',
-  })
-
-  -- SVN added highlight: green background
+  -- SVN highlights: blend theme colors with semantic colors
   vim.api.nvim_set_hl(0, 'GeneroLualineSVNAdded', {
-    bg = '#1a4d2e',  -- Dark green
-    fg = '#a7f3d0',  -- Light green text
+    bg = blend(normal_bg, '#00ff00', 0.15),
+    fg = blend('#00ff00', normal_fg, 0.6),
     bold = true,
   })
 
-  -- SVN modified highlight: yellow/amber background
   vim.api.nvim_set_hl(0, 'GeneroLualineSVNModified', {
-    bg = '#78350f',  -- Dark amber
-    fg = '#fde68a',  -- Light amber text
+    bg = blend(normal_bg, '#ffaa00', 0.15),
+    fg = blend('#ffaa00', normal_fg, 0.6),
     bold = true,
   })
 
-  -- SVN deleted highlight: red background
   vim.api.nvim_set_hl(0, 'GeneroLualineSVNDeleted', {
-    bg = '#7f1d1d',  -- Dark red
-    fg = '#fca5a5',  -- Light red text
+    bg = blend(normal_bg, '#ff0000', 0.15),
+    fg = blend('#ff0000', normal_fg, 0.6),
     bold = true,
   })
 
-  -- Cache stats highlight: gray background
+  -- Cache stats: subtle
   vim.api.nvim_set_hl(0, 'GeneroLualineCache', {
-    bg = '#374151',  -- Dark gray
-    fg = '#d1d5db',  -- Light gray text
+    bg = blend(normal_bg, comment_fg, 0.1),
+    fg = comment_fg,
   })
 end
 
@@ -591,8 +603,16 @@ end
 
 -- Setup lualine integration
 function M.setup()
-  -- Initialize highlight groups
+  -- Initialize highlight groups from current theme
   M.setup_highlights()
+
+  -- Re-derive colors when the colorscheme changes
+  vim.api.nvim_create_autocmd('ColorScheme', {
+    group = vim.api.nvim_create_augroup('GeneroLualineColors', { clear = true }),
+    callback = function()
+      M.setup_highlights()
+    end,
+  })
 end
 
 return M
