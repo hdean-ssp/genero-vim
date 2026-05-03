@@ -234,33 +234,66 @@ vim.opt.rtp:prepend(lazypath)
 -- ============================================================================
 
 local plugins = {
-  -- Modern Dark Theme - Tokyonight
+  -- ============================================================================
+  -- THEME SELECTION
+  -- Uncomment ONE theme block below. Default: thorn (minimal green)
+  -- ============================================================================
+
+  -- Default: Thorn - Minimal dark green theme
   {
-    "folke/tokyonight.nvim",
+    "jpwol/thorn.nvim",
     lazy = false,
     priority = 1000,
     config = function()
-      require("tokyonight").setup({
-        style = "night",
-        transparent = false,
-        terminal_colors = true,
-        styles = {
-          comments = { italic = true },
-          keywords = { italic = true },
-          functions = {},
-          variables = {},
-          sidebars = "dark",
-          floats = "dark",
-        },
-        sidebars = { "qf", "help" },
-        day_brightness = 0.3,
-        hide_inactive_statusline = false,
-        dim_inactive = false,
-        lualine_bold = true,
-      })
-      vim.cmd("colorscheme tokyonight")
+      vim.cmd("colorscheme thorn")
     end,
   },
+
+  -- Alternative: Tokyonight - Popular dark blue theme
+  -- Uncomment this block and comment out thorn above to switch
+  -- {
+  --   "folke/tokyonight.nvim",
+  --   lazy = false,
+  --   priority = 1000,
+  --   config = function()
+  --     require("tokyonight").setup({
+  --       style = "night",
+  --       transparent = false,
+  --       terminal_colors = true,
+  --       styles = {
+  --         comments = { italic = true },
+  --         keywords = { italic = true },
+  --         functions = {},
+  --         variables = {},
+  --         sidebars = "dark",
+  --         floats = "dark",
+  --       },
+  --       lualine_bold = true,
+  --     })
+  --     vim.cmd("colorscheme tokyonight")
+  --   end,
+  -- },
+
+  -- Alternative: Catppuccin - Warm pastel theme
+  -- {
+  --   "catppuccin/nvim",
+  --   name = "catppuccin",
+  --   lazy = false,
+  --   priority = 1000,
+  --   config = function()
+  --     vim.cmd("colorscheme catppuccin-mocha")
+  --   end,
+  -- },
+
+  -- Alternative: Gruvbox - Retro warm theme
+  -- {
+  --   "ellisonleao/gruvbox.nvim",
+  --   lazy = false,
+  --   priority = 1000,
+  --   config = function()
+  --     vim.cmd("colorscheme gruvbox")
+  --   end,
+  -- },
 
   -- LuaSnip - Required for Genero code snippets
   -- Note: jsregexp is optional (only needed for advanced regex in snippets)
@@ -297,7 +330,7 @@ local plugins = {
       
       require("lualine").setup({
         options = {
-          theme = "tokyonight",
+          theme = "auto",
           component_separators = { left = "│", right = "│" },
           section_separators = { left = "", right = "" },
           globalstatus = true,
@@ -1359,7 +1392,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 })
 
 -- Parentheses/bracket matching: background-only highlight (no orange foreground)
--- Uses the same background as the cursor line for a consistent look
+-- Uses a subtle background that works across themes
 vim.api.nvim_create_autocmd("ColorScheme", {
   callback = function()
     vim.api.nvim_set_hl(0, "MatchParen", { bg = "#3b4261", fg = "NONE", bold = true })
