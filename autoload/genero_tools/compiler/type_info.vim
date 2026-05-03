@@ -611,6 +611,20 @@ function! s:parse_variable_from_define(define_text, var_pattern, line_nr) abort
     endif
   endfor
 
+  " Fallback: check if the variable is a field inside a RECORD block in this DEFINE
+  " This handles hovering on field names within their DEFINE RECORD block
+  if text =~? '\<RECORD\>' && text !~? '\<RECORD\s\+LIKE\>'
+    let fields_text = matchstr(text, '\c\<RECORD\>\s*\zs.*')
+    let fields_text = substitute(fields_text, '\c\s*END\s\+RECORD.*$', '', '')
+    let fields = s:parse_record_fields(fields_text)
+    for field in fields
+      if field.name =~? a:var_pattern
+        let clean_type = substitute(field.type, '\c\s*END\s\+RECORD.*$', '', '')
+        return {'type': clean_type, 'line': a:line_nr}
+      endif
+    endfor
+  endif
+
   return {}
 endfunction
 
