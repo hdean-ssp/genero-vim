@@ -71,6 +71,9 @@ function! genero_tools#cursor#on_moved() abort
     " Clear stale type info immediately
     call genero_tools#compiler#type_info#on_word_changed(word, bufnr, current_line)
 
+    " Highlight all occurrences of the word in current function scope
+    call genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
+
     " Schedule expensive lookup after 400ms
     " Allow short words on FUNCTION definition lines (signature shown for whole line)
     let on_func_line = (toupper(substitute(getline(current_line), '^\s*', '', '')) =~# '^FUNCTION\>')
@@ -119,6 +122,7 @@ function! genero_tools#cursor#on_insert_enter() abort
     call genero_tools#compiler#type_info#clear()
     call genero_tools#compiler#inline_diagnostics#clear()
     call genero_tools#refcount#clear()
+    call genero_tools#word_highlight#clear()
   endif
   let s:last_word = ''
 endfunction
@@ -134,6 +138,7 @@ function! genero_tools#cursor#on_buf_leave() abort
     call genero_tools#compiler#type_info#clear()
     call genero_tools#compiler#inline_diagnostics#clear()
     call genero_tools#refcount#clear()
+    call genero_tools#word_highlight#clear()
   endif
   let s:last_line = -1
   let s:last_bufnr = -1

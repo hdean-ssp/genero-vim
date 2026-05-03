@@ -31,6 +31,7 @@ call genero_tools#block_match#init()
 " Initialize reference counts (Neovim only)
 if has('nvim')
   call genero_tools#refcount#init()
+  call genero_tools#word_highlight#init()
 endif
 
 " Initialize auto-close blocks
