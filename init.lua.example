@@ -719,6 +719,316 @@ local plugins = {
     end,
   },
 
+  -- ============================================================================
+  -- TREESITTER - Syntax highlighting and code understanding for all languages
+  -- ============================================================================
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        -- Install parsers for Genero-adjacent languages in the codebase
+        ensure_installed = {
+          "python", "java", "c", "cpp", "perl", "bash",
+          "lua", "vim", "vimdoc",
+          "json", "xml", "yaml", "toml",
+          "markdown", "markdown_inline",
+          "sql",
+        },
+        auto_install = true,       -- Auto-install missing parsers on buffer open
+        highlight = {
+          enable = true,
+          -- Disable for very large files (>500KB) to avoid slowdown
+          disable = function(_, buf)
+            local max_filesize = 500 * 1024
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            return ok and stats and stats.size > max_filesize
+          end,
+        },
+        indent = { enable = true },
+        -- Incremental selection: expand/shrink selection by syntax node
+        incremental_selection = {
+          enable = true,
+          keymaps = {
+            init_selection    = "<C-space>",
+            node_incremental  = "<C-space>",
+            scope_incremental = "<C-s>",
+            node_decremental  = "<M-space>",
+          },
+        },
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- LSP - Language Server Protocol for Python, Java, C, Perl, Bash, etc.
+  -- ============================================================================
+
+  -- Mason: installs and manages LSP servers, linters, and formatters
+  {
+    "williamboman/mason.nvim",
+    build = ":MasonUpdate",
+    config = function()
+      require("mason").setup({
+        ui = {
+          border = "rounded",
+          icons = {
+            package_installed   = "✓",
+            package_pending     = "➜",
+            package_uninstalled = "✗",
+          },
+        },
+      })
+    end,
+  },
+
+  -- mason-lspconfig: bridges mason with nvim-lspconfig
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = { "williamboman/mason.nvim" },
+    config = function()
+      require("mason-lspconfig").setup({
+        -- Auto-install these servers when missing
+        ensure_installed = {
+          "pyright",       -- Python
+          "jdtls",         -- Java
+          "clangd",        -- C / C++
+          "bashls",        -- Bash / shell scripts
+          "lua_ls",        -- Lua (for editing this config)
+          "jsonls",        -- JSON
+          "yamlls",        -- YAML
+          "lemminx",       -- XML
+        },
+        automatic_installation = true,
+      })
+    end,
+  },
+
+  -- nvim-lspconfig: configures each language server
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+      "hrsh7th/cmp-nvim-lsp",   -- feeds LSP completions into nvim-cmp
+    },
+    config = function()
+      local lspconfig = require("lspconfig")
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+      -- Shared on_attach: sets LSP keybindings for any language server
+      local function on_attach(_, bufnr)
+        local bopts = { noremap = true, silent = true, buffer = bufnr }
+
+        -- Navigation (mirrors Genero-Tools bindings for non-Genero files)
+        vim.keymap.set("n", "K",  vim.lsp.buf.hover,           vim.tbl_extend("force", bopts, { desc = "Hover docs" }))
+        vim.keymap.set("n", "gi", vim.lsp.buf.implementation,  vim.tbl_extend("force", bopts, { desc = "Go to implementation" }))
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename,  vim.tbl_extend("force", bopts, { desc = "Rename symbol" }))
+        vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, vim.tbl_extend("force", bopts, { desc = "Code action" }))
+        vim.keymap.set("n", "<leader>lf", function() vim.lsp.buf.format({ async = true }) end,
+          vim.tbl_extend("force", bopts, { desc = "Format file" }))
+        vim.keymap.set("n", "<leader>ld", vim.diagnostic.open_float, vim.tbl_extend("force", bopts, { desc = "Line diagnostics" }))
+
+        -- On non-Genero files, wire gd/gr to LSP so the same keys work everywhere
+        local ft = vim.bo[bufnr].filetype
+        local genero_fts = { ["4gl"] = true, fgl = true, per = true }
+        if not genero_fts[ft] then
+          vim.keymap.set("n", "gd", vim.lsp.buf.definition,   vim.tbl_extend("force", bopts, { desc = "Go to definition" }))
+          vim.keymap.set("n", "gr", vim.lsp.buf.references,   vim.tbl_extend("force", bopts, { desc = "Find references" }))
+          vim.keymap.set("n", "gp", function()
+            -- Peek: open definition in a floating preview
+            vim.lsp.buf.definition({ reuse_win = false })
+          end, vim.tbl_extend("force", bopts, { desc = "Peek definition" }))
+        end
+      end
+
+      -- Python
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          python = {
+            analysis = {
+              typeCheckingMode = "basic",
+              autoSearchPaths = true,
+              useLibraryCodeForTypes = true,
+            },
+          },
+        },
+      })
+
+      -- Java (jdtls needs a workspace dir per project)
+      lspconfig.jdtls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          java = {
+            configuration = { updateBuildConfiguration = "interactive" },
+            eclipse = { downloadSources = true },
+            maven = { downloadSources = true },
+          },
+        },
+      })
+
+      -- C / C++
+      lspconfig.clangd.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--clang-tidy",
+          "--header-insertion=iwyu",
+          "--completion-style=detailed",
+        },
+      })
+
+      -- Bash / shell scripts
+      lspconfig.bashls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        filetypes = { "sh", "bash", "zsh" },
+      })
+
+      -- Lua (for editing this config file)
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        on_attach = on_attach,
+        settings = {
+          Lua = {
+            runtime = { version = "LuaJIT" },
+            diagnostics = { globals = { "vim" } },
+            workspace = {
+              library = vim.api.nvim_get_runtime_file("", true),
+              checkThirdParty = false,
+            },
+            telemetry = { enable = false },
+          },
+        },
+      })
+
+      -- JSON
+      lspconfig.jsonls.setup({ capabilities = capabilities, on_attach = on_attach })
+
+      -- YAML
+      lspconfig.yamlls.setup({ capabilities = capabilities, on_attach = on_attach })
+
+      -- XML
+      lspconfig.lemminx.setup({ capabilities = capabilities, on_attach = on_attach })
+
+      -- Diagnostic display settings (consistent with Genero-Tools style)
+      vim.diagnostic.config({
+        virtual_text = {
+          prefix = "●",
+          source = "if_many",
+        },
+        signs = true,
+        underline = true,
+        update_in_insert = false,   -- Don't flicker while typing
+        severity_sort = true,
+        float = {
+          border = "rounded",
+          source = "always",
+        },
+      })
+    end,
+  },
+
+  -- ============================================================================
+  -- COMPLETION - nvim-cmp for LSP + snippet completion on non-Genero files
+  -- ============================================================================
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",    -- LSP source
+      "hrsh7th/cmp-buffer",      -- Words from current buffer
+      "hrsh7th/cmp-path",        -- Filesystem paths
+      "hrsh7th/cmp-cmdline",     -- Command-line completion
+      "L3MON4D3/LuaSnip",        -- Snippet engine (shared with Genero snippets)
+      "saadparwaiz1/cmp_luasnip", -- LuaSnip source for cmp
+    },
+    config = function()
+      local cmp = require("cmp")
+      local luasnip = require("luasnip")
+
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            luasnip.lsp_expand(args.body)
+          end,
+        },
+        window = {
+          completion    = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        mapping = cmp.mapping.preset.insert({
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-e>"]     = cmp.mapping.abort(),
+          ["<CR>"]      = cmp.mapping.confirm({ select = false }),  -- only confirm explicit selection
+          ["<Tab>"]     = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item()
+            elseif luasnip.expand_or_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item()
+            elseif luasnip.jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<C-u>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-d>"] = cmp.mapping.scroll_docs(4),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp", priority = 1000 },
+          { name = "luasnip",  priority = 750 },
+          { name = "buffer",   priority = 500 },
+          { name = "path",     priority = 250 },
+        }),
+        formatting = {
+          format = function(entry, item)
+            -- Show source name in the menu
+            local source_labels = {
+              nvim_lsp = "[LSP]",
+              luasnip  = "[Snip]",
+              buffer   = "[Buf]",
+              path     = "[Path]",
+            }
+            item.menu = source_labels[entry.source.name] or ""
+            return item
+          end,
+        },
+        -- Disable cmp on Genero files — those use the plugin's own omnifunc
+        enabled = function()
+          local ft = vim.bo.filetype
+          return ft ~= "4gl" and ft ~= "fgl" and ft ~= "per"
+        end,
+      })
+
+      -- Command-line completion for / search
+      cmp.setup.cmdline({ "/", "?" }, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = { { name = "buffer" } },
+      })
+
+      -- Command-line completion for : commands
+      cmp.setup.cmdline(":", {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources(
+          { { name = "path" } },
+          { { name = "cmdline" } }
+        ),
+      })
+    end,
+  },
+
   -- Telescope - Fuzzy finder for files, grep, and more
   -- Falls back to native grep if ripgrep is not installed
   {
@@ -742,12 +1052,18 @@ local plugins = {
       else
         -- Fallback: use grep (available on virtually all systems)
         vimgrep_arguments = {
-          "grep", "-r", "-n", "--include=*.4gl", "--include=*.per",
-          "--include=*.m3", "--include=*.m4", "--include=*.lua",
-          "--include=*.vim", "--include=*.sh", "--include=*.txt",
-          "--include=*.md", "--include=*.json", "--include=*.xml",
-          "--include=*.cfg", "--include=*.conf",
-          "--exclude-dir=.git", "--exclude-dir=node_modules",
+          "grep", "-r", "-n",
+          -- Genero
+          "--include=*.4gl", "--include=*.per", "--include=*.m3", "--include=*.m4",
+          -- Common languages in the codebase
+          "--include=*.py", "--include=*.java", "--include=*.c", "--include=*.h",
+          "--include=*.cpp", "--include=*.pl", "--include=*.pm", "--include=*.sh",
+          -- Config / data
+          "--include=*.lua", "--include=*.vim", "--include=*.json", "--include=*.xml",
+          "--include=*.yaml", "--include=*.yml", "--include=*.sql",
+          "--include=*.txt", "--include=*.md", "--include=*.conf", "--include=*.cfg",
+          "--exclude-dir=.git", "--exclude-dir=node_modules", "--exclude-dir=target",
+          "--exclude-dir=build", "--exclude-dir=__pycache__",
           "-H", "-E",
         }
         vim.notify("ripgrep (rg) not found — Telescope grep using system grep (slower)", vim.log.levels.INFO)
@@ -774,7 +1090,13 @@ local plugins = {
             height = 0.80,
             preview_cutoff = 120,
           },
-          file_ignore_patterns = { "node_modules", ".git/", "%.42m", "%.42f", "%.o" },
+          file_ignore_patterns = {
+            "node_modules", ".git/",
+            "%.42m", "%.42f", "%.o",          -- Genero / C build artifacts
+            "__pycache__/", "%.pyc",           -- Python
+            "target/", "%.class", "%.jar",     -- Java
+            "build/", "dist/",
+          },
           path_display = { "truncate" },
           winblend = 0,
           border = {},
@@ -1090,6 +1412,12 @@ if is_nvim_010_plus then
     { "<leader>tv", desc = "Vertical terminal" },
     { "<leader>tk", desc = "Kiro AI terminal" },
 
+    { "<leader>l", group = "LSP" },
+    { "<leader>la", desc = "Code action" },
+    { "<leader>lf", desc = "Format file" },
+    { "<leader>ld", desc = "Line diagnostics" },
+    { "<leader>rn", desc = "Rename symbol" },
+
     { "<leader>b", group = "Buffers" },
     { "<leader>bd", ":bdelete<CR>", desc = "Delete buffer" },
   })
@@ -1148,6 +1476,16 @@ else
       h = { "Horizontal terminal" },
       v = { "Vertical terminal" },
       k = { "Kiro AI terminal" },
+    },
+    l = {
+      name = "+LSP",
+      a = { "Code action" },
+      f = { "Format file" },
+      d = { "Line diagnostics" },
+    },
+    r = {
+      name = "+Rename",
+      n = { "Rename symbol" },
     },
     b = {
       name = "+Buffers",
@@ -1260,6 +1598,18 @@ SEARCH (Telescope with grep fallback):
     Esc/q         - Close
   Note: If ripgrep (rg) is not installed, Telescope uses system grep.
         If Telescope itself fails, searches fall back to :vimgrep + quickfix.
+
+LSP (Python, Java, C, Bash, Lua, JSON, YAML, XML):
+  K               - Hover documentation
+  gi              - Go to implementation
+  Space+la        - Code action (fix, refactor)
+  Space+lf        - Format file
+  Space+ld        - Show line diagnostics in float
+  Space+rn        - Rename symbol
+  gd              - Go to definition (LSP, on non-Genero files)
+  gr              - Find references (LSP, on non-Genero files)
+  :Mason          - Open LSP/tool installer UI
+  :MasonUpdate    - Update all installed servers
 
 COMMENTING:
   gcc             - Toggle comment on current line
