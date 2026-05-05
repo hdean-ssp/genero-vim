@@ -189,7 +189,7 @@ function M.breadcrumb()
 
   local result = ''
 
-  -- Module (dimmest)
+  -- Module (dimmest) — only shown if detected
   if has_module then
     local display_module = module_name
     if not display_module:match('%.m[34]$') then
@@ -464,8 +464,8 @@ function M.setup_highlights()
   -- module (dimmest) → file → function (brightest) → refcount (subdued)
   local module_bg = blend(normal_bg, comment_fg, 0.08)
   local module_fg = blend(comment_fg, normal_fg, 0.15)
-  local file_bg = blend(normal_bg, func_fg, 0.12)
-  local file_fg = blend(comment_fg, normal_fg, 0.45)
+  local file_bg = blend(normal_bg, func_fg, 0.18)      -- Increased from 0.12 for better visibility
+  local file_fg = blend(comment_fg, normal_fg, 0.55)   -- Increased from 0.45 for better contrast
   local func_bg = blend(normal_bg, func_fg, 0.20)
   local func_fg_color = blend(func_fg, normal_fg, 0.6)
   local ref_bg = blend(normal_bg, comment_fg, 0.05)
