@@ -704,36 +704,58 @@ local plugins = {
       local user = os.getenv("USER") or ""
       local user_tag = "TMP" .. string.upper(string.sub(user, 1, 2))
 
-      require("todo-comments").setup({
-        signs = true,
-        sign_priority = 8,
-        keywords = {
-          FIX =  { icon = " ", color = "error", alt = { "FIXME", "FIXIT", "ISSUE" } },
-          TODO = { icon = " ", color = "info" },
-          HACK = { icon = " ", color = "warning" },
-          WARN = { icon = " ", color = "warning", alt = { "WARNING" } },
-          NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
-          BUG =  { icon = " ", color = "error" },
-          TMP =  { icon = " ", color = "warning", alt = { user_tag } },
-        },
-        merge_keywords = false,
-        highlight = {
-          multiline = false,
-          before = "",
-          keyword = "wide",
-          after = "fg",
-          pattern = [[.*<(KEYWORDS)\s*]],
-          comments_only = false,  -- Also highlight in code, not just comments (for #TMP tags)
-        },
-        search = {
-          command = "rg",
-          args = {
-            "--color=never", "--no-heading", "--with-filename",
-            "--line-number", "--column", "--hidden",
+      -- Wrap setup in pcall to handle any errors gracefully
+      local ok, err = pcall(function()
+        require("todo-comments").setup({
+          signs = true,
+          sign_priority = 8,
+          keywords = {
+            FIX =  { icon = " ", color = "error", alt = { "FIXME", "FIXIT", "ISSUE" } },
+            TODO = { icon = " ", color = "info" },
+            HACK = { icon = " ", color = "warning" },
+            WARN = { icon = " ", color = "warning", alt = { "WARNING" } },
+            NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+            BUG =  { icon = " ", color = "error" },
+            TMP =  { icon = " ", color = "warning", alt = { user_tag } },
           },
-          pattern = [[\b(KEYWORDS)\b]],
-        },
-      })
+          merge_keywords = false,
+          highlight = {
+            multiline = false,
+            before = "",
+            keyword = "wide",
+            after = "fg",
+            pattern = [[.*<(KEYWORDS)\s*]],
+            comments_only = false,  -- Also highlight in code, not just comments (for #TMP tags)
+            -- Reduce update frequency to avoid extmark conflicts
+            max_line_len = 400,  -- Don't highlight very long lines
+            exclude = {},
+          },
+          search = {
+            command = "rg",
+            args = {
+              "--color=never", "--no-heading", "--with-filename",
+              "--line-number", "--column", "--hidden",
+            },
+            pattern = [[\b(KEYWORDS)\b]],
+          },
+        })
+        
+        -- Patch the highlight function to catch extmark errors
+        local todo_hl = require("todo-comments.highlight")
+        local original_add_highlight = todo_hl.add_highlight
+        todo_hl.add_highlight = function(...)
+          local success, result = pcall(original_add_highlight, ...)
+          if not success then
+            -- Silently ignore extmark errors
+            return
+          end
+          return result
+        end
+      end)
+      
+      if not ok then
+        vim.notify("todo-comments setup failed: " .. tostring(err), vim.log.levels.WARN)
+      end
     end,
   },
 
