@@ -201,6 +201,9 @@ endfunction
 
 " Called by cursor dispatcher when line changes
 function! genero_tools#hints#display#on_line_changed(bufnr, current_line) abort
+  " Close hint details popup when cursor moves
+  call genero_tools#hints#display#close_details_window()
+  
   let display_mode = genero_tools#hints#config#get('hints_display')
   if display_mode != 'virtual_text' && display_mode != 'both'
     return
@@ -312,6 +315,11 @@ function! genero_tools#hints#display#show_details(hint) abort
   endif
   
   if has('nvim')
+    " Close previous hint details window if it exists
+    if exists('g:genero_hints_details_winid') && nvim_win_is_valid(g:genero_hints_details_winid)
+      call nvim_win_close(g:genero_hints_details_winid, v:true)
+    endif
+    
     " Use floating window in Neovim
     " Position just above the cursor line for better visibility
     let opts = {
@@ -327,7 +335,10 @@ function! genero_tools#hints#display#show_details(hint) abort
     
     let buf = nvim_create_buf(v:false, v:true)
     call nvim_buf_set_lines(buf, 0, -1, v:false, lines)
-    call nvim_open_win(buf, v:false, opts)
+    let g:genero_hints_details_winid = nvim_open_win(buf, v:false, opts)
+    
+    " Auto-close the window after 3 seconds
+    call timer_start(3000, {-> genero_tools#hints#display#close_details_window()})
   else
     " Use popup in Vim 8.1+
     if exists('*popup_create')
@@ -336,12 +347,21 @@ function! genero_tools#hints#display#show_details(hint) abort
         \ 'line': 'cursor-' . len(lines),
         \ 'col': 'cursor',
         \ 'maxwidth': 60,
-        \ 'border': [1, 1, 1, 1]
+        \ 'border': [1, 1, 1, 1],
+        \ 'time': 3000
         \ })
     else
       " Fallback: echo to command line
       call genero_tools#display#echo(join(lines, ' | '))
     endif
+  endif
+endfunction
+
+" Close the hint details window
+function! genero_tools#hints#display#close_details_window() abort
+  if exists('g:genero_hints_details_winid') && nvim_win_is_valid(g:genero_hints_details_winid)
+    call nvim_win_close(g:genero_hints_details_winid, v:true)
+    unlet g:genero_hints_details_winid
   endif
 endfunction
 
