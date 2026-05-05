@@ -472,4 +472,125 @@ function M.variable_references(var_name, refs_json)
   return true  -- Signal that Telescope handled it
 end
 
+-- ============================================================================
+-- Snippet picker with preview
+-- ============================================================================
+
+function M.snippets()
+  local t = telescope_available()
+  if not t then
+    return false  -- Signal to fall back to floating window
+  end
+
+  -- Get snippets from the snippets module
+  local ok_snippets, snippets_module = pcall(require, "genero_tools.snippets")
+  if not ok_snippets then
+    vim.notify("Snippets module not available", vim.log.levels.WARN)
+    return false
+  end
+
+  -- Get all snippets
+  local snippets = snippets_module.get_all_snippets()
+  if not snippets or #snippets == 0 then
+    vim.notify("No snippets available", vim.log.levels.WARN)
+    return false
+  end
+
+  -- Sort snippets by trigger for consistent ordering
+  table.sort(snippets, function(a, b)
+    return (a.trigger or "") < (b.trigger or "")
+  end)
+
+  local ok_actions, actions = pcall(require, "telescope.actions")
+  local ok_state, action_state = pcall(require, "telescope.actions.state")
+  local ok_previewers, previewers = pcall(require, "telescope.previewers")
+
+  -- Custom previewer to show snippet body
+  local snippet_previewer = previewers.new_buffer_previewer({
+    title = "Snippet Preview",
+    define_preview = function(self, entry, status)
+      local snippet = entry.snippet
+      if not snippet or not snippet.body then
+        return
+      end
+
+      -- Split body into lines
+      local lines = vim.split(snippet.body, "\n", { plain = true })
+      
+      -- Add header with snippet info
+      local preview_lines = {
+        "Snippet: " .. (snippet.name or snippet.trigger),
+        "",
+        "Trigger: " .. snippet.trigger,
+      }
+      
+      if snippet.description and snippet.description ~= "" then
+        table.insert(preview_lines, "")
+        table.insert(preview_lines, "Description:")
+        table.insert(preview_lines, "  " .. snippet.description)
+      end
+      
+      table.insert(preview_lines, "")
+      table.insert(preview_lines, "Template:")
+      table.insert(preview_lines, string.rep("-", 60))
+      
+      -- Add body lines
+      for _, line in ipairs(lines) do
+        table.insert(preview_lines, line)
+      end
+      
+      table.insert(preview_lines, string.rep("-", 60))
+      
+      -- Set preview content
+      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
+      
+      -- Apply syntax highlighting for Genero code
+      vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "4gl")
+    end,
+  })
+
+  t.pickers.new({}, {
+    prompt_title = "Genero Snippets (" .. #snippets .. ")",
+    finder = t.finders.new_table({
+      results = snippets,
+      entry_maker = function(snippet)
+        local trigger = snippet.trigger or "unknown"
+        local description = snippet.description or ""
+        
+        -- Format display: trigger - description
+        local display = string.format("%-15s %s", trigger, description)
+        
+        return {
+          value = snippet,
+          display = display,
+          ordinal = trigger .. " " .. description,
+          snippet = snippet,
+        }
+      end,
+    }),
+    sorter = t.conf.values.generic_sorter({}),
+    previewer = snippet_previewer,
+    attach_mappings = function(prompt_bufnr, map)
+      if ok_actions and ok_state then
+        actions.select_default:replace(function()
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          if selection and selection.snippet then
+            local trigger = selection.snippet.trigger
+            if trigger then
+              -- Expand the selected snippet
+              vim.schedule(function()
+                vim_call("genero_tools#snippets#expand", trigger)
+              end)
+            end
+          end
+        end)
+      end
+      return true
+    end,
+  }):find()
+
+  return true  -- Signal that Telescope handled it
+end
+
 return M

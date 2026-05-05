@@ -56,8 +56,9 @@ Quickly insert common Genero code patterns:
 - Smart parameter population from function signatures
 - Custom snippet support with hot-reload
 - Tab-based placeholder navigation
+- Telescope integration with live preview and fuzzy search
 
-**See:** [SNIPPETS.md](SNIPPETS.md)
+**See:** [SNIPPETS.md](SNIPPETS.md) | [SNIPPET_TELESCOPE_INTEGRATION.md](SNIPPET_TELESCOPE_INTEGRATION.md)
 
 ### Lua Layer (Neovim)
 
@@ -133,10 +134,13 @@ See feature-specific guides for detailed troubleshooting.
 :GeneroConfigShow                  " Show configuration
 :GeneroCompleteEnable              " Enable completion
 :GeneroCompleteDisable             " Disable completion
-:GeneroSnippetList                 " List available snippets
+:GeneroSnippetList                 " List available snippets (Telescope if available)
+:GeneroSnippetsTelescope           " List snippets with Telescope picker
 :GeneroSnippetHelp {trigger}       " Show snippet help
 :GeneroSnippet {trigger}           " Expand snippet by trigger
 ```
+
+**Note:** `:GeneroSnippetList` automatically uses Telescope when available for a consistent UI experience. See [Snippet Telescope Integration](SNIPPET_TELESCOPE_INTEGRATION.md) for details.
 
 ## Development
 
@@ -197,6 +201,18 @@ When reporting issues, include:
 ## License
 
 See [LICENSE](../LICENSE) for license information.
+
+## Snippet Documentation
+
+Complete guide to code snippets:
+- **[SNIPPETS.md](SNIPPETS.md)** - Overview and basic usage
+- **[SNIPPET_TELESCOPE_INTEGRATION.md](SNIPPET_TELESCOPE_INTEGRATION.md)** - Telescope picker integration
+- **[SNIPPET_TELESCOPE_EXAMPLE.md](SNIPPET_TELESCOPE_EXAMPLE.md)** - Visual examples and comparison
+- **[SNIPPET_CONFIGURATION.md](SNIPPET_CONFIGURATION.md)** - Configuration options
+- **[SNIPPET_ARCHITECTURE.md](SNIPPET_ARCHITECTURE.md)** - Technical architecture
+- **[SNIPPET_TESTING_GUIDE.md](SNIPPET_TESTING_GUIDE.md)** - Testing guide
+- **[SNIPPET_TELESCOPE_IMPLEMENTATION.md](SNIPPET_TELESCOPE_IMPLEMENTATION.md)** - Implementation details
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Recent changes summary
 
 ## Quick Links
 

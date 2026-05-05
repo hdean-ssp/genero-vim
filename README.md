@@ -177,12 +177,13 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 ### Snippet Commands (Neovim only)
 
 ```vim
-:GeneroSnippetList                      " List all available snippets
+:GeneroSnippetList                      " List all available snippets (uses Telescope if available)
+:GeneroSnippetsTelescope                " List snippets with Telescope picker (explicit)
 :GeneroSnippetHelp [trigger]            " Show help for a snippet
 :GeneroSnippet [trigger]                " Expand a snippet by trigger
 ```
 
-**Note**: Snippet commands are only available in Neovim with LuaSnip installed. See [Snippets Documentation](docs/SNIPPETS.md) for details.
+**Note**: Snippet commands are only available in Neovim with LuaSnip installed. `:GeneroSnippetList` will automatically use Telescope if available, otherwise falls back to a floating window. See [Snippets Documentation](docs/SNIPPETS.md) for details.
 
 ### Debug Streaming Commands (Neovim only)
 

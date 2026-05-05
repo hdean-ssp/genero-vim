@@ -898,7 +898,8 @@ vim.g.genero_tools_config = {
 | `:GeneroHintAutofix` | Apply auto-fix |
 | `:GeneroSVNToggle` | Toggle SVN markers |
 | `:GeneroSVNRefresh` | Refresh SVN status |
-| `:GeneroSnippetList` | List available snippets |
+| `:GeneroSnippetList` | List available snippets (Telescope) |
+| `:GeneroSnippetsTelescope` | List snippets (explicit Telescope) |
 | `:TodoTelescope` | Search TODO/BUG tags |
 
 ### Snippet Triggers

@@ -29,11 +29,16 @@ function! genero_tools#snippets#list() abort
   endif
 
   try
-    " Check if snippet list selection is enabled
-    if genero_tools#config#get('snippet_list_selectable')
-      call genero_tools#snippets#list_with_selection()
-    else
-      call luaeval('require("genero_tools.snippets").list_snippets_display()')
+    " Try Telescope first if available
+    let telescope_handled = luaeval('require("genero_tools.telescope").snippets()')
+    
+    if !telescope_handled
+      " Fall back to custom popup window if Telescope not available
+      if genero_tools#config#get('snippet_list_selectable')
+        call genero_tools#snippets#list_with_selection()
+      else
+        call luaeval('require("genero_tools.snippets").list_snippets_display()')
+      endif
     endif
   catch
     call genero_tools#error#error('Snippets', 'Error listing snippets: ' . v:exception)

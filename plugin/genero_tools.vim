@@ -95,6 +95,7 @@ if has('nvim')
   command! GeneroDiagnostics lua require('genero_tools.telescope').diagnostics('all')
   command! GeneroDiagnosticsErrors lua require('genero_tools.telescope').diagnostics('errors')
   command! GeneroDiagnosticsWarnings lua require('genero_tools.telescope').diagnostics('warnings')
+  command! GeneroSnippetsTelescope lua require('genero_tools.telescope').snippets()
 endif
 
 " Register snippet commands (Neovim only)
