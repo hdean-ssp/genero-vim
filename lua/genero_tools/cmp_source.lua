@@ -28,6 +28,12 @@ function source:is_available()
     return false
   end
   
+  -- Check if we're in a noice command-line popup (additional safety check)
+  local bufname = vim.api.nvim_buf_get_name(0)
+  if bufname:match("^noice://") or bufname:match("^%[Command Line%]") then
+    return false
+  end
+  
   local ft = vim.bo.filetype
   return ft == "4gl" or ft == "fgl" or ft == "per"
 end

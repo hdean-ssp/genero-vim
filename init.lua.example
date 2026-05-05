@@ -976,6 +976,29 @@ local plugins = {
       require("genero_tools.cmp_source")
 
       cmp.setup({
+        enabled = function()
+          -- Disable in command-line mode (noice popup)
+          local context = require("cmp.config.context")
+          
+          -- Check if we're in a command-line buffer
+          local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+          if buftype == "prompt" then
+            return false
+          end
+          
+          -- Check buffer name for noice command-line
+          local bufname = vim.api.nvim_buf_get_name(0)
+          if bufname:match("^noice://") or bufname:match("^%[Command Line%]") then
+            return false
+          end
+          
+          -- Disable in comments (optional, but good practice)
+          if context.in_treesitter_capture("comment") or context.in_syntax_group("Comment") then
+            return false
+          end
+          
+          return true
+        end,
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -1037,6 +1060,11 @@ local plugins = {
       cmp.setup.cmdline({ "/", "?" }, {
         mapping = cmp.mapping.preset.cmdline(),
         sources = { { name = "buffer" } },
+        enabled = function()
+          -- Disable in noice command-line popup to avoid conflicts
+          local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+          return buftype ~= "nofile" and buftype ~= "prompt"
+        end,
       })
 
       -- Command-line completion for : commands
@@ -1046,6 +1074,11 @@ local plugins = {
           { { name = "path" } },
           { { name = "cmdline" } }
         ),
+        enabled = function()
+          -- Disable in noice command-line popup to avoid conflicts
+          local buftype = vim.api.nvim_buf_get_option(0, "buftype")
+          return buftype ~= "nofile" and buftype ~= "prompt"
+        end,
       })
     end,
   },
