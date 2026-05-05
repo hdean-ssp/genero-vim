@@ -791,15 +791,13 @@ local plugins = {
   --   :MasonInstall yamlls      (YAML)
   --   :MasonInstall lemminx     (XML)
   --
-  -- NOTE: nvim-lspconfig is deprecated in Neovim 0.11+. This config only
-  -- loads LSP on Neovim 0.9.x and 0.10.x. For 0.11+, use native vim.lsp.config.
+  -- NOTE: nvim-lspconfig is pinned to v1.0.0 for Neovim 0.9.5 compatibility.
+  -- v1.1+ requires Neovim 0.10+.
 
   -- Mason: installs and manages LSP servers, linters, and formatters
   {
     "williamboman/mason.nvim",
     build = ":MasonUpdate",
-    -- Only load on Neovim < 0.11 (lspconfig is deprecated in 0.11+)
-    enabled = nvim_version.minor < 11,
     config = function()
       require("mason").setup({
         ui = {
@@ -818,7 +816,6 @@ local plugins = {
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
-    enabled = nvim_version.minor < 11,
     config = function()
       require("mason-lspconfig").setup({
         -- Don't auto-install on startup (causes lag and errors)
@@ -830,14 +827,15 @@ local plugins = {
   },
 
   -- nvim-lspconfig: configures each language server
+  -- Pin to v1.0.0 for Neovim 0.9.5 compatibility (v1.1+ requires 0.10+)
   {
     "neovim/nvim-lspconfig",
+    version = "v1.0.0",
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
       "hrsh7th/cmp-nvim-lsp",   -- feeds LSP completions into nvim-cmp
     },
-    enabled = nvim_version.minor < 11,
     config = function()
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
