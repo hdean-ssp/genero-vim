@@ -1,16 +1,10 @@
 " Genero-Tools Plugin - Filetype Plugin for Genero
 
-" Setup completion (omnifunc for Vim compatibility, cmp handles Neovim)
-if has('nvim')
-  " Neovim: omnifunc as fallback, cmp is primary
-  setlocal omnifunc=genero_tools#complete#omnifunc
-  " Disable pause-based autocomplete (cmp handles triggering)
-  let b:genero_autocomplete_on_pause = 0
-else
-  " Vim: use omnifunc with pause-based triggering
-  call genero_tools#complete#setup_auto()
-  call genero_tools#complete#setup_preview()
-endif
+" Setup completion (omnifunc always enabled, pause-based optional via config)
+call genero_tools#complete#setup_auto()
+
+" Setup completion preview window (for omnifunc fallback)
+call genero_tools#complete#setup_preview()
 
 " Set comment string for genero files (# for comments)
 setlocal commentstring=#\ %s

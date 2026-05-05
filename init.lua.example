@@ -162,7 +162,7 @@ vim.g.genero_tools_config = {
   async_enabled = true,                  -- Enable async operations
   
   -- Autocomplete configuration
-  autocomplete_on_pause = true,      -- Auto-trigger completion on pause (default: true)
+  autocomplete_on_pause = false,     -- Disabled: nvim-cmp handles triggering (Vim still uses omnifunc)
   autocomplete_delay = 500,          -- Delay in ms before triggering (default: 500)
   
   -- Format flag configuration (for optimized output from genero-tools)
