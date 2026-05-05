@@ -1,10 +1,16 @@
 " Genero-Tools Plugin - Filetype Plugin for Genero
 
-" Setup completion (omnifunc always enabled for Ctrl+N, pause-based optional)
-call genero_tools#complete#setup_auto()
-
-" Setup completion preview window
-call genero_tools#complete#setup_preview()
+" Setup completion (omnifunc for Vim compatibility, cmp handles Neovim)
+if has('nvim')
+  " Neovim: omnifunc as fallback, cmp is primary
+  setlocal omnifunc=genero_tools#complete#omnifunc
+  " Disable pause-based autocomplete (cmp handles triggering)
+  let b:genero_autocomplete_on_pause = 0
+else
+  " Vim: use omnifunc with pause-based triggering
+  call genero_tools#complete#setup_auto()
+  call genero_tools#complete#setup_preview()
+endif
 
 " Set comment string for genero files (# for comments)
 setlocal commentstring=#\ %s
@@ -21,9 +27,3 @@ endif
 
 " Setup statusline integration for error/warning counts
 call genero_tools#display#setup_statusline()
-
-" Navigation in completion menu
-inoremap <buffer> <expr> <Down> pumvisible() ? "\<C-n>" : "\<Down>"
-inoremap <buffer> <expr> <Up> pumvisible() ? "\<C-p>" : "\<Up>"
-inoremap <buffer> <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
-inoremap <buffer> <expr> <Esc> pumvisible() ? "\<C-e>" : "\<Esc>"

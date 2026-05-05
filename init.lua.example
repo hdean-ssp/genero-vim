@@ -972,6 +972,9 @@ local plugins = {
       local cmp = require("cmp")
       local luasnip = require("luasnip")
 
+      -- Load Genero cmp source (registers itself automatically)
+      require("genero_tools.cmp_source")
+
       cmp.setup({
         snippet = {
           expand = function(args)
@@ -1008,6 +1011,7 @@ local plugins = {
           ["<C-d>"] = cmp.mapping.scroll_docs(4),
         }),
         sources = cmp.config.sources({
+          { name = "genero",   priority = 1100 },  -- Genero functions (highest priority on .4gl files)
           { name = "nvim_lsp", priority = 1000 },
           { name = "luasnip",  priority = 750 },
           { name = "buffer",   priority = 500 },
@@ -1017,6 +1021,7 @@ local plugins = {
           format = function(entry, item)
             -- Show source name in the menu
             local source_labels = {
+              genero   = "[Genero]",
               nvim_lsp = "[LSP]",
               luasnip  = "[Snip]",
               buffer   = "[Buf]",
@@ -1026,11 +1031,6 @@ local plugins = {
             return item
           end,
         },
-        -- Disable cmp on Genero files — those use the plugin's own omnifunc
-        enabled = function()
-          local ft = vim.bo.filetype
-          return ft ~= "4gl" and ft ~= "fgl" and ft ~= "per"
-        end,
       })
 
       -- Command-line completion for / search
@@ -1580,10 +1580,12 @@ SNIPPETS:
 AUTOCOMPLETE:
   Ctrl+Space      - Trigger code completion (shows function/module suggestions)
   In completion menu:
-    Up/Down       - Navigate suggestions
+    Tab/Shift+Tab - Navigate suggestions and jump snippet placeholders
     Enter         - Accept selected suggestion
-    Esc           - Close completion menu
-  Auto-completion triggers after 500ms pause (configurable)
+    Ctrl+e        - Close completion menu
+    Ctrl+u/d      - Scroll documentation
+  Auto-completion triggers after 500ms pause (Neovim with nvim-cmp)
+  Vim users: Ctrl+N for manual completion (omnifunc)
 
 DEBUG STREAMING:
   Space+gd        - Toggle debug stream on/off
