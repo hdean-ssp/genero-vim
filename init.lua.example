@@ -375,11 +375,11 @@ local plugins = {
           TRACE = "✎",
           WARN = "",
         },
-        level = vim.log.levels.ERROR,  -- Only show errors, suppress warnings/info
+        level = vim.log.levels.WARN,  -- Show warnings and errors
         minimum_width = 50,
         render = "compact",            -- Compact render to reduce visual noise
         stages = "static",             -- "static" avoids animation math bugs across all versions
-        timeout = 2000,                -- Auto-dismiss after 2 seconds
+        timeout = 3000,                -- Auto-dismiss after 3 seconds
         top_down = true,
       })
       vim.notify = require("notify")
@@ -399,10 +399,10 @@ local plugins = {
     config = function()
       require("noice").setup({
         notify = {
-          enabled = false,  -- Disable noice notifications to avoid spam
+          enabled = true,  -- Re-enable notifications (we filter specific ones below)
         },
         messages = {
-          enabled = false,  -- Disable message handling to reduce noise
+          enabled = true,  -- Re-enable message handling
         },
         lsp = {
           progress = {
@@ -415,20 +415,20 @@ local plugins = {
             enabled = false,  -- Disable LSP messages
           },
           override = {
-            ["vim.lsp.util.convert_input_to_markdown_lines"] = false,
-            ["vim.lsp.util.stylize_markdown"] = false,
-            ["cmp.entry.get_documentation"] = false,
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
           },
         },
         presets = {
           bottom_search = true,
-          command_palette = false,       -- Disable to reduce visual noise
-          long_message_to_split = false,
+          command_palette = true,
+          long_message_to_split = true,
           inc_rename = false,
           lsp_doc_border = false,
         },
         routes = {
-          -- Filter out common noisy messages
+          -- Filter out specific noisy messages
           {
             filter = {
               event = "msg_show",
@@ -436,18 +436,18 @@ local plugins = {
                 { find = "%d+L, %d+B" },
                 { find = "; after #%d+" },
                 { find = "; before #%d+" },
-                { find = "deprecated" },
-                { find = "warning" },
+                { find = "lspconfig.*deprecated" },  -- Filter lspconfig deprecation
+                { find = "vim%.lsp%.config" },       -- Filter vim.lsp.config mentions
               },
             },
-            opts = { skip = true },
+            view = "mini",
           },
           {
             filter = {
               event = "notify",
               any = {
-                { find = "deprecated" },
-                { find = "warning" },
+                { find = "lspconfig.*deprecated" },
+                { find = "vim%.lsp%.config" },
               },
             },
             opts = { skip = true },
@@ -790,11 +790,16 @@ local plugins = {
   --   :MasonInstall jsonls      (JSON)
   --   :MasonInstall yamlls      (YAML)
   --   :MasonInstall lemminx     (XML)
+  --
+  -- NOTE: nvim-lspconfig is deprecated in Neovim 0.11+. This config only
+  -- loads LSP on Neovim 0.9.x and 0.10.x. For 0.11+, use native vim.lsp.config.
 
   -- Mason: installs and manages LSP servers, linters, and formatters
   {
     "williamboman/mason.nvim",
     build = ":MasonUpdate",
+    -- Only load on Neovim < 0.11 (lspconfig is deprecated in 0.11+)
+    enabled = nvim_version.minor < 11,
     config = function()
       require("mason").setup({
         ui = {
@@ -813,6 +818,7 @@ local plugins = {
   {
     "williamboman/mason-lspconfig.nvim",
     dependencies = { "williamboman/mason.nvim" },
+    enabled = nvim_version.minor < 11,
     config = function()
       require("mason-lspconfig").setup({
         -- Don't auto-install on startup (causes lag and errors)
@@ -831,6 +837,7 @@ local plugins = {
       "williamboman/mason-lspconfig.nvim",
       "hrsh7th/cmp-nvim-lsp",   -- feeds LSP completions into nvim-cmp
     },
+    enabled = nvim_version.minor < 11,
     config = function()
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
