@@ -1384,11 +1384,11 @@ map("n", "[[", function()
   end
 end, { noremap = true, silent = true, desc = "Prev temp tag (" .. tmp_tag .. ", wrap)" })
 
--- Resize windows
-map("n", "<C-Up>", ":resize +2<CR>", opts)
-map("n", "<C-Down>", ":resize -2<CR>", opts)
-map("n", "<C-Left>", ":vertical resize -2<CR>", opts)
-map("n", "<C-Right>", ":vertical resize +2<CR>", opts)
+-- Navigate between splits with Ctrl+Arrow keys
+map("n", "<C-Up>", "<C-w>k", { noremap = true, silent = true, desc = "Move to split above" })
+map("n", "<C-Down>", "<C-w>j", { noremap = true, silent = true, desc = "Move to split below" })
+map("n", "<C-Left>", "<C-w>h", { noremap = true, silent = true, desc = "Move to split left" })
+map("n", "<C-Right>", "<C-w>l", { noremap = true, silent = true, desc = "Move to split right" })
 
 -- ============================================================================
 -- SEARCH HELPERS (Telescope with native grep/vimgrep fallback)
@@ -1720,8 +1720,9 @@ DEBUG STREAMING:
     j/k           - Scroll down/up
 
 WINDOW MANAGEMENT:
-  Ctrl+Up/Down    - Resize window vertically
-  Ctrl+Left/Right - Resize window horizontally
+  Ctrl+Up/Down    - Navigate to split above/below
+  Ctrl+Left/Right - Navigate to split left/right
+  Ctrl+h/j/k/l    - Navigate between windows (alternative)
 
 TERMINAL:
   Ctrl+\          - Toggle terminal (horizontal split)
