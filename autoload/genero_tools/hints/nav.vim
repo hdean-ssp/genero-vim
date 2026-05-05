@@ -36,7 +36,13 @@ function! genero_tools#hints#nav#next() abort
   
   " Jump to hint line
   call cursor(next_hint.line, next_hint.column)
-  call genero_tools#hints#display#highlight_hint(next_hint)
+  
+  " Highlight hint after a small delay to avoid conflicts with todo-comments
+  if has('nvim')
+    call timer_start(10, {-> genero_tools#hints#display#highlight_hint(next_hint)})
+  else
+    call genero_tools#hints#display#highlight_hint(next_hint)
+  endif
   
   " Show position feedback
   let total = len(hints)
@@ -83,7 +89,13 @@ function! genero_tools#hints#nav#prev() abort
   
   " Jump to hint line
   call cursor(prev_hint.line, prev_hint.column)
-  call genero_tools#hints#display#highlight_hint(prev_hint)
+  
+  " Highlight hint after a small delay to avoid conflicts with todo-comments
+  if has('nvim')
+    call timer_start(10, {-> genero_tools#hints#display#highlight_hint(prev_hint)})
+  else
+    call genero_tools#hints#display#highlight_hint(prev_hint)
+  endif
   
   " Show position feedback
   let total = len(hints)
