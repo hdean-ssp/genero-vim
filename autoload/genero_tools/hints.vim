@@ -137,7 +137,6 @@ function! genero_tools#hints#analyze(bufnr, ...) abort
   
   return all_hints
 endfunction
-  let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')
 
 " Get cached hints for a buffer without re-analyzing
 function! genero_tools#hints#get_hints(bufnr) abort
