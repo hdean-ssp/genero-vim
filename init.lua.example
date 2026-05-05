@@ -1254,8 +1254,43 @@ map("n", "<C-l>", "<C-w>l", opts)
 map("n", "<leader>bn", ":bnext<CR>", opts)
 map("n", "<leader>bp", ":bprev<CR>", opts)
 map("n", "<leader>bd", ":bdelete<CR>", opts)
-map("n", "]b", ":bnext<CR>", { noremap = true, silent = true, desc = "Next buffer" })
-map("n", "[b", ":bprev<CR>", { noremap = true, silent = true, desc = "Previous buffer" })
+
+-- Buffer navigation with wrapping
+map("n", "]b", function()
+  local current = vim.fn.bufnr('%')
+  local last = vim.fn.bufnr('$')
+  local next = current
+  
+  -- Find next listed buffer
+  for i = 1, last do
+    next = next + 1
+    if next > last then
+      next = 1  -- Wrap to first buffer
+    end
+    if vim.fn.buflisted(next) == 1 then
+      vim.cmd('buffer ' .. next)
+      return
+    end
+  end
+end, { noremap = true, silent = true, desc = "Next buffer (wrap)" })
+
+map("n", "[b", function()
+  local current = vim.fn.bufnr('%')
+  local last = vim.fn.bufnr('$')
+  local prev = current
+  
+  -- Find previous listed buffer
+  for i = 1, last do
+    prev = prev - 1
+    if prev < 1 then
+      prev = last  -- Wrap to last buffer
+    end
+    if vim.fn.buflisted(prev) == 1 then
+      vim.cmd('buffer ' .. prev)
+      return
+    end
+  end
+end, { noremap = true, silent = true, desc = "Previous buffer (wrap)" })
 
 -- Temp code tag navigation: jump to next/prev #TMP<initials> tag for current user
 -- Uses $USER to build the tag pattern (e.g. hdean → #TMPHD)
@@ -1264,13 +1299,39 @@ local tmp_tag = "#TMP" .. string.upper(string.sub(username, 1, 2))
 
 map("n", "]]", function()
   local pattern = vim.fn.escape(tmp_tag, "#")
-  vim.fn.search(pattern, "W")
-end, { noremap = true, silent = true, desc = "Next temp tag (" .. tmp_tag .. ")" })
+  local pos = vim.fn.getpos('.')
+  
+  -- Try to find next occurrence
+  if vim.fn.search(pattern, "W") == 0 then
+    -- Not found forward, wrap to beginning
+    vim.fn.cursor(1, 1)
+    if vim.fn.search(pattern, "W") == 0 then
+      -- Still not found, restore position and notify
+      vim.fn.setpos('.', pos)
+      vim.notify("No " .. tmp_tag .. " tags found", vim.log.levels.WARN)
+    else
+      vim.notify("Wrapped to first " .. tmp_tag, vim.log.levels.INFO)
+    end
+  end
+end, { noremap = true, silent = true, desc = "Next temp tag (" .. tmp_tag .. ", wrap)" })
 
 map("n", "[[", function()
   local pattern = vim.fn.escape(tmp_tag, "#")
-  vim.fn.search(pattern, "bW")
-end, { noremap = true, silent = true, desc = "Prev temp tag (" .. tmp_tag .. ")" })
+  local pos = vim.fn.getpos('.')
+  
+  -- Try to find previous occurrence
+  if vim.fn.search(pattern, "bW") == 0 then
+    -- Not found backward, wrap to end
+    vim.fn.cursor(vim.fn.line('$'), 1)
+    if vim.fn.search(pattern, "bW") == 0 then
+      -- Still not found, restore position and notify
+      vim.fn.setpos('.', pos)
+      vim.notify("No " .. tmp_tag .. " tags found", vim.log.levels.WARN)
+    else
+      vim.notify("Wrapped to last " .. tmp_tag, vim.log.levels.INFO)
+    end
+  end
+end, { noremap = true, silent = true, desc = "Prev temp tag (" .. tmp_tag .. ", wrap)" })
 
 -- Resize windows
 map("n", "<C-Up>", ":resize +2<CR>", opts)

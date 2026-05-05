@@ -15,6 +15,7 @@ function! genero_tools#hints#nav#next() abort
   
   " Find next hint after current line
   let next_hint = v:null
+  let wrapped = 0
   for hint in hints
     if hint.line > current_line
       let next_hint = hint
@@ -25,6 +26,7 @@ function! genero_tools#hints#nav#next() abort
   " If no hint found after current line, wrap to first hint
   if next_hint is v:null && !empty(hints)
     let next_hint = hints[0]
+    let wrapped = 1
   endif
   
   if next_hint is v:null
@@ -35,6 +37,15 @@ function! genero_tools#hints#nav#next() abort
   " Jump to hint line
   call cursor(next_hint.line, next_hint.column)
   call genero_tools#hints#display#highlight_hint(next_hint)
+  
+  " Show position feedback
+  let total = len(hints)
+  let idx = index(hints, next_hint) + 1
+  if wrapped
+    echom 'Hint ' . idx . ' of ' . total . ' (wrapped to first)'
+  else
+    echom 'Hint ' . idx . ' of ' . total
+  endif
 endfunction
 
 " Navigate to previous hint in current buffer
@@ -51,6 +62,7 @@ function! genero_tools#hints#nav#prev() abort
   
   " Find previous hint before current line
   let prev_hint = v:null
+  let wrapped = 0
   for hint in reverse(copy(hints))
     if hint.line < current_line
       let prev_hint = hint
@@ -61,6 +73,7 @@ function! genero_tools#hints#nav#prev() abort
   " If no hint found before current line, wrap to last hint
   if prev_hint is v:null && !empty(hints)
     let prev_hint = hints[-1]
+    let wrapped = 1
   endif
   
   if prev_hint is v:null
@@ -71,6 +84,15 @@ function! genero_tools#hints#nav#prev() abort
   " Jump to hint line
   call cursor(prev_hint.line, prev_hint.column)
   call genero_tools#hints#display#highlight_hint(prev_hint)
+  
+  " Show position feedback
+  let total = len(hints)
+  let idx = index(hints, prev_hint) + 1
+  if wrapped
+    echom 'Hint ' . idx . ' of ' . total . ' (wrapped to last)'
+  else
+    echom 'Hint ' . idx . ' of ' . total
+  endif
 endfunction
 
 " List all hints in current buffer

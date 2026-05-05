@@ -118,7 +118,8 @@ function! genero_tools#compiler#quickfix#next() abort
     " E553: No more items — wrap to first
     try
       cfirst
-      echom 'Error 1 of ' . len(qf_list) . ' (wrapped)'
+      let total = len(qf_list)
+      echom 'Error 1 of ' . total . ' (wrapped to first)'
       return {
         \ 'success': 1,
         \ 'error': ''
@@ -169,7 +170,8 @@ function! genero_tools#compiler#quickfix#prev() abort
     " E553: No more items — wrap to last
     try
       clast
-      echom 'Error ' . len(qf_list) . ' of ' . len(qf_list) . ' (wrapped)'
+      let total = len(qf_list)
+      echom 'Error ' . total . ' of ' . total . ' (wrapped to last)'
       return {
         \ 'success': 1,
         \ 'error': ''
