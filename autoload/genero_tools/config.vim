@@ -359,7 +359,7 @@ function! genero_tools#config#validate() abort
   
   " Validate display_mode is supported
   let l:display_mode = genero_tools#config#get('display_mode')
-  let l:valid_modes = ['quickfix', 'popup', 'split', 'echo', 'inline']
+  let l:valid_modes = ['quickfix', 'popup', 'floating', 'split', 'echo', 'inline']
   if index(l:valid_modes, l:display_mode) == -1
     call genero_tools#error#warn('config', 'invalid display_mode "' . l:display_mode . '", using quickfix')
     let g:genero_tools_config.display_mode = 'quickfix'
