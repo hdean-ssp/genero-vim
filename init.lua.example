@@ -813,8 +813,10 @@ local plugins = {
   },
 
   -- mason-lspconfig: bridges mason with nvim-lspconfig
+  -- Pin to v1.31.0 for Neovim 0.9.5 compatibility
   {
     "williamboman/mason-lspconfig.nvim",
+    version = "v1.31.0",
     dependencies = { "williamboman/mason.nvim" },
     config = function()
       require("mason-lspconfig").setup({
