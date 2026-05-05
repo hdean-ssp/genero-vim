@@ -726,9 +726,16 @@ local plugins = {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
+      -- Gracefully handle if treesitter isn't fully installed yet
+      local ok, treesitter = pcall(require, "nvim-treesitter.configs")
+      if not ok then
+        vim.notify("nvim-treesitter not ready. Run :TSUpdate to install.", vim.log.levels.WARN)
+        return
+      end
+      
       -- Lazy-load parsers: only install when opening a file of that type
       -- This avoids blocking startup with parser compilation
-      require("nvim-treesitter.configs").setup({
+      treesitter.setup({
         -- Don't auto-install all parsers on startup (causes lag)
         ensure_installed = {},
         
@@ -740,8 +747,8 @@ local plugins = {
           -- Disable for very large files (>500KB) to avoid slowdown
           disable = function(_, buf)
             local max_filesize = 500 * 1024
-            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-            return ok and stats and stats.size > max_filesize
+            local ok_stat, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            return ok_stat and stats and stats.size > max_filesize
           end,
         },
         indent = { enable = true },
@@ -836,7 +843,11 @@ local plugins = {
 
       -- Helper: only setup server if it's installed via Mason
       local function setup_if_installed(server_name, config)
-        local mason_registry = require("mason-registry")
+        local ok_registry, mason_registry = pcall(require, "mason-registry")
+        if not ok_registry then
+          -- Mason not installed yet, skip LSP setup
+          return
+        end
         if mason_registry.is_installed(server_name) then
           lspconfig[server_name].setup(config)
         end
