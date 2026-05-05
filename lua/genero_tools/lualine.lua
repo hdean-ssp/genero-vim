@@ -464,8 +464,8 @@ function M.setup_highlights()
   -- module (dimmest) → file → function (brightest) → refcount (subdued)
   local module_bg = blend(normal_bg, comment_fg, 0.08)
   local module_fg = blend(comment_fg, normal_fg, 0.15)
-  local file_bg = blend(normal_bg, func_fg, 0.18)      -- Increased from 0.12 for better visibility
-  local file_fg = blend(comment_fg, normal_fg, 0.55)   -- Increased from 0.45 for better contrast
+  local file_bg = blend(normal_bg, func_fg, 0.12)
+  local file_fg = blend(comment_fg, normal_fg, 0.45)
   local func_bg = blend(normal_bg, func_fg, 0.20)
   local func_fg_color = blend(func_fg, normal_fg, 0.6)
   local ref_bg = blend(normal_bg, comment_fg, 0.05)
@@ -502,6 +502,7 @@ function M.setup_highlights()
   vim.api.nvim_set_hl(0, 'GeneroLualineFile', {
     bg = file_bg,
     fg = file_fg,
+    bold = true,  -- Make filename bold for visibility when no module
   })
 
   vim.api.nvim_set_hl(0, 'GeneroLualineModule', {
