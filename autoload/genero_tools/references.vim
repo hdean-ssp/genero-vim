@@ -23,14 +23,31 @@ function! genero_tools#references#find_smart() abort
     return
   endif
   
-  " Check if the word under cursor looks like a function call
-  " Function calls typically have parentheses after them or are in CALL statements
+  " Get the word under cursor and check context
   let word = expand('<cword>')
-  let line_after_cursor = strpart(line_text, col('.') - 1)
+  let col = col('.')
   
-  " Check if this line is a CALL statement or has parentheses after the word
-  if upper =~# '^\s*CALL\>' || line_after_cursor =~# '^\w*\s*('
-    " Looks like a function call - use function references
+  " Get text immediately after the word under cursor
+  " We need to check if there's a '(' right after the word (not just anywhere on the line)
+  let word_end_col = col + len(word) - 1
+  let line_after_word = strpart(line_text, word_end_col)
+  
+  " Check if this is a CALL statement
+  if upper =~# '^\s*CALL\>'
+    " On a CALL line - check if cursor is on the function name (before the '(')
+    " Extract the function name from CALL statement
+    let call_func = matchstr(upper, '^\s*CALL\s\+\zs\w\+')
+    if !empty(call_func) && toupper(word) ==# call_func
+      " Cursor is on the function name in CALL statement
+      call genero_tools#references#find(word)
+      return
+    endif
+    " Otherwise cursor is on a parameter - treat as variable
+  endif
+  
+  " Check if cursor is directly on a function call (word followed immediately by '(')
+  if line_after_word =~# '^\s*('
+    " Cursor is on the function name itself
     call genero_tools#references#find(word)
     return
   endif
