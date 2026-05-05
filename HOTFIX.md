@@ -6,27 +6,21 @@ After the performance optimization update, you may see this error:
 E117: Unknown function: genero_tools#hints#get_hints
 ```
 
+## Status
+✅ **FIXED** in commit `4a5b02b`
+
 ## Cause
-Neovim has the old version of the hints module loaded in memory. The `get_hints` function exists in the updated file but Neovim hasn't reloaded it yet.
+There was orphaned code (a `let` statement outside any function) that prevented the rest of the hints.vim file from loading properly. This has been removed.
 
 ## Solution
 
-### Option 1: Restart Neovim (Recommended)
-Simply close and reopen Neovim. This will load all the updated files.
-
-### Option 2: Reload the Module
-Run these commands in Neovim:
-```vim
-:unlet g:genero_tools_hints_state
-:runtime! autoload/genero_tools/hints.vim
-:call genero_tools#hints#init()
+### Update to Latest Version
+```bash
+cd ~/.vim/plugged/genero-vim  # or your plugin directory
+git pull origin main
 ```
 
-### Option 3: Source the Plugin
-```vim
-:source ~/.vim/plugged/genero-vim/plugin/genero-tools.vim
-```
-(Adjust path based on your plugin manager)
+Then restart Neovim. The error is now fixed.
 
 ## Verification
 After reloading, the error should disappear. You can verify by:
@@ -34,8 +28,8 @@ After reloading, the error should disappear. You can verify by:
 2. Moving the cursor around
 3. No errors should appear
 
-## Why This Happened
-The performance optimizations modified the hints.vim file structure. During development, we ensured the `get_hints` function was preserved, but Neovim needs to reload the file to see the changes.
+## What Was Fixed
+The orphaned `let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')` statement on line 140 was removed. This line was outside any function and caused Vim to stop parsing the file, preventing the `get_hints` function from being defined.
 
 ## Prevention
-This is a one-time issue. After restarting Neovim once, the updated code will be loaded and the error won't recur.
+This was a one-time issue caused by sed-based text replacement during development. The fix has been tested and verified.
