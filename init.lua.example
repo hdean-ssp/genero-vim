@@ -726,16 +726,15 @@ local plugins = {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
+      -- Lazy-load parsers: only install when opening a file of that type
+      -- This avoids blocking startup with parser compilation
       require("nvim-treesitter.configs").setup({
-        -- Install parsers for Genero-adjacent languages in the codebase
-        ensure_installed = {
-          "python", "java", "c", "cpp", "perl", "bash",
-          "lua", "vim", "vimdoc",
-          "json", "xml", "yaml", "toml",
-          "markdown", "markdown_inline",
-          "sql",
-        },
-        auto_install = true,       -- Auto-install missing parsers on buffer open
+        -- Don't auto-install all parsers on startup (causes lag)
+        ensure_installed = {},
+        
+        -- Install parsers on-demand when opening a file
+        auto_install = true,
+        
         highlight = {
           enable = true,
           -- Disable for very large files (>500KB) to avoid slowdown
@@ -746,16 +745,6 @@ local plugins = {
           end,
         },
         indent = { enable = true },
-        -- Incremental selection: expand/shrink selection by syntax node
-        incremental_selection = {
-          enable = true,
-          keymaps = {
-            init_selection    = "<C-space>",
-            node_incremental  = "<C-space>",
-            scope_incremental = "<C-s>",
-            node_decremental  = "<M-space>",
-          },
-        },
       })
     end,
   },
@@ -763,6 +752,17 @@ local plugins = {
   -- ============================================================================
   -- LSP - Language Server Protocol for Python, Java, C, Perl, Bash, etc.
   -- ============================================================================
+  -- IMPORTANT: LSP servers are NOT auto-installed to avoid startup lag.
+  -- Install manually as needed:
+  --   :Mason                    (open UI, press 'i' to install)
+  --   :MasonInstall pyright     (Python)
+  --   :MasonInstall jdtls       (Java)
+  --   :MasonInstall clangd      (C/C++)
+  --   :MasonInstall bashls      (Bash)
+  --   :MasonInstall lua_ls      (Lua)
+  --   :MasonInstall jsonls      (JSON)
+  --   :MasonInstall yamlls      (YAML)
+  --   :MasonInstall lemminx     (XML)
 
   -- Mason: installs and manages LSP servers, linters, and formatters
   {
@@ -788,18 +788,10 @@ local plugins = {
     dependencies = { "williamboman/mason.nvim" },
     config = function()
       require("mason-lspconfig").setup({
-        -- Auto-install these servers when missing
-        ensure_installed = {
-          "pyright",       -- Python
-          "jdtls",         -- Java
-          "clangd",        -- C / C++
-          "bashls",        -- Bash / shell scripts
-          "lua_ls",        -- Lua (for editing this config)
-          "jsonls",        -- JSON
-          "yamlls",        -- YAML
-          "lemminx",       -- XML
-        },
-        automatic_installation = true,
+        -- Don't auto-install on startup (causes lag and errors)
+        -- Install manually with :MasonInstall <server> or via :Mason UI
+        ensure_installed = {},
+        automatic_installation = false,
       })
     end,
   },
@@ -842,8 +834,16 @@ local plugins = {
         end
       end
 
+      -- Helper: only setup server if it's installed via Mason
+      local function setup_if_installed(server_name, config)
+        local mason_registry = require("mason-registry")
+        if mason_registry.is_installed(server_name) then
+          lspconfig[server_name].setup(config)
+        end
+      end
+
       -- Python
-      lspconfig.pyright.setup({
+      setup_if_installed("pyright", {
         capabilities = capabilities,
         on_attach = on_attach,
         settings = {
@@ -858,7 +858,7 @@ local plugins = {
       })
 
       -- Java (jdtls needs a workspace dir per project)
-      lspconfig.jdtls.setup({
+      setup_if_installed("jdtls", {
         capabilities = capabilities,
         on_attach = on_attach,
         settings = {
@@ -871,7 +871,7 @@ local plugins = {
       })
 
       -- C / C++
-      lspconfig.clangd.setup({
+      setup_if_installed("clangd", {
         capabilities = capabilities,
         on_attach = on_attach,
         cmd = {
@@ -884,14 +884,14 @@ local plugins = {
       })
 
       -- Bash / shell scripts
-      lspconfig.bashls.setup({
+      setup_if_installed("bashls", {
         capabilities = capabilities,
         on_attach = on_attach,
         filetypes = { "sh", "bash", "zsh" },
       })
 
       -- Lua (for editing this config file)
-      lspconfig.lua_ls.setup({
+      setup_if_installed("lua_ls", {
         capabilities = capabilities,
         on_attach = on_attach,
         settings = {
@@ -908,13 +908,13 @@ local plugins = {
       })
 
       -- JSON
-      lspconfig.jsonls.setup({ capabilities = capabilities, on_attach = on_attach })
+      setup_if_installed("jsonls", { capabilities = capabilities, on_attach = on_attach })
 
       -- YAML
-      lspconfig.yamlls.setup({ capabilities = capabilities, on_attach = on_attach })
+      setup_if_installed("yamlls", { capabilities = capabilities, on_attach = on_attach })
 
       -- XML
-      lspconfig.lemminx.setup({ capabilities = capabilities, on_attach = on_attach })
+      setup_if_installed("lemminx", { capabilities = capabilities, on_attach = on_attach })
 
       -- Diagnostic display settings (consistent with Genero-Tools style)
       vim.diagnostic.config({
