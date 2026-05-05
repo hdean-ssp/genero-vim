@@ -302,21 +302,17 @@ endfunction
 "   m_ prefix → module variable, search module-level defines first
 "   gl_ prefix → global variable, search module-level defines first
 "   others → search local scope first (upward from cursor)
+" OPTIMIZED: Uses incremental getline() instead of loading entire buffer
 function! s:find_define_scan(word, bufnr, cursor_line) abort
-  let lines = getbufline(a:bufnr, 1, '$')
-  if empty(lines)
-    return {}
-  endif
-
   " Build a case-insensitive pattern for the variable name
   let var_pattern = '\c\<' . escape(a:word, '\') . '\>'
 
   " Check if cursor is on a FUNCTION definition line
-  let current_line_text = get(lines, a:cursor_line - 1, '')
+  let current_line_text = getline(a:cursor_line)
   let upper_current = toupper(substitute(current_line_text, '^\s*', '', ''))
   if upper_current =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
     " Cursor is on the function signature — search downward for DEFINE
-    let found = s:search_define_downward(lines, var_pattern, a:cursor_line)
+    let found = s:search_define_downward_incremental(var_pattern, a:cursor_line)
     if !empty(found)
       let found.scope = 'param'
       return found
@@ -330,28 +326,28 @@ function! s:find_define_scan(word, bufnr, cursor_line) abort
   if is_module_var || is_global_var
     " Module/global variables: search module-level defines first (top of file)
     " This is faster for large files since module defines are near the top
-    let found = s:search_module_defines(lines, var_pattern)
+    let found = s:search_module_defines_incremental(var_pattern)
     if !empty(found)
       let found.scope = is_global_var ? 'global' : 'module'
       return found
     endif
 
     " Fall back to local search in case naming convention wasn't followed
-    let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
+    let found = s:search_define_upward_incremental(var_pattern, a:cursor_line)
     if !empty(found)
       let found.scope = 'local'
       return found
     endif
   else
     " Local variables: search upward from cursor first (closest scope)
-    let found = s:search_define_upward(lines, var_pattern, a:cursor_line)
+    let found = s:search_define_upward_incremental(var_pattern, a:cursor_line)
     if !empty(found)
       let found.scope = 'local'
       return found
     endif
 
     " Fall back to module-level defines
-    let found = s:search_module_defines(lines, var_pattern)
+    let found = s:search_module_defines_incremental(var_pattern)
     if !empty(found)
       let found.scope = 'module'
       return found
@@ -361,17 +357,13 @@ function! s:find_define_scan(word, bufnr, cursor_line) abort
   return {}
 endfunction
 
-" Search upward from cursor_line for a DEFINE containing the variable
+" OPTIMIZED: Search upward using incremental getline() calls
 " Stops at the enclosing FUNCTION line
-function! s:search_define_upward(lines, var_pattern, cursor_line) abort
-  let in_define_block = 0
-  let define_start_line = 0
-  let define_text = ''
-
+function! s:search_define_upward_incremental(var_pattern, cursor_line) abort
   " Walk upward from cursor line
-  let i = a:cursor_line - 1  " 0-indexed
-  while i >= 0
-    let line = a:lines[i]
+  let i = a:cursor_line
+  while i >= 1
+    let line = getline(i)
     let trimmed = substitute(line, '^\s*', '', '')
     let upper_trimmed = toupper(trimmed)
 
@@ -381,11 +373,10 @@ function! s:search_define_upward(lines, var_pattern, cursor_line) abort
     endif
 
     " Check if this line is part of a DEFINE statement
-    " DEFINE can span multiple lines with comma continuation
     if upper_trimmed =~# '^DEFINE\>'
       " Found a DEFINE line — collect the full statement
-      let define_text = s:collect_define_statement(a:lines, i)
-      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      let define_text = s:collect_define_statement_incremental(i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i)
       if !empty(result)
         return result
       endif
@@ -397,15 +388,14 @@ function! s:search_define_upward(lines, var_pattern, cursor_line) abort
   return {}
 endfunction
 
-" Search downward from a FUNCTION line for DEFINE statements
+" OPTIMIZED: Search downward using incremental getline() calls
 " Used when cursor is on the function signature (params are defined below)
-" Stops at the next FUNCTION or END FUNCTION
-function! s:search_define_downward(lines, var_pattern, func_line) abort
-  let i = a:func_line  " Start from the line after the FUNCTION line (0-indexed = func_line)
-  let total = len(a:lines)
+function! s:search_define_downward_incremental(var_pattern, func_line) abort
+  let i = a:func_line + 1
+  let total = line('$')
 
-  while i < total
-    let line = a:lines[i]
+  while i <= total
+    let line = getline(i)
     let trimmed = substitute(line, '^\s*', '', '')
     let upper_trimmed = toupper(trimmed)
 
@@ -413,23 +403,20 @@ function! s:search_define_downward(lines, var_pattern, func_line) abort
     if upper_trimmed =~# '^\(END\s\+FUNCTION\|END\s\+MAIN\|END\s\+REPORT\)\>'
       break
     endif
-    " Stop if we hit another FUNCTION (shouldn't happen, but safety)
     if i > a:func_line && upper_trimmed =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
       break
     endif
 
-    " Stop once we pass the DEFINE section (first non-DEFINE, non-blank, non-comment line)
+    " Stop once we pass the DEFINE section
     if !empty(trimmed) && upper_trimmed !~# '^\(DEFINE\>\|--\|#\|{\)' && upper_trimmed !~# '^\s*$'
-      " Check if this looks like a continuation of a DEFINE (type name, comma, etc.)
-      " If not, we've passed the DEFINE block
       if upper_trimmed !~# '^\w' || upper_trimmed =~# '^\(LET\|CALL\|IF\|FOR\|WHILE\|RETURN\|DISPLAY\|INPUT\|CASE\|SELECT\|OPEN\|CLOSE\|WHENEVER\|INITIALIZE\|PREPARE\|DECLARE\)\>'
         break
       endif
     endif
 
     if upper_trimmed =~# '^DEFINE\>'
-      let define_text = s:collect_define_statement(a:lines, i)
-      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      let define_text = s:collect_define_statement_incremental(i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i)
       if !empty(result)
         return result
       endif
@@ -441,13 +428,13 @@ function! s:search_define_downward(lines, var_pattern, func_line) abort
   return {}
 endfunction
 
-" Search module-level defines (before the first FUNCTION keyword)
-function! s:search_module_defines(lines, var_pattern) abort
-  let i = 0
-  let total = len(a:lines)
+" OPTIMIZED: Search module-level defines using incremental getline()
+function! s:search_module_defines_incremental(var_pattern) abort
+  let i = 1
+  let total = line('$')
 
-  while i < total
-    let line = a:lines[i]
+  while i <= total
+    let line = getline(i)
     let trimmed = substitute(line, '^\s*', '', '')
     let upper_trimmed = toupper(trimmed)
 
@@ -457,8 +444,8 @@ function! s:search_module_defines(lines, var_pattern) abort
     endif
 
     if upper_trimmed =~# '^DEFINE\>'
-      let define_text = s:collect_define_statement(a:lines, i)
-      let result = s:parse_variable_from_define(define_text, a:var_pattern, i + 1)
+      let define_text = s:collect_define_statement_incremental(i)
+      let result = s:parse_variable_from_define(define_text, a:var_pattern, i)
       if !empty(result)
         return result
       endif
@@ -470,17 +457,18 @@ function! s:search_module_defines(lines, var_pattern) abort
   return {}
 endfunction
 
-" Collect a full DEFINE statement that may span multiple lines
+" OPTIMIZED: Collect DEFINE statement using incremental getline() calls
 " Lines ending with comma indicate continuation
 " Also handles RECORD...END RECORD blocks
-function! s:collect_define_statement(lines, start_idx) abort
-  let total = len(a:lines)
+function! s:collect_define_statement_incremental(start_line) abort
+  let total = line('$')
   let result = ''
-  let i = a:start_idx
+  let i = a:start_line
   let in_record = 0
 
-  while i < total
-    let line = substitute(a:lines[i], '^\s*', '', '')
+  while i <= total
+    let line = getline(i)
+    let line = substitute(line, '^\s*', '', '')
     let line = substitute(line, '\s*$', '', '')
 
     " Skip comment lines
@@ -491,8 +479,7 @@ function! s:collect_define_statement(lines, start_idx) abort
 
     let upper_line = toupper(line)
 
-    " Track inline RECORD...END RECORD blocks (not RECORD LIKE which is a schema ref)
-    " Check END RECORD first to avoid double-counting (END RECORD contains RECORD)
+    " Track inline RECORD...END RECORD blocks
     if upper_line =~# '^END\s\+RECORD'
       let in_record -= 1
     elseif upper_line =~# '\<RECORD\>' && upper_line !~# '\<RECORD\s\+LIKE\>'
@@ -518,12 +505,11 @@ function! s:collect_define_statement(lines, start_idx) abort
       continue
     endif
 
-    " If next line starts with a type or variable name (not a keyword that starts
-    " a new statement), it might be a continuation
-    if i + 1 < total
-      let next = substitute(a:lines[i + 1], '^\s*', '', '')
+    " Check if next line is a continuation
+    if i + 1 <= total
+      let next = getline(i + 1)
+      let next = substitute(next, '^\s*', '', '')
       let upper_next = toupper(next)
-      " If next line doesn't start a new statement, it's a continuation
       if !empty(next) && upper_next !~# '^\(DEFINE\|FUNCTION\|MAIN\|REPORT\|END\|IF\|FOR\|WHILE\|CALL\|LET\|RETURN\|DISPLAY\|INPUT\|CASE\|SELECT\|INSERT\|UPDATE\|DELETE\|OPEN\|CLOSE\|FETCH\|FOREACH\|PREPARE\|EXECUTE\|FREE\|DECLARE\|WHENEVER\|MENU\|DIALOG\|CONSTRUCT\|OUTPUT\|PRINT\|GLOBALS\|IMPORT\|DATABASE\|CONNECT\|CONSTANT\|TYPE\)\>'
         let i += 1
         continue

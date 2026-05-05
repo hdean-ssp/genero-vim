@@ -1,19 +1,27 @@
 " Genero-Tools Plugin - Whitespace & Formatting Detector
 " Detects whitespace and formatting issues in code
+" OPTIMIZED: Supports incremental analysis for changed regions
 
 " Detect all whitespace issues in buffer
-function! genero_tools#hints#whitespace#detect(bufnr, config) abort
+" OPTIMIZED: Can analyze specific line range for incremental updates
+function! genero_tools#hints#whitespace#detect(bufnr, config, ...) abort
   let hints = []
   
   if !bufexists(a:bufnr)
     return hints
   endif
   
-  let lines = getbufline(a:bufnr, 1, '$')
+  " Support incremental analysis: optional start_line and end_line parameters
+  let start_line = a:0 >= 1 ? a:1 : 1
+  let end_line = a:0 >= 2 ? a:2 : line('$')
+  
+  " Only load the lines we need to analyze
+  let lines = getbufline(a:bufnr, start_line, end_line)
   
   " Check each line for whitespace issues
-  for line_num in range(1, len(lines))
-    let line = lines[line_num - 1]
+  for i in range(len(lines))
+    let line_num = start_line + i
+    let line = lines[i]
     
     " Check trailing whitespace
     if a:config.trailing_whitespace && line =~ '\s$'
@@ -55,14 +63,15 @@ function! genero_tools#hints#whitespace#detect(bufnr, config) abort
     endif
   endfor
   
-  " Check for multiple consecutive blank lines
-  if a:config.multiple_blank_lines
+  " Check for multiple consecutive blank lines (only if analyzing full buffer or large range)
+  if a:config.multiple_blank_lines && (end_line - start_line) > 10
     let max_blank = a:config.max_blank_lines
     let blank_count = 0
     let blank_start = 0
     
-    for line_num in range(1, len(lines))
-      let line = lines[line_num - 1]
+    for i in range(len(lines))
+      let line_num = start_line + i
+      let line = lines[i]
       
       if line =~ '^\s*$'
         if blank_count == 0

@@ -59,7 +59,10 @@ endfunction
 
 " Analyze a buffer and return all hints
 " Checks cache first, then runs all enabled detectors
-function! genero_tools#hints#analyze(bufnr) abort
+" Analyze a buffer and return all hints
+" Checks cache first, then runs all enabled detectors
+" OPTIMIZED: Supports incremental analysis for specific line ranges
+function! genero_tools#hints#analyze(bufnr, ...) abort
   let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')
   
   " Check if hints are enabled
@@ -67,20 +70,47 @@ function! genero_tools#hints#analyze(bufnr) abort
     return []
   endif
   
-  " Try to get cached hints
-  let cached_hints = genero_tools#hints#cache#get(bufnr)
-  if !empty(cached_hints)
-    return cached_hints
+  " Support incremental analysis: optional start_line and end_line parameters
+  let start_line = a:0 >= 1 ? a:1 : 1
+  let end_line = a:0 >= 2 ? a:2 : line('$')
+  let is_incremental = a:0 >= 1
+  
+  " For full buffer analysis, try cache first
+  if !is_incremental
+    let cached_hints = genero_tools#hints#cache#get(bufnr)
+    if !empty(cached_hints)
+      return cached_hints
+    endif
+  endif
+  
+  " For incremental updates, merge with existing hints outside the range
+  let existing_hints = []
+  if is_incremental && has_key(g:genero_tools_hints_state.buffer_hints, bufnr)
+    let existing_hints = g:genero_tools_hints_state.buffer_hints[bufnr]
+    " Filter out hints in the range we're re-analyzing
+    let existing_hints = filter(copy(existing_hints), 'v:val.line < start_line || v:val.line > end_line')
   endif
   
   " Get effective configuration for this buffer
   let config = genero_tools#hints#config#get_for_buffer(bufnr)
   
-  " Run all enabled detectors
+  " Run all enabled detectors (pass line range for incremental analysis)
   let all_hints = []
   for [detector_name, Detector_Func] in items(g:genero_tools_hints_state.detectors)
     try
-      let hints = Detector_Func(bufnr, config)
+      " Try calling detector with line range (new signature)
+      " Fall back to old signature if detector doesn't support it
+      if is_incremental
+        try
+          let hints = Detector_Func(bufnr, config, start_line, end_line)
+        catch /E118/
+          " Detector doesn't support line range, skip for incremental
+          continue
+        endtry
+      else
+        let hints = Detector_Func(bufnr, config)
+      endif
+      
       if !empty(hints)
         let all_hints = all_hints + hints
       endif
@@ -90,14 +120,24 @@ function! genero_tools#hints#analyze(bufnr) abort
     endtry
   endfor
   
-  " Store in cache
-  call genero_tools#hints#cache#set(bufnr, all_hints)
+  " Merge with existing hints if incremental
+  if is_incremental
+    call extend(all_hints, existing_hints)
+    " Sort by line number
+    call sort(all_hints, {a, b -> a.line - b.line})
+  endif
+  
+  " Store in cache (only for full buffer analysis)
+  if !is_incremental
+    call genero_tools#hints#cache#set(bufnr, all_hints)
+  endif
   
   " Store in buffer state
   let g:genero_tools_hints_state.buffer_hints[bufnr] = all_hints
   
   return all_hints
 endfunction
+  let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')
 
 " Get cached hints for a buffer without re-analyzing
 function! genero_tools#hints#get_hints(bufnr) abort
@@ -117,8 +157,6 @@ function! genero_tools#hints#get_hints(bufnr) abort
   
   return []
 endfunction
-
-" Clear all hints for a buffer
 function! genero_tools#hints#clear(bufnr) abort
   let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')
   
