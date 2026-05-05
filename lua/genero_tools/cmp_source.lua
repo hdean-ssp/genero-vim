@@ -15,6 +15,13 @@ end
 
 -- Check if this source is available for the current buffer
 function source:is_available()
+  -- Don't trigger in command-line mode or special buffers
+  local buftype = vim.bo.buftype
+  if buftype ~= "" then
+    -- Skip special buffers (nofile, prompt, terminal, etc.)
+    return false
+  end
+  
   -- Only available in insert mode, not in command-line or other modes
   local mode = vim.api.nvim_get_mode().mode
   if mode ~= "i" and mode ~= "ic" then
