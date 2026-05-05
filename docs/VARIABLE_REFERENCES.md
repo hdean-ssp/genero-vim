@@ -8,9 +8,9 @@ Find all references to a variable in the current buffer with scope-aware searchi
   - Local variables: Scans only current function
   - Module variables (m_*): Scans entire buffer
   - Global variables (gl_*): Scans entire buffer
-- **Live Preview**: Background buffer scrolls as you navigate references
+- **Telescope Integration**: Uses Telescope picker with built-in preview (falls back to floating window)
 - **Performance Optimized**: Uses caching to avoid redundant scans
-- **Interactive Navigation**: Jump to any reference with Enter key
+- **Interactive Navigation**: Fuzzy search, live preview, and quick jump
 - **Context Display**: Shows line number, column, and code snippet for each reference
 
 ## Usage
@@ -32,12 +32,14 @@ gR    " Find references for function under cursor
 
 1. Position cursor on a variable name
 2. Press `gr` (or run `:GeneroFindVariableReferences`)
-3. A floating window appears showing all references
-4. Use `j`/`k` (or arrow keys) to navigate the list
-   - **Background buffer scrolls automatically** to show each reference
-   - See the code context without leaving the references window
-5. Press `Enter` to jump to a reference and close the window
-6. Press `q` or `Esc` to close without jumping
+3. Telescope picker appears showing all references
+4. Type to fuzzy search through references
+5. Use `j`/`k` or `Ctrl-n`/`Ctrl-p` to navigate
+   - **Live preview** shows the reference in context automatically
+6. Press `Enter` to jump to a reference
+7. Press `Esc` to close without jumping
+
+**Without Telescope**: Falls back to a floating window with basic navigation.
 
 ## How It Works
 
@@ -81,6 +83,23 @@ Cache is automatically invalidated when:
 
 ## Display Format
 
+### Telescope Picker (Neovim with Telescope)
+```
+┌─ 4 references to l_count ─────────────────────────────────┐
+│ > LET l_count = 0                                          │
+│   IF l_count > 10 THEN                                     │
+│   LET l_count = l_count + 1                                │
+│   RETURN l_count                                           │
+└────────────────────────────────────────────────────────────┘
+```
+
+Features:
+- Fuzzy search through references
+- Live preview pane showing code context
+- Syntax highlighting in preview
+- Standard Telescope keybindings
+
+### Floating Window (Fallback)
 ```
   Idx  Line:Col  Code Snippet
   ───────────────────────────────────────
@@ -89,13 +108,10 @@ Cache is automatically invalidated when:
     3   148:8   LET l_count = l_count + 1
     4   152:15  RETURN l_count
     
-  Enter: jump  j/k: navigate with preview  q/Esc: close
+  Enter: jump  q/Esc: close
 ```
 
-- **Idx**: Reference number (for quick identification)
-- **Line:Col**: Exact position in file
-- **Code Snippet**: Trimmed line showing context (max 80 chars)
-- **Live Preview**: As you navigate with `j`/`k`, the background buffer scrolls to show the reference in context
+Used when Telescope is not available.
 
 ## Performance
 
@@ -124,7 +140,9 @@ Cache is automatically invalidated when:
 | Speed | Network dependent | Instant (cached) |
 | Accuracy | 100% (database) | 95%+ (pattern matching) |
 | Keybinding | `gR` | `gr` |
-| Live Preview | ❌ | ✅ |
+| UI | Telescope / Floating | Telescope / Floating |
+| Preview | ✅ | ✅ |
+| Fuzzy Search | ✅ | ✅ |
 
 ## Limitations
 

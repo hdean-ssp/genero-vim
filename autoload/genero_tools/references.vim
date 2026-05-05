@@ -8,9 +8,6 @@ let s:ref_win = -1
 let s:ref_buf = -1
 let s:ref_data = []
 let s:ref_type = 'function'  " 'function' or 'variable'
-let s:preview_win = -1
-let s:preview_buf = -1
-let s:source_win = -1  " Original window to preview in
 
 " Find references for the function under cursor (or on the current FUNCTION line)
 function! genero_tools#references#find(...) abort
@@ -106,7 +103,20 @@ function! genero_tools#references#find_variable(...) abort
     return
   endif
   
-  " Format and display
+  " Try Telescope picker first (Neovim + Telescope available)
+  if has('nvim')
+    try
+      let refs_json = json_encode(refs)
+      let handled = luaeval('require("genero_tools.telescope").variable_references(_A[1], _A[2])', [var_name, refs_json])
+      if handled
+        return
+      endif
+    catch
+      " Telescope not available or error — fall through to floating window
+    endtry
+  endif
+  
+  " Fallback: floating window
   let s:ref_data = refs
   let lines = s:format_variable_references(var_name, refs)
   call s:show_references_window(lines, var_name . ' (variable)', len(refs))
@@ -354,15 +364,12 @@ endfunction
 " Show references in a floating window with navigation
 function! s:show_references_window(lines, func_name, count) abort
   call s:close_references_window()
-  
-  " Store the source window for preview
-  let s:source_win = win_getid()
 
   let header = a:count == 1
     \ ? '1 reference to ' . a:func_name
     \ : a:count . ' references to ' . a:func_name
   let separator = repeat('─', len(header) + 4)
-  let footer = '  Enter: jump  j/k: navigate with preview  q/Esc: close'
+  let footer = '  Enter: jump  q/Esc: close'
 
   let all_lines = ['  ' . header, separator] + a:lines + ['', footer]
 
@@ -408,25 +415,8 @@ function! s:show_references_window(lines, func_name, count) abort
   call nvim_buf_set_keymap(s:ref_buf, 'n', '<CR>',
     \ ':call genero_tools#references#jump_to_reference()<CR>',
     \ {'noremap': v:true, 'silent': v:true})
-  
-  " Navigation with preview
-  call nvim_buf_set_keymap(s:ref_buf, 'n', 'j',
-    \ ':call genero_tools#references#next_reference()<CR>',
-    \ {'noremap': v:true, 'silent': v:true})
-  call nvim_buf_set_keymap(s:ref_buf, 'n', 'k',
-    \ ':call genero_tools#references#prev_reference()<CR>',
-    \ {'noremap': v:true, 'silent': v:true})
-  call nvim_buf_set_keymap(s:ref_buf, 'n', '<Down>',
-    \ ':call genero_tools#references#next_reference()<CR>',
-    \ {'noremap': v:true, 'silent': v:true})
-  call nvim_buf_set_keymap(s:ref_buf, 'n', '<Up>',
-    \ ':call genero_tools#references#prev_reference()<CR>',
-    \ {'noremap': v:true, 'silent': v:true})
 
   call nvim_buf_set_option(s:ref_buf, 'modifiable', v:false)
-  
-  " Show initial preview
-  call genero_tools#references#preview_current_reference()
 endfunction
 
 " Jump to the reference under the cursor
@@ -486,124 +476,6 @@ function! genero_tools#references#jump_to_reference() abort
     endif
     normal! zz
   endif
-endfunction
-
-" Navigate to next reference with preview
-function! genero_tools#references#next_reference() abort
-  let current_line = line('.')
-  let last_ref_line = 2 + len(s:ref_data)  " header + separator + refs
-  
-  " Move down if not at last reference
-  if current_line < last_ref_line
-    normal! j
-    call genero_tools#references#preview_current_reference()
-  endif
-endfunction
-
-" Navigate to previous reference with preview
-function! genero_tools#references#prev_reference() abort
-  let current_line = line('.')
-  let first_ref_line = 3  " header + separator, refs start at line 3
-  
-  " Move up if not at first reference
-  if current_line > first_ref_line
-    normal! k
-    call genero_tools#references#preview_current_reference()
-  endif
-endfunction
-
-" Preview the current reference in the background buffer
-function! genero_tools#references#preview_current_reference() abort
-  let cursor_line = line('.')
-  let ref_index = cursor_line - 3
-  
-  if ref_index < 0 || ref_index >= len(s:ref_data)
-    return
-  endif
-  
-  let ref = s:ref_data[ref_index]
-  
-  " Extract location info
-  if s:ref_type ==# 'variable'
-    let file = get(ref, 'file', '')
-    let line_nr = get(ref, 'line', 0)
-    let col_nr = get(ref, 'column', 0)
-  else
-    let file = get(ref, 'path', get(ref, 'file', get(ref, 'file_path', '')))
-    let line_nr = get(ref, 'line_number', get(ref, 'line', get(ref, 'line_start', 0)))
-    let col_nr = 0
-    
-    if type(line_nr) == type({})
-      let line_nr = get(line_nr, 'start', 0)
-    endif
-  endif
-  
-  if empty(file) || line_nr == 0
-    return
-  endif
-  
-  " Resolve file path
-  let full_path = s:resolve_ref_path(file)
-  
-  " Check if source window is still valid
-  if !win_id2win(s:source_win)
-    " Source window closed, find a suitable window
-    let s:source_win = s:find_suitable_preview_window()
-  endif
-  
-  if !s:source_win
-    return
-  endif
-  
-  " Switch to source window temporarily
-  let current_win = win_getid()
-  call win_gotoid(s:source_win)
-  
-  " Load the file if not already loaded
-  let current_file = expand('%:p')
-  if current_file !=# full_path
-    try
-      execute 'edit ' . fnameescape(full_path)
-    catch
-      " Failed to load file, return to references window
-      call win_gotoid(current_win)
-      return
-    endtry
-  endif
-  
-  " Jump to the line and center it
-  execute line_nr
-  if col_nr > 0
-    execute 'normal! ' . col_nr . '|'
-  endif
-  normal! zz
-  
-  " Return to references window
-  call win_gotoid(current_win)
-endfunction
-
-" Find a suitable window for preview (not the references window)
-function! s:find_suitable_preview_window() abort
-  " Get all windows
-  let windows = nvim_list_wins()
-  
-  for win in windows
-    " Skip the references window
-    if win == s:ref_win
-      continue
-    endif
-    
-    " Skip floating windows
-    let config = nvim_win_get_config(win)
-    if config.relative != ''
-      continue
-    endif
-    
-    " Found a suitable window
-    return win
-  endfor
-  
-  return 0
 endfunction
 
 " Resolve a file path from query.sh output to an absolute path

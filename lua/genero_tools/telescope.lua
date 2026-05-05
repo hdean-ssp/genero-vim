@@ -419,4 +419,57 @@ function M.module_files()
   }):find()
 end
 
+-- ============================================================================
+-- Variable references picker (buffer-local, scope-aware)
+-- ============================================================================
+
+function M.variable_references(var_name, refs_json)
+  local t = telescope_available()
+  if not t then
+    return false  -- Signal to fall back to floating window
+  end
+
+  -- Decode the JSON data passed from VimScript
+  local ok, refs = pcall(vim.fn.json_decode, refs_json)
+  if not ok or not refs or #refs == 0 then
+    return false
+  end
+
+  -- Build vimgrep-style lines: file:lnum:col:text
+  local vimgrep_lines = {}
+  for _, ref in ipairs(refs) do
+    local file = ref.file or ""
+    local lnum = ref.line or 1
+    local col = ref.column or 1
+    local text = ref.text or ""
+    
+    -- Trim leading whitespace from text
+    text = text:gsub("^%s+", "")
+    
+    if file ~= "" then
+      table.insert(vimgrep_lines, file .. ":" .. lnum .. ":" .. col .. ":" .. text)
+    end
+  end
+
+  if #vimgrep_lines == 0 then
+    return false
+  end
+
+  local title = #refs == 1
+    and "1 reference to " .. var_name
+    or #refs .. " references to " .. var_name
+
+  t.pickers.new({}, {
+    prompt_title = title,
+    finder = t.finders.new_table({
+      results = vimgrep_lines,
+      entry_maker = t.make_entry.gen_from_vimgrep({}),
+    }),
+    sorter = t.conf.values.generic_sorter({}),
+    previewer = t.conf.values.grep_previewer({}),
+  }):find()
+
+  return true  -- Signal that Telescope handled it
+end
+
 return M
