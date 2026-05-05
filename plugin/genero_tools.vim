@@ -85,6 +85,7 @@ command! -nargs=? GeneroGotoDefinition call genero_tools#navigation#goto_definit
 command! -nargs=? GeneroPeekDefinition call genero_tools#navigation#peek_definition(<q-args>)
 command! -nargs=? GeneroFindReferences call genero_tools#references#find(<q-args>)
 command! -nargs=? GeneroFindVariableReferences call genero_tools#references#find_variable(<q-args>)
+command! GeneroFindSmartReferences call genero_tools#references#find_smart()
 
 " Telescope picker commands (Neovim only)
 if has('nvim')

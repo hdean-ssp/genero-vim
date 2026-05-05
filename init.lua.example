@@ -1314,7 +1314,8 @@ map("n", "<leader>gd", ":GeneroDebugStreamToggle<CR>", opts)
 -- Go to definition / Peek definition / Find references
 map("n", "gd", ":GeneroGotoDefinition<CR>", { noremap = true, silent = true, desc = "Go to definition" })
 map("n", "gp", ":GeneroPeekDefinition<CR>", { noremap = true, silent = true, desc = "Peek definition" })
-map("n", "gr", ":GeneroFindReferences<CR>", { noremap = true, silent = true, desc = "Find references" })
+map("n", "gr", ":GeneroFindSmartReferences<CR>", { noremap = true, silent = true, desc = "Find references (smart)" })
+map("n", "gR", ":GeneroFindReferences<CR>", { noremap = true, silent = true, desc = "Find function references" })
 
 -- Telescope pickers
 map("n", "<leader>gF", ":GeneroFileFunctions<CR>", { noremap = true, silent = true, desc = "File functions (Telescope)" })
@@ -1562,7 +1563,6 @@ if is_nvim_010_plus then
     { "<leader>gs", ":GeneroFunctionSignature<CR>", desc = "Get function signature" },
     { "<leader>gm", ":GeneroFileMetadata<CR>", desc = "Get file metadata" },
     { "<leader>gd", ":GeneroDebugStreamToggle<CR>", desc = "Toggle debug stream" },
-    { "<leader>gr", ":GeneroFindReferences<CR>", desc = "Find references" },
     { "<leader>gF", ":GeneroFileFunctions<CR>", desc = "File functions (Telescope)" },
     { "<leader>gM", ":GeneroModuleFunctions<CR>", desc = "Module functions (Telescope)" },
     { "<leader>gS", ":GeneroModuleFiles<CR>", desc = "Module sibling files" },

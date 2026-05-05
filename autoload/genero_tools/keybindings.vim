@@ -46,11 +46,11 @@ function! genero_tools#keybindings#register() abort
       nnoremap <silent> <leader>gd :GeneroDebugStreamToggle<CR>
     endif
 
-    " Find variable references (Neovim only — scope-aware buffer scanning)
+    " Find references - smart detection (function vs variable)
     " Note: Using nnoremap (not checking if exists) to ensure correct mapping
-    nnoremap <silent> gr :GeneroFindVariableReferences<CR>
+    nnoremap <silent> gr :GeneroFindSmartReferences<CR>
     
-    " Find function references (Neovim only — uses floating window)
+    " Find function references explicitly (Neovim only — uses floating window)
     nnoremap <silent> gR :GeneroFindReferences<CR>
 
     " Telescope pickers (Neovim only)

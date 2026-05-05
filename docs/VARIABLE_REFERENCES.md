@@ -24,20 +24,29 @@ If no variable name is provided, uses the word under cursor.
 
 ### Keybinding
 ```vim
-gr    " Find references for variable under cursor (with live preview)
-gR    " Find references for function under cursor
+gr    " Find references (smart: auto-detects function vs variable)
+gR    " Find function references explicitly (via genero-tools)
 ```
+
+The `gr` keybinding intelligently detects whether you're on:
+- **Function name**: Uses genero-tools to find all callers across the codebase
+- **Variable name**: Uses buffer scanning with scope-aware search (fast, local)
 
 ### Example Workflow
 
-1. Position cursor on a variable name
-2. Press `gr` (or run `:GeneroFindVariableReferences`)
+1. Position cursor on a function or variable name
+2. Press `gr` (smart detection) or run `:GeneroFindSmartReferences`
 3. Telescope picker appears showing all references
 4. Type to fuzzy search through references
 5. Use `j`/`k` or `Ctrl-n`/`Ctrl-p` to navigate
    - **Live preview** shows the reference in context automatically
 6. Press `Enter` to jump to a reference
 7. Press `Esc` to close without jumping
+
+**Explicit commands**:
+- `:GeneroFindReferences` - Always use genero-tools (functions only)
+- `:GeneroFindVariableReferences` - Always use buffer scanning (variables)
+- `:GeneroFindSmartReferences` - Auto-detect (recommended)
 
 **Without Telescope**: Falls back to a floating window with basic navigation.
 

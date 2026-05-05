@@ -9,6 +9,59 @@ let s:ref_buf = -1
 let s:ref_data = []
 let s:ref_type = 'function'  " 'function' or 'variable'
 
+" Smart find references - detects if cursor is on function or variable
+" Calls find() for functions, find_variable() for variables
+function! genero_tools#references#find_smart() abort
+  " Check if we're on a FUNCTION definition line
+  let line_text = getline('.')
+  let trimmed = substitute(line_text, '^\s*', '', '')
+  let upper = toupper(trimmed)
+  
+  if upper =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+    " On a function definition - use function references
+    call genero_tools#references#find()
+    return
+  endif
+  
+  " Check if the word under cursor looks like a function call
+  " Function calls typically have parentheses after them or are in CALL statements
+  let word = expand('<cword>')
+  let line_after_cursor = strpart(line_text, col('.') - 1)
+  
+  " Check if this line is a CALL statement or has parentheses after the word
+  if upper =~# '^\s*CALL\>' || line_after_cursor =~# '^\w*\s*('
+    " Looks like a function call - use function references
+    call genero_tools#references#find(word)
+    return
+  endif
+  
+  " Check if word matches function naming pattern (no prefix like l_, m_, gl_)
+  " Variables typically have prefixes, functions typically don't
+  if word !~# '^[lmg][lr_]_' && word !~# '^p_'
+    " Could be a function - try function references first
+    " If it fails, fall back to variable references
+    let cache_key = 'find-function-dependents:' . word
+    let cached = genero_tools#cache#get(cache_key)
+    
+    if !empty(cached) && has_key(cached, 'success') && cached.success
+      " Function exists in cache - use function references
+      call genero_tools#references#find(word)
+      return
+    else
+      " Try querying for function
+      let result = genero_tools#command#execute_shell('find-function-dependents', [word])
+      if result.success && !empty(result.data) && type(result.data) == type([])
+        " Function found - use function references
+        call genero_tools#references#find(word)
+        return
+      endif
+    endif
+  endif
+  
+  " Default to variable references (local scope-aware scanning)
+  call genero_tools#references#find_variable(word)
+endfunction
+
 " Find references for the function under cursor (or on the current FUNCTION line)
 function! genero_tools#references#find(...) abort
   let func_name = a:0 > 0 && !empty(a:1) ? a:1 : s:get_function_name()
