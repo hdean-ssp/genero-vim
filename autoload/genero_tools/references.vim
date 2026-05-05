@@ -175,6 +175,47 @@ function! genero_tools#references#find_variable(...) abort
   call s:show_references_window(lines, var_name . ' (variable)', len(refs))
 endfunction
 
+" Check if a position in a line is inside a string or comment
+" Returns 1 if inside string/comment, 0 otherwise
+function! s:is_in_string_or_comment(line_text, col) abort
+  " Check for line comments (# or --)
+  let comment_pos = match(a:line_text, '\s*\(#\|--\)')
+  if comment_pos != -1 && a:col >= comment_pos
+    return 1
+  endif
+  
+  " Check if inside a string (single or double quotes)
+  " Count quotes before the position to determine if we're inside
+  let before_pos = strpart(a:line_text, 0, a:col)
+  
+  " Count unescaped double quotes
+  let double_quotes = 0
+  let i = 0
+  while i < len(before_pos)
+    if before_pos[i] ==# '"' && (i == 0 || before_pos[i-1] !=# '\')
+      let double_quotes += 1
+    endif
+    let i += 1
+  endwhile
+  
+  " Count unescaped single quotes
+  let single_quotes = 0
+  let i = 0
+  while i < len(before_pos)
+    if before_pos[i] ==# "'" && (i == 0 || before_pos[i-1] !=# '\')
+      let single_quotes += 1
+    endif
+    let i += 1
+  endwhile
+  
+  " If odd number of quotes, we're inside a string
+  if (double_quotes % 2) == 1 || (single_quotes % 2) == 1
+    return 1
+  endif
+  
+  return 0
+endfunction
+
 " Determine variable scope (module, global, or local)
 " Uses the same logic as type_info to detect scope
 function! s:get_variable_scope(var_name, bufnr, cursor_line) abort
@@ -218,7 +259,7 @@ function! s:find_variable_refs_in_function(var_name, bufnr, cursor_line) abort
   for line_nr in range(func_start, func_end)
     let line_text = getline(line_nr)
     
-    " Skip comments
+    " Skip full-line comments
     if line_text =~# '^\s*[#\-\-]'
       continue
     endif
@@ -233,12 +274,15 @@ function! s:find_variable_refs_in_function(var_name, bufnr, cursor_line) abort
           break
         endif
         
-        call add(refs, {
-          \ 'line': line_nr,
-          \ 'column': col + 1,
-          \ 'text': line_text,
-          \ 'file': expand('%:p')
-          \ })
+        " Skip if inside string or comment
+        if !s:is_in_string_or_comment(line_text, col)
+          call add(refs, {
+            \ 'line': line_nr,
+            \ 'column': col + 1,
+            \ 'text': line_text,
+            \ 'file': expand('%:p')
+            \ })
+        endif
         
         let col += len(a:var_name)
       endwhile
@@ -261,7 +305,7 @@ function! s:find_variable_refs_full_buffer(var_name, bufnr) abort
   for line_nr in range(1, total_lines)
     let line_text = getline(line_nr)
     
-    " Skip comments
+    " Skip full-line comments
     if line_text =~# '^\s*[#\-\-]'
       continue
     endif
@@ -276,12 +320,15 @@ function! s:find_variable_refs_full_buffer(var_name, bufnr) abort
           break
         endif
         
-        call add(refs, {
-          \ 'line': line_nr,
-          \ 'column': col + 1,
-          \ 'text': line_text,
-          \ 'file': expand('%:p')
-          \ })
+        " Skip if inside string or comment
+        if !s:is_in_string_or_comment(line_text, col)
+          call add(refs, {
+            \ 'line': line_nr,
+            \ 'column': col + 1,
+            \ 'text': line_text,
+            \ 'file': expand('%:p')
+            \ })
+        endif
         
         let col += len(a:var_name)
       endwhile

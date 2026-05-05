@@ -71,10 +71,12 @@ The system determines variable scope using:
 **Local Variables** (default):
 - Finds current function boundaries
 - Scans only lines within that function
+- Excludes matches in strings and comments
 - Fast: O(n) where n = function size
 
 **Module/Global Variables**:
 - Scans entire buffer
+- Excludes matches in strings and comments
 - Still fast: O(n) where n = buffer size
 - Results are cached for subsequent lookups
 
@@ -156,14 +158,13 @@ Used when Telescope is not available.
 ## Limitations
 
 1. **Current Buffer Only**: Only searches the open file, not across the codebase
-2. **Pattern Matching**: May find false positives in comments or strings
+2. **Pattern Matching**: Uses intelligent filtering to exclude strings and comments
 3. **No Cross-File**: Cannot find references in other files
 
 ## Future Enhancements
 
 Potential improvements:
 - Cross-file variable references (requires database support)
-- Filter out references in comments/strings
 - Show variable type in header
 - Group references by context (assignments, reads, function calls)
 
