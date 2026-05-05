@@ -375,11 +375,11 @@ local plugins = {
           TRACE = "✎",
           WARN = "",
         },
-        level = 2,
+        level = vim.log.levels.ERROR,  -- Only show errors, suppress warnings/info
         minimum_width = 50,
-        render = "default",
-        stages = "static",  -- "static" avoids animation math bugs across all versions
-        timeout = 3000,
+        render = "compact",            -- Compact render to reduce visual noise
+        stages = "static",             -- "static" avoids animation math bugs across all versions
+        timeout = 2000,                -- Auto-dismiss after 2 seconds
         top_down = true,
       })
       vim.notify = require("notify")
@@ -399,7 +399,10 @@ local plugins = {
     config = function()
       require("noice").setup({
         notify = {
-          enabled = false,  -- Disable noice notifications to avoid nvim-notify issues
+          enabled = false,  -- Disable noice notifications to avoid spam
+        },
+        messages = {
+          enabled = false,  -- Disable message handling to reduce noise
         },
         lsp = {
           progress = {
@@ -408,20 +411,24 @@ local plugins = {
           signature = {
             enabled = false,  -- Disable signature help for Neovim 0.9.5 compatibility
           },
+          message = {
+            enabled = false,  -- Disable LSP messages
+          },
           override = {
-            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-            ["vim.lsp.util.stylize_markdown"] = true,
-            ["cmp.entry.get_documentation"] = true,
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = false,
+            ["vim.lsp.util.stylize_markdown"] = false,
+            ["cmp.entry.get_documentation"] = false,
           },
         },
         presets = {
           bottom_search = true,
-          command_palette = true,
-          long_message_to_split = true,
+          command_palette = false,       -- Disable to reduce visual noise
+          long_message_to_split = false,
           inc_rename = false,
-          lsp_doc_border = false,  -- Disable for compatibility
+          lsp_doc_border = false,
         },
         routes = {
+          -- Filter out common noisy messages
           {
             filter = {
               event = "msg_show",
@@ -429,9 +436,21 @@ local plugins = {
                 { find = "%d+L, %d+B" },
                 { find = "; after #%d+" },
                 { find = "; before #%d+" },
+                { find = "deprecated" },
+                { find = "warning" },
               },
             },
-            view = "mini",
+            opts = { skip = true },
+          },
+          {
+            filter = {
+              event = "notify",
+              any = {
+                { find = "deprecated" },
+                { find = "warning" },
+              },
+            },
+            opts = { skip = true },
           },
         },
       })
@@ -729,7 +748,8 @@ local plugins = {
       -- Gracefully handle if treesitter isn't fully installed yet
       local ok, treesitter = pcall(require, "nvim-treesitter.configs")
       if not ok then
-        vim.notify("nvim-treesitter not ready. Run :TSUpdate to install.", vim.log.levels.WARN)
+        -- Silently skip treesitter setup if not installed
+        -- User can run :TSUpdate manually if they want syntax highlighting
         return
       end
       
