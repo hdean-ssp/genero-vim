@@ -6,36 +6,18 @@ return {
     trigger = "while",
     name = "While Loop",
     description = "Define a while loop with condition",
-    body = [[
-WHILE ${1:condition}
-  ${2:-- loop body}
-END WHILE
-    ]],
+    body = "WHILE ${1:condition}\n  ${2:-- loop body}\nEND WHILE",
   },
   {
     trigger = "whilec",
     name = "While Loop with Counter",
     description = "Define a while loop with counter variable",
-    body = [[
-DEFINE ${1:counter} INT
-LET ${1:counter} = ${2:start}
-WHILE ${1:counter} <= ${3:end}
-  ${4:-- loop body}
-  LET ${1:counter} = ${1:counter} + 1
-END WHILE
-    ]],
+    body = "DEFINE ${1:counter} INT\nLET ${1:counter} = ${2:start}\nWHILE ${1:counter} <= ${3:end}\n  ${4:-- loop body}\n  LET ${1:counter} = ${1:counter} + 1\nEND WHILE",
   },
   {
     trigger = "whilet",
     name = "While True Loop",
     description = "Define a while true loop with break condition",
-    body = [[
-WHILE TRUE
-  ${1:-- loop body}
-  IF ${2:break_condition} THEN
-    EXIT WHILE
-  END IF
-END WHILE
-    ]],
+    body = "WHILE TRUE\n  ${1:-- loop body}\n  IF ${2:break_condition} THEN\n    EXIT WHILE\n  END IF\nEND WHILE",
   },
 }

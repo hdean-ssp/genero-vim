@@ -6,55 +6,24 @@ return {
     trigger = "try",
     name = "Try-Catch Block",
     description = "Define a try-catch error handling block",
-    body = [[
-TRY
-  ${1:-- try body}
-CATCH
-  ${2:-- catch body}
-END TRY
-    ]],
+    body = "TRY\n  ${1:-- try body}\nCATCH\n  ${2:-- catch body}\nEND TRY",
   },
   {
     trigger = "trye",
     name = "Try-Catch with Error Variable",
     description = "Define a try-catch block with error variable",
-    body = [[
-TRY
-  ${1:-- try body}
-CATCH
-  DEFINE ${2:error_msg} STRING
-  LET ${2:error_msg} = SQLCA.SQLERRM
-  ${3:-- error handling}
-END TRY
-    ]],
+    body = "TRY\n  ${1:-- try body}\nCATCH\n  DEFINE ${2:error_msg} STRING\n  LET ${2:error_msg} = SQLCA.SQLERRM\n  ${3:-- error handling}\nEND TRY",
   },
   {
     trigger = "tryf",
     name = "Try-Catch-Finally",
     description = "Define a try-catch-finally error handling block",
-    body = [[
-TRY
-  ${1:-- try body}
-CATCH
-  ${2:-- catch body}
-FINALLY
-  ${3:-- finally body}
-END TRY
-    ]],
+    body = "TRY\n  ${1:-- try body}\nCATCH\n  ${2:-- catch body}\nFINALLY\n  ${3:-- finally body}\nEND TRY",
   },
   {
     trigger = "trys",
     name = "Try with Status Check",
     description = "Define a try block with status checking",
-    body = [[
-TRY
-  ${1:-- try body}
-  IF SQLCA.SQLCODE != 0 THEN
-    RAISE EXCEPTION ${2:error_code}, ${3:error_message}
-  END IF
-CATCH
-  ${4:-- catch body}
-END TRY
-    ]],
+    body = "TRY\n  ${1:-- try body}\n  IF SQLCA.SQLCODE != 0 THEN\n    RAISE EXCEPTION ${2:error_code}, ${3:error_message}\n  END IF\nCATCH\n  ${4:-- catch body}\nEND TRY",
   },
 }
