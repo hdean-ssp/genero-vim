@@ -812,22 +812,6 @@ local plugins = {
     end,
   },
 
-  -- mason-lspconfig: bridges mason with nvim-lspconfig
-  -- Pin to v1.31.0 for Neovim 0.9.5 compatibility
-  {
-    "williamboman/mason-lspconfig.nvim",
-    version = "v1.31.0",
-    dependencies = { "williamboman/mason.nvim" },
-    config = function()
-      require("mason-lspconfig").setup({
-        -- Don't auto-install on startup (causes lag and errors)
-        -- Install manually with :MasonInstall <server> or via :Mason UI
-        ensure_installed = {},
-        automatic_installation = false,
-      })
-    end,
-  },
-
   -- nvim-lspconfig: configures each language server
   -- Pin to v1.0.0 for Neovim 0.9.5 compatibility (v1.1+ requires 0.10+)
   {
@@ -835,7 +819,6 @@ local plugins = {
     version = "v1.0.0",
     dependencies = {
       "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
       "hrsh7th/cmp-nvim-lsp",   -- feeds LSP completions into nvim-cmp
     },
     config = function()
