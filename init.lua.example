@@ -964,7 +964,7 @@ local plugins = {
       "hrsh7th/cmp-nvim-lsp",    -- LSP source
       "hrsh7th/cmp-buffer",      -- Words from current buffer
       "hrsh7th/cmp-path",        -- Filesystem paths
-      "hrsh7th/cmp-cmdline",     -- Command-line completion
+      -- NOTE: cmp-cmdline removed - command-line completion disabled to avoid conflicts with noice
       "L3MON4D3/LuaSnip",        -- Snippet engine (shared with Genero snippets)
       "saadparwaiz1/cmp_luasnip", -- LuaSnip source for cmp
     },
@@ -1056,30 +1056,9 @@ local plugins = {
         },
       })
 
-      -- Command-line completion for / search
-      cmp.setup.cmdline({ "/", "?" }, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = { { name = "buffer" } },
-        enabled = function()
-          -- Disable in noice command-line popup to avoid conflicts
-          local buftype = vim.api.nvim_buf_get_option(0, "buftype")
-          return buftype ~= "nofile" and buftype ~= "prompt"
-        end,
-      })
-
-      -- Command-line completion for : commands
-      cmp.setup.cmdline(":", {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources(
-          { { name = "path" } },
-          { { name = "cmdline" } }
-        ),
-        enabled = function()
-          -- Disable in noice command-line popup to avoid conflicts
-          local buftype = vim.api.nvim_buf_get_option(0, "buftype")
-          return buftype ~= "nofile" and buftype ~= "prompt"
-        end,
-      })
+      -- NOTE: Command-line completion is intentionally disabled
+      -- nvim-cmp in command mode conflicts with noice.nvim popup cmdline
+      -- Use native Vim command-line completion instead (Tab, Ctrl+D)
     end,
   },
 
