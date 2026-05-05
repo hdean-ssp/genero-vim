@@ -1,305 +1,993 @@
-# Genero-Tools Plugin Demo
+# Getting Started with Genero-Tools
 
-A walkthrough of the plugin's key features for Genero development in Vim/Neovim.
-Target audience: developers on the team. Keep each section to ~1 minute.
+A step-by-step guide to help you discover and use all the features of the Genero-Tools plugin and Neovim configuration. This guide is designed for developers familiar with Vim but new to Neovim and modern IDE-like features.
 
 ---
 
-## 1. Zero to Running (Setup)
+## Table of Contents
 
-Show that a new developer can be productive in under 2 minutes.
+1. [Installation and First Launch](#1-installation-and-first-launch)
+2. [Understanding the Interface](#2-understanding-the-interface)
+3. [Writing Code Faster](#3-writing-code-faster)
+4. [Navigating Your Codebase](#4-navigating-your-codebase)
+5. [Finding and Fixing Errors](#5-finding-and-fixing-errors)
+6. [Code Quality and Hints](#6-code-quality-and-hints)
+7. [Version Control Integration](#7-version-control-integration)
+8. [Advanced Features](#8-advanced-features)
+9. [Customization](#9-customization)
+10. [Quick Reference](#10-quick-reference)
+
+---
+
+## 1. Installation and First Launch
+
+### Step 1.1: Install the Plugin
+
+Add to your Neovim plugin manager (vim-plug example):
+
+```vim
+Plug 'hdean-ssp/genero-vim'
+```
+
+Then run `:PlugInstall` in Neovim.
+
+### Step 1.2: Copy the Example Configuration
+
+The plugin includes a complete Neovim configuration that sets up everything:
 
 ```bash
-# Install
-Plug 'hdean-ssp/genero-vim'    # add to config, :PlugInstall
-
-# Copy the example config and go
 cp init.lua.example ~/.config/nvim/init.lua
 ```
 
-Open any `.4gl` file — everything works out of the box. No configuration required.
+**What this gives you:**
+- Pre-configured keybindings optimized for Genero development
+- Curated set of complementary plugins (Telescope, terminal, etc.)
+- Sensible defaults for code editing
+- Modern UI with floating windows and notifications
+
+### Step 1.3: First Launch
+
+Open any `.4gl` file:
+
+```bash
+nvim myfile.4gl
+```
+
+**What happens on first launch:**
+- Lazy.nvim (plugin manager) installs automatically
+- All plugins download and install (takes 1-2 minutes)
+- Configuration loads with no errors
+- You're ready to code!
+
+**Tip:** If you see plugin installation messages, wait for them to complete, then restart Neovim.
 
 ---
 
-## 2. Write Code Faster
+## 2. Understanding the Interface
 
-### Auto-Close Blocks
+### Step 2.1: The Sign Column (Left Side)
 
-Type a block opener and press Enter — the matching `END` statement is inserted
-automatically with correct indentation.
+The sign column shows important information at a glance:
 
 ```
-IF l_count > 0 THEN<Enter>
+│ ✕  │  Error on this line (red)
+│ ⚠  │  Warning on this line (yellow)
+│ ◆  │  Code quality hint (blue)
+│ +  │  Line added (SVN, green)
+│ ~  │  Line modified (SVN, yellow)
+│ -  │  Line deleted (SVN, red)
 ```
 
-Produces:
+**Try it:** Open a file with errors or in an SVN working copy to see these markers.
 
+### Step 2.2: The Statusline (Bottom)
+
+The statusline shows your current context:
+
+```
+module.m3 › file.4gl › ƒ calculate_total    E2 W1    +3 ~5 -1
+└─────────┘ └────────┘   └──────────────┘   └────┘   └────────┘
+  module      file       current function   errors   SVN changes
+```
+
+**Try it:** Move your cursor between functions and watch the function name update in real-time.
+
+### Step 2.3: Virtual Text (Inline Information)
+
+Neovim can display extra information directly in your code without modifying the file:
+
+- **Function signatures:** Hover over a function call to see its parameters
+- **Variable types:** See the type of variables from their DEFINE statements
+- **Inline diagnostics:** Error messages appear at the end of the line
+- **Code hints:** Quality suggestions appear as faded text
+
+**Try it:** Move your cursor to a function call and wait a moment - you'll see its signature appear.
+
+### Step 2.4: Floating Windows
+
+Instead of splitting your screen, many features use floating windows that appear on top of your code:
+
+- Definition previews
+- Error details
+- Reference lists
+- Help documentation
+
+**Try it:** Press `<space>` and pause - a floating window shows available keybindings.
+
+---
+
+## 3. Writing Code Faster
+
+### Step 3.1: Auto-Close Blocks
+
+Type a block opener and press Enter - the matching `END` statement appears automatically:
+
+**Try it:**
+1. Type: `IF l_count > 0 THEN`
+2. Press: `Enter`
+3. Result:
 ```4gl
 IF l_count > 0 THEN
-    |                    ← cursor here
+    |                    ← cursor here, ready to type
 END IF
 ```
 
-Works for all 12+ Genero block types: `IF`, `FOR`, `WHILE`, `CASE`, `FUNCTION`,
-`MAIN`, `REPORT`, `MENU`, `INPUT`, `DIALOG`, `CONSTRUCT`, `FOREACH`.
+**Works for all Genero blocks:**
+- `IF ... END IF`
+- `FOR ... END FOR`
+- `WHILE ... END WHILE`
+- `CASE ... END CASE`
+- `FUNCTION ... END FUNCTION`
+- `MAIN ... END MAIN`
+- `REPORT ... END REPORT`
+- `MENU ... END MENU`
+- `INPUT ... END INPUT`
+- `DIALOG ... END DIALOG`
+- `CONSTRUCT ... END CONSTRUCT`
+- `FOREACH ... END FOREACH`
 
-### Code Snippets (Neovim)
+### Step 3.2: Code Snippets
 
-Type a trigger and press `Tab` to expand. `Tab`/`Shift+Tab` navigates placeholders.
+Snippets are templates that expand into full code blocks. Type a trigger word and press `Tab`:
 
-| Trigger | Result |
-|---------|--------|
-| `fn`    | Full `FUNCTION ... END FUNCTION` skeleton |
-| `if`    | `IF ... THEN ... END IF` |
-| `for`   | `FOR` loop with counter |
-| `try`   | `TRY ... CATCH ... END TRY` |
-| `rec`   | `RECORD` definition |
-| `arr`   | Array declaration |
+**Try these snippets:**
 
-Smart parameter population: snippets query function signatures and fill in
-parameter names and types automatically.
+1. **Function skeleton:**
+   - Type: `fn`
+   - Press: `Tab`
+   - Result: Full function with placeholders for name, parameters, and body
+   - Press: `Tab` to jump between placeholders
 
-### Intelligent Autocomplete
+2. **IF statement:**
+   - Type: `if`
+   - Press: `Tab`
+   - Result: `IF ... THEN ... END IF` with cursor on condition
 
-Start typing a function name and press `Ctrl+N`:
+3. **FOR loop:**
+   - Type: `for`
+   - Press: `Tab`
+   - Result: Complete FOR loop with counter variable
 
-- Prioritizes functions in the current module
-- Falls back to project-wide search
-- Shows parameter signatures in the completion menu
-- Cached for speed on large codebases
+4. **TRY-CATCH:**
+   - Type: `try`
+   - Press: `Tab`
+   - Result: Full error handling block
 
----
+**Common snippets:**
 
-## 3. Catch Errors Without Leaving the Editor
+| Trigger | Expands to |
+|---------|-----------|
+| `fn` | Function definition |
+| `if` | IF statement |
+| `for` | FOR loop |
+| `while` | WHILE loop |
+| `case` | CASE statement |
+| `try` | TRY-CATCH block |
+| `rec` | RECORD definition |
+| `arr` | Array declaration |
+| `cur` | CURSOR declaration |
+| `prep` | PREPARE statement |
 
-### Autocompile on Save
+**Navigation:**
+- `Tab` - Jump to next placeholder
+- `Shift+Tab` - Jump to previous placeholder
 
-Save a file → the compiler runs automatically → errors and warnings appear
-instantly. No manual compile step.
+### Step 3.3: Intelligent Autocomplete
 
-What you see:
-- **Sign column**: `✕` (error, red) and `⚠` (warning, yellow) markers
-- **Inline diagnostics** (Neovim): error text appears as virtual text on the
-  affected line — no need to open the quickfix list
-- **Unused variable highlighting**: all occurrences highlighted in yellow
+Get function name suggestions as you type:
 
-Navigate errors:
-```
-Ctrl+,    previous error
-Ctrl+.    next error
-F5        manual compile
-```
+**Try it:**
+1. Start typing a function name: `calc`
+2. Press: `Ctrl+N`
+3. See: A menu with matching functions from your codebase
+4. Use: Arrow keys or `Ctrl+N`/`Ctrl+P` to navigate
+5. Press: `Enter` to select
 
-### Compiler Diagnostics via Telescope
+**What you see in the completion menu:**
+- Function name
+- Parameter signature
+- Module location
+- Return type (if available)
 
-`:GeneroDiagnostics` opens a Telescope picker with all errors and warnings.
-Filter, fuzzy-search, and preview the error location before jumping.
-
----
-
-## 4. Navigate a Large Codebase
-
-Designed for codebases with thousands of files and 6M+ lines of code.
-
-### Go to Definition / Peek
-
-```
-gd        jump to the function definition (opens the file)
-gp        peek definition in a floating window (stay where you are)
-```
-
-### Find References
-
-```
-gr        find all callers of the function under the cursor (Telescope picker)
-```
-
-### Telescope Pickers
-
-```
-<space>gF    file functions — browse all functions in the current file
-<space>gM    module functions — browse all functions in the current module
-<space>gS    module sibling files — switch between files in the same module
-```
-
-All pickers include a live file preview so you see context before jumping.
-
-### Function Signature on Hover (Neovim)
-
-Move the cursor to a function call — its signature appears as faded virtual text
-at the end of the line. Variable types are resolved from `DEFINE` statements.
-No keypress needed.
+**Smart features:**
+- Prioritizes functions in your current module
+- Searches entire codebase if needed
+- Cached for speed on large projects
+- Shows parameter types from function definitions
 
 ---
 
-## 5. Keep Code Clean
+## 4. Navigating Your Codebase
 
-### Real-Time Code Hints
+Modern IDEs have "Go to Definition" and "Find References" - now you do too.
 
-The hints system runs as you type and flags quality issues:
+### Step 4.1: Go to Definition
 
-- Trailing whitespace, mixed indentation
-- Inconsistent keyword casing
-- Excessive nesting depth, long lines
-- Deprecated function usage
+Jump directly to where a function or variable is defined:
 
-Hints appear in the sign column (`◆`) and optionally as virtual text.
+**Try it:**
+1. Move cursor to a function name (e.g., in a `CALL` statement)
+2. Press: `gd`
+3. Result: Jumps to the function definition (opens the file if needed)
 
-### One-Key Auto-Fix
+**What it does:**
+- Searches your entire codebase
+- Opens the file containing the definition
+- Positions cursor on the FUNCTION line
+- Adds position to jump list (press `Ctrl+O` to go back)
 
-Cursor on a hint → `<space>hf` → the issue is fixed in place.
+### Step 4.2: Peek Definition
 
+Preview a definition without leaving your current location:
+
+**Try it:**
+1. Move cursor to a function name
+2. Press: `gp`
+3. Result: Floating window shows the function definition
+4. Press: `Esc` to close
+
+**When to use:**
+- Quick reference to check parameters
+- See implementation without losing your place
+- Review multiple functions quickly
+
+### Step 4.3: Find References (Smart Detection)
+
+Find all places where a function or variable is used:
+
+**Try it:**
+1. Move cursor to a function name or variable
+2. Press: `gr`
+3. Result: Telescope picker shows all references
+4. Type to filter results
+5. Press: `Enter` to jump to a reference
+
+**Smart detection:**
+- On a **function name**: Searches entire codebase for all callers
+- On a **variable**: Searches current buffer with scope awareness
+  - Local variables: Only searches current function
+  - Module variables (m_*): Searches entire file
+  - Global variables (gl_*): Searches entire file
+
+**Example:**
+```4gl
+CALL calculate_total(l_sum, m_config)
+     ^^^^^^^^^^^^^^^  ^^^^^  ^^^^^^^^
+     gr → function    gr → local var  gr → module var
+     (all callers)    (in function)   (in file)
 ```
-<space>hn    next hint
-<space>hp    previous hint
-<space>hl    list all hints in the file
-<space>hd    show hint details
-<space>hf    apply auto-fix
-```
 
-Every check is individually toggleable in the config.
+**Telescope picker features:**
+- Fuzzy search through results
+- Live preview pane shows context
+- Navigate with `j`/`k` or `Ctrl+N`/`Ctrl+P`
+- Press `Esc` to cancel
+
+### Step 4.4: Browse Functions in Current File
+
+See all functions in the file you're editing:
+
+**Try it:**
+1. Press: `<space>gF`
+2. Result: Telescope picker lists all functions
+3. Type to filter by name
+4. Preview shows function location
+5. Press: `Enter` to jump
+
+**When to use:**
+- Navigate large files quickly
+- Find a function by name
+- Get an overview of file structure
+
+### Step 4.5: Browse Functions in Current Module
+
+See all functions across all files in your module:
+
+**Try it:**
+1. Press: `<space>gM`
+2. Result: Telescope picker lists all module functions
+3. Shows which file each function is in
+4. Preview shows function definition
+5. Press: `Enter` to jump (opens file if needed)
+
+**When to use:**
+- Navigate multi-file modules
+- Find related functions
+- Understand module structure
+
+### Step 4.6: Switch Between Module Files
+
+Quickly switch between files in the same module:
+
+**Try it:**
+1. Press: `<space>gS`
+2. Result: Telescope picker lists all files in module
+3. Current file marked with `●`
+4. Preview shows file contents
+5. Press: `Enter` to switch
+
+**When to use:**
+- Navigate between related files
+- Switch between implementation files
+- Explore module structure
 
 ---
 
-## 6. Track Changes at a Glance
+## 5. Finding and Fixing Errors
 
-### SVN Diff Markers
+Catch compilation errors without leaving the editor.
 
-Open a file in an SVN working copy and the sign column shows what changed:
+### Step 5.1: Manual Compilation
 
-```
-+   added line      (green)
-~   modified line   (yellow)
--   deleted line    (red)
-```
+Compile the current file on demand:
 
-Markers load automatically, refresh on save, and are cached for performance.
+**Try it:**
+1. Press: `F5`
+2. Result: File compiles in background
+3. Errors/warnings appear in sign column
+4. Inline diagnostics show on affected lines
 
-### Unified Sign Column
+**What you see:**
+- `✕` Red markers for errors
+- `⚠` Yellow markers for warnings
+- Error text as faded virtual text at end of line
+- Unused variables highlighted in yellow
 
-Compiler markers and SVN markers share a single sign column — no wasted screen
-space. Toggle with `<space>su`.
+### Step 5.2: Auto-Compile on Save
 
-### Statusline Breadcrumb
+Enable automatic compilation every time you save:
 
-The statusline shows your current context at all times:
+**Try it:**
+1. Run: `:GeneroAutocompileEnable`
+2. Make a change and save: `:w`
+3. Result: File compiles automatically
+4. Errors appear within 1-2 seconds
 
-```
-module.m3 › file.4gl › ƒ my_function    E2 W1    +3 ~5 -1
-```
+**When to use:**
+- Catch errors as you code
+- Get immediate feedback
+- Reduce manual compile steps
 
-Module, file, current function, error/warning counts, and SVN change counts —
-all updated in real-time as you move the cursor.
+**Disable:** `:GeneroAutocompileDisable`
 
----
+### Step 5.3: Navigate Between Errors
 
-## 7. Keyword Highlighting
+Jump between errors without opening the quickfix list:
 
-`TODO`, `BUG`, `FIX`, `HACK`, `WARN`, `NOTE`, `TMP` tags are highlighted in
-code and comments. User-specific temp tags (`#TMP<initials>` derived from
-`$USER`) are also detected, with `]]`/`[[` to jump between them.
+**Try it:**
+1. Press: `Ctrl+.` (next error)
+2. Press: `Ctrl+,` (previous error)
+3. Result: Cursor jumps to error location
+4. Error details shown in virtual text
 
----
+**Workflow:**
+1. Compile with `F5`
+2. Jump to first error with `Ctrl+.`
+3. Fix the error
+4. Jump to next error with `Ctrl+.`
+5. Repeat until all errors fixed
 
-## 8. Bundled Plugins (Example Config)
+### Step 5.4: Browse All Diagnostics
 
-The `init.lua.example` config ships a curated set of plugins that complement
-the Genero workflow. Everything installs automatically on first launch.
+View all errors and warnings in a searchable list:
 
-### ToggleTerm — Inline Terminal
+**Try it:**
+1. Press: `<space>cD`
+2. Result: Telescope picker shows all diagnostics
+3. Type to filter by error message
+4. Preview shows error location
+5. Press: `Enter` to jump
 
-Open a terminal without leaving the editor. Useful for running builds, SVN
-commands, or checking logs alongside your code.
+**Filter options:**
+- `:GeneroDiagnostics` - All errors and warnings
+- `:GeneroDiagnosticsErrors` - Errors only
+- `:GeneroDiagnosticsWarnings` - Warnings only
 
-```
-Ctrl+\    toggle terminal (horizontal split at bottom)
-```
+**When to use:**
+- Get overview of all issues
+- Search for specific error types
+- Prioritize which errors to fix
 
-The terminal sources your login shell, so `$FGLDIR`, `$BRODIR`, and other
-environment variables are available immediately. `Ctrl+h/j/k/l` navigates
-between the terminal and code windows.
+### Step 5.5: Clear Error Markers
 
-### Which-Key — Keybinding Discovery
+Remove error markers from the sign column:
 
-Press `<space>` and pause — a popup shows all available keybinding groups
-(`c` compiler, `g` goto, `h` hints, `s` SVN, `f` find, etc.). No need to
-memorize anything on day one.
+**Try it:**
+1. Press: `<space>cc`
+2. Result: All error markers cleared
+3. Compile again to refresh
 
-### Telescope — Fuzzy Finder
-
-Beyond the Genero-specific pickers, Telescope provides general-purpose search:
-
-```
-<space>ff    find files in the project
-<space>fg    live grep across all files
-<space>fw    search for word under cursor
-<space>fb    switch between open buffers
-```
-
-### Noice + Notify — Modern UI
-
-Command-line input, search, and messages are rendered in floating windows
-instead of the bottom bar. Notifications appear as toast popups with icons
-for error, warning, and info levels.
-
-### Todo-Comments — Tag Highlighting
-
-Integrates with the Genero keyword highlighting. `TODO`, `BUG`, `HACK`, `TMP`
-and user-specific `#TMP<initials>` tags get colored icons in the sign column
-and are searchable via Telescope (`:TodoTelescope`).
-
-### Other Included Plugins
-
-| Plugin | What it does |
-|--------|-------------|
-| **indent-blankline** | Visual indent guides — makes nesting depth obvious |
-| **Comment.nvim** | `gcc` to toggle line comment, `gbc` for block comment |
-| **dressing.nvim** | Better UI for prompts and selection menus |
-| **LuaSnip** | Snippet engine powering Genero code snippets |
-| **lualine** | Statusline showing breadcrumb, diagnostics, and SVN counts |
-
-### Theme Options
-
-The config defaults to **Thorn** (minimal dark green). Three alternatives are
-included as commented blocks — uncomment one to switch:
-
-- **Tokyonight** — popular dark blue
-- **Catppuccin** — warm pastels
-- **Gruvbox** — retro warm
+**When to use:**
+- Clear stale errors after fixing
+- Clean up display
+- Start fresh after major changes
 
 ---
 
-## Quick Reference Card
+## 6. Code Quality and Hints
 
-| Key | Action |
-|-----|--------|
-| `F5` | Compile |
-| `Ctrl+,` / `Ctrl+.` | Prev / next error |
-| `Ctrl+N` | Autocomplete |
-| `gd` | Go to definition |
-| `gp` | Peek definition |
-| `gr` | Find references |
-| `gcc` | Toggle line comment |
-| `<space>gF` | File functions (Telescope) |
-| `<space>gM` | Module functions (Telescope) |
-| `<space>hf` | Auto-fix hint |
-| `<space>sv` | Toggle SVN markers |
-| `<space>su` | Toggle unified signs |
-| `<space>cD` | Diagnostics (Telescope) |
-| `<space>ff` | Find files |
-| `<space>fg` | Live grep |
-| `Ctrl+\` | Toggle terminal |
+Automated code quality checks that run as you type.
+
+### Step 6.1: Understanding Hints
+
+Hints flag code quality issues in real-time:
+
+**Types of hints:**
+- **Whitespace:** Trailing spaces, mixed tabs/spaces
+- **Style:** Inconsistent keyword casing, long lines
+- **Structure:** Excessive nesting, complex functions
+- **Best practices:** Deprecated functions, unused variables
+
+**What you see:**
+- `◆` Blue marker in sign column
+- Optional virtual text with hint message
+- Hint details on demand
+
+### Step 6.2: Navigate Between Hints
+
+Jump between code quality issues:
+
+**Try it:**
+1. Press: `<space>hn` (next hint)
+2. Press: `<space>hp` (previous hint)
+3. Result: Cursor jumps to hint location
+
+### Step 6.3: View Hint Details
+
+See detailed information about a hint:
+
+**Try it:**
+1. Move cursor to a line with a hint marker
+2. Press: `<space>hd`
+3. Result: Floating window shows:
+   - What the issue is
+   - Why it matters
+   - How to fix it
+   - Severity level
+
+### Step 6.4: Auto-Fix Hints
+
+Many hints can be fixed automatically:
+
+**Try it:**
+1. Move cursor to a line with a hint
+2. Press: `<space>hf`
+3. Result: Issue fixed automatically
+
+**Auto-fixable hints:**
+- Remove trailing whitespace
+- Fix keyword casing
+- Normalize indentation
+- Add missing spaces
+
+**Example:**
+```4gl
+if l_count>0 then    ← inconsistent casing, no spaces
+```
+Press `<space>hf`:
+```4gl
+IF l_count > 0 THEN  ← fixed!
+```
+
+### Step 6.5: List All Hints
+
+See all hints in the current file:
+
+**Try it:**
+1. Press: `<space>hl`
+2. Result: List of all hints with line numbers
+3. Navigate with `j`/`k`
+4. Press: `Enter` to jump to hint
+
+**When to use:**
+- Get overview of code quality
+- Prioritize which issues to fix
+- Clean up file before commit
 
 ---
 
-## Compatibility
+## 7. Version Control Integration
 
-All core features work in Vim 7+. Neovim unlocks:
+See what changed in your SVN working copy without leaving the editor.
+
+### Step 7.1: SVN Diff Markers
+
+Visual indicators show modified lines:
+
+**What you see:**
+- `+` Green marker - Line added
+- `~` Yellow marker - Line modified
+- `-` Red marker - Line deleted
+
+**Try it:**
+1. Open a file in an SVN working copy
+2. Make a change and save
+3. Result: Markers appear automatically
+
+**Features:**
+- Updates automatically on save
+- Cached for performance
+- Works alongside compiler markers
+
+### Step 7.2: Toggle SVN Markers
+
+Show or hide SVN diff markers:
+
+**Try it:**
+1. Press: `<space>sv`
+2. Result: SVN markers toggle on/off
+
+**When to use:**
+- Reduce visual clutter
+- Focus on code without distractions
+- Temporarily disable for screenshots
+
+### Step 7.3: Refresh SVN Status
+
+Manually update SVN markers:
+
+**Try it:**
+1. Press: `<space>sr`
+2. Result: SVN status refreshed from disk
+
+**When to use:**
+- After SVN update/commit
+- After external file changes
+- Force refresh if markers seem stale
+
+### Step 7.4: Unified Sign Column
+
+Compiler and SVN markers share one column:
+
+**Priority order:**
+1. Errors (highest priority)
+2. Warnings
+3. Hints
+4. SVN changes (lowest priority)
+
+**Try it:**
+1. Press: `<space>su`
+2. Result: Toggle unified sign column on/off
+
+**When unified is off:**
+- Separate columns for compiler and SVN
+- More screen space used
+- All markers always visible
+
+---
+
+## 8. Advanced Features
+
+### Step 8.1: Inline Terminal
+
+Run shell commands without leaving Neovim:
+
+**Try it:**
+1. Press: `Ctrl+\`
+2. Result: Terminal opens in horizontal split
+3. Type shell commands normally
+4. Press: `Ctrl+\` again to close
+
+**Navigation:**
+- `Ctrl+h/j/k/l` - Move between terminal and code windows
+- `Ctrl+\` - Toggle terminal visibility
+
+**When to use:**
+- Run builds or tests
+- Execute SVN commands
+- Check logs or file contents
+- Run database queries
+
+**Tip:** The terminal sources your login shell, so `$FGLDIR`, `$BRODIR`, and other environment variables work automatically.
+
+### Step 8.2: Fuzzy File Finding
+
+Find files by name across your entire project:
+
+**Try it:**
+1. Press: `<space>ff`
+2. Type part of a filename
+3. Result: Matching files appear
+4. Preview shows file contents
+5. Press: `Enter` to open
+
+**Features:**
+- Fuzzy matching (type `usrep` to find `user_report.4gl`)
+- Searches entire project
+- Respects `.gitignore`
+- Fast even on large codebases
+
+### Step 8.3: Live Grep (Search in Files)
+
+Search for text across all files:
+
+**Try it:**
+1. Press: `<space>fg`
+2. Type search term
+3. Result: Live results as you type
+4. Shows file, line number, and context
+5. Press: `Enter` to jump
+
+**When to use:**
+- Find where a variable is used
+- Search for error messages
+- Find TODO comments
+- Locate specific code patterns
+
+### Step 8.4: Search Word Under Cursor
+
+Quickly search for the word under cursor:
+
+**Try it:**
+1. Move cursor to a word
+2. Press: `<space>fw`
+3. Result: Searches all files for that word
+4. Shows results in Telescope picker
+
+**When to use:**
+- Find all uses of a constant
+- Search for error codes
+- Find similar variable names
+
+### Step 8.5: Buffer Switching
+
+Switch between open files:
+
+**Try it:**
+1. Press: `<space>fb`
+2. Result: List of open buffers
+3. Type to filter by filename
+4. Preview shows buffer contents
+5. Press: `Enter` to switch
+
+**When to use:**
+- Navigate between multiple open files
+- Find a file you opened earlier
+- See what files are currently open
+
+### Step 8.6: Comment Toggle
+
+Quickly comment/uncomment lines:
+
+**Try it:**
+1. Move cursor to a line
+2. Press: `gcc`
+3. Result: Line commented with `#`
+4. Press: `gcc` again to uncomment
+
+**Visual mode:**
+1. Select multiple lines with `V`
+2. Press: `gc`
+3. Result: All selected lines commented
+
+**When to use:**
+- Temporarily disable code
+- Comment out debug statements
+- Document code sections
+
+### Step 8.7: Keyword Highlighting
+
+Special keywords are highlighted automatically:
+
+**Highlighted keywords:**
+- `TODO` - Things to do
+- `BUG` - Known bugs
+- `FIX` - Things to fix
+- `HACK` - Temporary workarounds
+- `WARN` - Warnings
+- `NOTE` - Important notes
+- `TMP` - Temporary code
+- `#TMP<initials>` - User-specific temp code (from `$USER`)
+
+**Try it:**
+1. Type: `# TODO: implement error handling`
+2. Result: `TODO` highlighted in yellow with icon
+
+**Navigate temp tags:**
+- `]]` - Jump to next temp tag
+- `[[` - Jump to previous temp tag
+
+**Search all tags:**
+1. Run: `:TodoTelescope`
+2. Result: All TODO/BUG/etc tags in Telescope picker
+
+---
+
+## 9. Customization
+
+### Step 9.1: Keybinding Discovery
+
+Don't memorize keybindings - discover them as you go:
+
+**Try it:**
+1. Press: `<space>`
+2. Wait 1 second
+3. Result: Popup shows all available keybindings
+4. Press a key to execute or `Esc` to cancel
+
+**Keybinding groups:**
+- `<space>c` - Compiler commands
+- `<space>g` - Genero-Tools (goto, lookup)
+- `<space>h` - Hints (code quality)
+- `<space>s` - SVN/Signs/Snippets
+- `<space>f` - Find/Search (Telescope)
+- `<space>l` - LSP (if enabled)
+- `<space>b` - Buffers
+
+### Step 9.2: Change Color Scheme
+
+The default theme is **Thorn** (minimal dark green). Try alternatives:
+
+**Try it:**
+1. Open: `~/.config/nvim/init.lua`
+2. Find the theme section (around line 100)
+3. Comment out Thorn, uncomment another theme
+4. Restart Neovim
+
+**Available themes:**
+- **Thorn** (default) - Minimal dark green
+- **Tokyonight** - Popular dark blue
+- **Catppuccin** - Warm pastels
+- **Gruvbox** - Retro warm colors
+
+### Step 9.3: Configure Compiler
+
+Customize compiler behavior:
+
+**Edit:** `~/.config/nvim/init.lua`
+
+**Common settings:**
+```lua
+vim.g.genero_tools_config = {
+  compiler_enabled = 1,              -- Enable compiler integration
+  compiler_autocompile = 0,          -- Auto-compile on save (0=off, 1=on)
+  compiler_autocompile_delay = 1000, -- Delay before compile (ms)
+  compiler_show_warnings = 1,        -- Show warnings (0=off, 1=on)
+  compiler_show_errors = 1,          -- Show errors (0=off, 1=on)
+  compiler_inline_diagnostics = 1,   -- Inline error text (0=off, 1=on)
+  compiler_sign_column = 1,          -- Sign column markers (0=off, 1=on)
+}
+```
+
+### Step 9.4: Configure Hints
+
+Enable/disable specific hint checks:
+
+**Edit:** `~/.config/nvim/init.lua`
+
+**Example:**
+```lua
+vim.g.genero_tools_config = {
+  hints_enabled = 1,                 -- Enable hints system
+  hints_whitespace = 1,              -- Check trailing whitespace
+  hints_keyword_case = 1,            -- Check keyword casing
+  hints_line_length = 1,             -- Check long lines
+  hints_nesting_depth = 1,           -- Check excessive nesting
+}
+```
+
+### Step 9.5: Configure SVN
+
+Customize SVN diff markers:
+
+**Edit:** `~/.config/nvim/init.lua`
+
+**Example:**
+```lua
+vim.g.genero_tools_config = {
+  svn_enabled = 1,                   -- Enable SVN integration
+  svn_show_added = 1,                -- Show added lines
+  svn_show_modified = 1,             -- Show modified lines
+  svn_show_deleted = 1,              -- Show deleted lines
+  svn_auto_update = 1,               -- Auto-update on save
+  svn_cache_ttl = 300,               -- Cache duration (seconds)
+}
+```
+
+---
+
+## 10. Quick Reference
+
+### Essential Keybindings
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| **Compilation** |||
+| `F5` | Compile | Compile current file |
+| `Ctrl+.` | Next error | Jump to next error |
+| `Ctrl+,` | Prev error | Jump to previous error |
+| `<space>cc` | Clear errors | Remove error markers |
+| `<space>cD` | Diagnostics | Browse all errors (Telescope) |
+| **Navigation** |||
+| `gd` | Go to definition | Jump to function definition |
+| `gp` | Peek definition | Preview definition in popup |
+| `gr` | Find references | Find all references (smart) |
+| `gR` | Function references | Find function callers explicitly |
+| `<space>gF` | File functions | Browse functions in file |
+| `<space>gM` | Module functions | Browse functions in module |
+| `<space>gS` | Module files | Switch between module files |
+| **Code Quality** |||
+| `<space>hn` | Next hint | Jump to next hint |
+| `<space>hp` | Prev hint | Jump to previous hint |
+| `<space>hl` | List hints | Show all hints |
+| `<space>hd` | Hint details | Show hint information |
+| `<space>hf` | Auto-fix | Fix hint automatically |
+| **SVN** |||
+| `<space>sv` | Toggle SVN | Show/hide SVN markers |
+| `<space>sr` | Refresh SVN | Update SVN status |
+| `<space>su` | Unified signs | Toggle unified sign column |
+| **Search** |||
+| `<space>ff` | Find files | Fuzzy file finder |
+| `<space>fg` | Live grep | Search in all files |
+| `<space>fw` | Search word | Search word under cursor |
+| `<space>fb` | Buffers | Switch between open files |
+| **Editing** |||
+| `Ctrl+N` | Autocomplete | Show completion menu |
+| `Tab` | Next placeholder | Jump to next snippet field |
+| `Shift+Tab` | Prev placeholder | Jump to previous snippet field |
+| `gcc` | Toggle comment | Comment/uncomment line |
+| `gc` (visual) | Toggle comment | Comment/uncomment selection |
+| **Terminal** |||
+| `Ctrl+\` | Toggle terminal | Show/hide terminal |
+| `Ctrl+h/j/k/l` | Navigate | Move between windows |
+| **General** |||
+| `<space>` | Which-key | Show keybinding menu |
+| `:w` | Save | Save file |
+| `:q` | Quit | Quit Neovim |
+| `Ctrl+O` | Jump back | Return to previous location |
+| `Ctrl+I` | Jump forward | Go to next location |
+
+### Common Commands
+
+| Command | Description |
+|---------|-------------|
+| `:GeneroCompile` | Compile current file |
+| `:GeneroAutocompileEnable` | Enable auto-compile on save |
+| `:GeneroAutocompileDisable` | Disable auto-compile |
+| `:GeneroGotoDefinition` | Go to definition |
+| `:GeneroPeekDefinition` | Peek definition |
+| `:GeneroFindReferences` | Find function references |
+| `:GeneroFindVariableReferences` | Find variable references |
+| `:GeneroFindSmartReferences` | Smart reference detection |
+| `:GeneroFileFunctions` | Browse file functions |
+| `:GeneroModuleFunctions` | Browse module functions |
+| `:GeneroModuleFiles` | Browse module files |
+| `:GeneroDiagnostics` | Show all diagnostics |
+| `:GeneroDiagnosticsErrors` | Show errors only |
+| `:GeneroDiagnosticsWarnings` | Show warnings only |
+| `:GeneroClearErrors` | Clear error markers |
+| `:GeneroNextHint` | Jump to next hint |
+| `:GeneroPrevHint` | Jump to previous hint |
+| `:GeneroListHints` | List all hints |
+| `:GeneroHintDetails` | Show hint details |
+| `:GeneroHintAutofix` | Apply auto-fix |
+| `:GeneroSVNToggle` | Toggle SVN markers |
+| `:GeneroSVNRefresh` | Refresh SVN status |
+| `:GeneroSnippetList` | List available snippets |
+| `:TodoTelescope` | Search TODO/BUG tags |
+
+### Snippet Triggers
+
+| Trigger | Expands to |
+|---------|-----------|
+| `fn` | Function definition |
+| `if` | IF statement |
+| `for` | FOR loop |
+| `while` | WHILE loop |
+| `case` | CASE statement |
+| `try` | TRY-CATCH block |
+| `rec` | RECORD definition |
+| `arr` | Array declaration |
+| `cur` | CURSOR declaration |
+| `prep` | PREPARE statement |
+| `exec` | EXECUTE statement |
+| `open` | OPEN cursor |
+| `fetch` | FETCH cursor |
+| `close` | CLOSE cursor |
+
+---
+
+## Compatibility Notes
+
+### Vim vs Neovim
+
+**All core features work in Vim 7+:**
+- Function lookup and navigation
+- Compilation and error detection
+- Code hints and auto-fix
+- SVN integration
+- Auto-close blocks
+
+**Neovim unlocks additional features:**
 - Inline diagnostics (virtual text)
-- Floating windows and Telescope pickers
+- Floating windows and popups
+- Telescope pickers with live preview
 - Code snippets with smart expansion
 - Function signature hover
-- Breadcrumb winbar
-- Async compilation
+- Breadcrumb in statusline/winbar
+- Async compilation (non-blocking)
+- Modern UI (Noice, Notify)
 
-The plugin auto-detects the environment and enables what's available.
+The plugin auto-detects your environment and enables what's available.
+
+### Recommended Neovim Version
+
+- **Minimum:** Neovim 0.9.0
+- **Recommended:** Neovim 0.10.0 or later
+
+Check your version: `nvim --version`
+
+---
+
+## Getting Help
+
+### Built-in Help
+
+- `:help genero-tools` - Plugin documentation
+- `<space>` then wait - Show keybinding menu
+- `:GeneroSnippetHelp` - Snippet documentation
+
+### Common Issues
+
+**Plugins not loading:**
+- Restart Neovim after first install
+- Run `:Lazy sync` to update plugins
+
+**Keybindings not working:**
+- Check if another plugin is using the same key
+- Run `:map gr` to see what `gr` is mapped to
+
+**Compilation not working:**
+- Ensure `fglcomp` is in your `$PATH`
+- Check `$FGLDIR` is set correctly
+- Run `:GeneroCompile` manually to see errors
+
+**Telescope not working:**
+- Ensure Telescope is installed: `:Lazy`
+- Check for errors: `:messages`
+
+**SVN markers not showing:**
+- Ensure file is in SVN working copy
+- Run `:GeneroSVNRefresh` to force update
+- Check `:GeneroSVNToggle` is enabled
+
+### Support
+
+- GitHub Issues: https://github.com/hdean-ssp/genero-vim/issues
+- Documentation: See `docs/` folder in plugin directory
+
+---
+
+## Next Steps
+
+Now that you've learned the basics:
+
+1. **Practice the keybindings** - Use them daily until they become muscle memory
+2. **Explore Telescope** - It's powerful for navigation and search
+3. **Customize your config** - Adjust colors, keybindings, and features to your preference
+4. **Learn the snippets** - They'll save you significant typing time
+5. **Enable auto-compile** - Catch errors as you code
+
+**Pro tip:** Keep this guide open in a split while you code for the first few days. Press `<space>` whenever you forget a keybinding!
+
+Happy coding! 🚀
