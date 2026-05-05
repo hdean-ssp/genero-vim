@@ -123,9 +123,11 @@ function M.register_with_luasnip(snippets)
     end
   end
   
-  -- Register snippets for genero filetype
+  -- Register snippets for genero filetypes (4gl, fgl, per)
   if #snippet_list > 0 then
-    ls.add_snippets('genero', snippet_list)
+    ls.add_snippets('4gl', snippet_list)
+    ls.add_snippets('fgl', snippet_list)
+    ls.add_snippets('per', snippet_list)
   end
 end
 

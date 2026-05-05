@@ -413,11 +413,11 @@ local plugins = {
           enabled = true,
           backend = "nui",
         },
-        -- Disable showcmd popup (the "calculator" window)
+        -- Position cmdline popup at top of screen
         views = {
           cmdline_popup = {
             position = {
-              row = "50%",
+              row = 5,
               col = "50%",
             },
             size = {
@@ -1091,11 +1091,17 @@ local plugins = {
             local source_labels = {
               genero   = "[Genero]",
               nvim_lsp = "[LSP]",
-              luasnip  = "[Snip]",
+              luasnip  = "[Snippet]",
               buffer   = "[Buf]",
               path     = "[Path]",
             }
             item.menu = source_labels[entry.source.name] or ""
+            
+            -- For snippets, show a snippet icon
+            if entry.source.name == "luasnip" then
+              item.kind = "Snippet"
+            end
+            
             return item
           end,
         },
