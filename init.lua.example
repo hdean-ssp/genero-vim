@@ -577,7 +577,12 @@ local plugins = {
             listchars = "extends:…",
             sidescrolloff = 0,
           },
-          get_config = nil,
+          get_config = function(opts)
+            -- Disable dressing for snippet choice nodes (use default UI)
+            if opts and opts.kind == "luasnip" then
+              return { enabled = false }
+            end
+          end,
         },
         select = {
           enabled = true,
@@ -612,7 +617,12 @@ local plugins = {
             end,
           },
           format_item_override = {},
-          get_config = nil,
+          get_config = function(opts)
+            -- Disable dressing for snippet choice nodes (use default UI)
+            if opts and opts.kind == "luasnip" then
+              return { enabled = false }
+            end
+          end,
         },
       })
     end,

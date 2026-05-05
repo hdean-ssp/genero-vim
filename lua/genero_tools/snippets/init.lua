@@ -40,7 +40,16 @@ function M.setup()
   -- This ensures Tab/Shift+Tab work properly for placeholder navigation
   luasnip.config.set_config({
     enable_autosnippets = true,
-    store_selection_keys = '<Tab>',
+    -- Disable store_selection_keys to prevent Tab popup
+    -- store_selection_keys = '<Tab>',
+    -- Disable choice node UI (prevents popup on Tab)
+    ext_opts = {
+      [require("luasnip.util.types").choiceNode] = {
+        active = {
+          virt_text = {},  -- No virtual text for choice nodes
+        },
+      },
+    },
   })
 end
 
