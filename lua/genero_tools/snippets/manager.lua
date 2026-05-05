@@ -141,38 +141,72 @@ function M.parse_snippet_nodes(body)
     return { t('') }
   end
 
+  -- Split body by newlines
+  local lines = vim.split(body, '\n', { plain = true })
   local nodes = {}
-  local pos = 1
-  local pattern = '%$%{(%d+):([^}]*)%}'
+  local placeholder_pattern = '%$%{(%d+):([^}]*)%}'
   
-  -- Parse the body and create nodes for text and placeholders
-  while pos <= #body do
-    local start, finish, num_str, label = body:find(pattern, pos)
+  for line_idx, line in ipairs(lines) do
+    local pos = 1
+    local line_nodes = {}
     
-    if not start then
-      -- No more placeholders, add remaining text
-      if pos <= #body then
-        table.insert(nodes, t(body:sub(pos)))
+    -- Parse each line for placeholders
+    while pos <= #line do
+      local start, finish, num_str, label = line:find(placeholder_pattern, pos)
+      
+      if not start then
+        -- No more placeholders in this line, add remaining text
+        if pos <= #line then
+          table.insert(line_nodes, line:sub(pos))
+        end
+        break
       end
-      break
+      
+      -- Add text before placeholder
+      if start > pos then
+        table.insert(line_nodes, line:sub(pos, start - 1))
+      end
+      
+      -- Add placeholder marker (we'll convert to insert node later)
+      local num = tonumber(num_str)
+      table.insert(line_nodes, { type = 'insert', num = num, label = label })
+      
+      -- Move position past this placeholder
+      pos = finish + 1
     end
     
-    -- Add text before placeholder
-    if start > pos then
-      table.insert(nodes, t(body:sub(pos, start - 1)))
+    -- Convert line_nodes to actual nodes
+    if #line_nodes > 0 then
+      local text_parts = {}
+      for _, node_data in ipairs(line_nodes) do
+        if type(node_data) == 'string' then
+          table.insert(text_parts, node_data)
+        elseif type(node_data) == 'table' and node_data.type == 'insert' then
+          -- Flush accumulated text before insert node
+          if #text_parts > 0 then
+            table.insert(nodes, t(table.concat(text_parts)))
+            text_parts = {}
+          end
+          -- Add insert node
+          table.insert(nodes, i(node_data.num, node_data.label))
+        end
+      end
+      -- Flush remaining text
+      if #text_parts > 0 then
+        table.insert(nodes, t(table.concat(text_parts)))
+      end
     end
     
-    -- Add placeholder as insert node with the label as default text
-    local num = tonumber(num_str)
-    table.insert(nodes, i(num, label))
-    
-    -- Move position past this placeholder
-    pos = finish + 1
+    -- Add newline after each line except the last
+    if line_idx < #lines then
+      table.insert(nodes, t({ '', '' }))
+    end
   end
   
   -- If no nodes were created, return the body as a single text node
   if #nodes == 0 then
-    table.insert(nodes, t(body))
+    -- Split into lines for text node
+    table.insert(nodes, t(lines))
   end
   
   return nodes
