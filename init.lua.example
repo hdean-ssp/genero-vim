@@ -704,58 +704,70 @@ local plugins = {
       local user = os.getenv("USER") or ""
       local user_tag = "TMP" .. string.upper(string.sub(user, 1, 2))
 
-      -- Wrap setup in pcall to handle any errors gracefully
-      local ok, err = pcall(function()
-        require("todo-comments").setup({
-          signs = true,
-          sign_priority = 8,
-          keywords = {
-            FIX =  { icon = " ", color = "error", alt = { "FIXME", "FIXIT", "ISSUE" } },
-            TODO = { icon = " ", color = "info" },
-            HACK = { icon = " ", color = "warning" },
-            WARN = { icon = " ", color = "warning", alt = { "WARNING" } },
-            NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
-            BUG =  { icon = " ", color = "error" },
-            TMP =  { icon = " ", color = "warning", alt = { user_tag } },
+      require("todo-comments").setup({
+        signs = true,
+        sign_priority = 8,
+        keywords = {
+          FIX =  { icon = " ", color = "error", alt = { "FIXME", "FIXIT", "ISSUE" } },
+          TODO = { icon = " ", color = "info" },
+          HACK = { icon = " ", color = "warning" },
+          WARN = { icon = " ", color = "warning", alt = { "WARNING" } },
+          NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+          BUG =  { icon = " ", color = "error" },
+          TMP =  { icon = " ", color = "warning", alt = { user_tag } },
+        },
+        merge_keywords = false,
+        highlight = {
+          multiline = false,
+          before = "",
+          keyword = "wide",
+          after = "fg",
+          pattern = [[.*<(KEYWORDS)\s*]],
+          comments_only = false,  -- Also highlight in code, not just comments (for #TMP tags)
+          max_line_len = 400,  -- Skip very long lines
+          exclude = {},
+        },
+        search = {
+          command = "rg",
+          args = {
+            "--color=never", "--no-heading", "--with-filename",
+            "--line-number", "--column", "--hidden",
           },
-          merge_keywords = false,
-          highlight = {
-            multiline = false,
-            before = "",
-            keyword = "wide",
-            after = "fg",
-            pattern = [[.*<(KEYWORDS)\s*]],
-            comments_only = false,  -- Also highlight in code, not just comments (for #TMP tags)
-            -- Reduce update frequency to avoid extmark conflicts
-            max_line_len = 400,  -- Don't highlight very long lines
-            exclude = {},
-          },
-          search = {
-            command = "rg",
-            args = {
-              "--color=never", "--no-heading", "--with-filename",
-              "--line-number", "--column", "--hidden",
-            },
-            pattern = [[\b(KEYWORDS)\b]],
-          },
-        })
-        
-        -- Patch the highlight function to catch extmark errors
-        local todo_hl = require("todo-comments.highlight")
-        local original_add_highlight = todo_hl.add_highlight
-        todo_hl.add_highlight = function(...)
-          local success, result = pcall(original_add_highlight, ...)
-          if not success then
-            -- Silently ignore extmark errors
-            return
-          end
-          return result
-        end
-      end)
+          pattern = [[\b(KEYWORDS)\b]],
+        },
+      })
       
-      if not ok then
-        vim.notify("todo-comments setup failed: " .. tostring(err), vim.log.levels.WARN)
-      end
+      -- Override the highlight module's add_highlight to catch extmark errors
+      vim.defer_fn(function()
+        local ok, todo_hl = pcall(require, "todo-comments.highlight")
+        if ok and todo_hl then
+          local original_add = todo_hl.add_highlight
+          todo_hl.add_highlight = function(buf, ns, hl_group, line, from, to)
+            -- Validate that 'to' doesn't exceed line length
+            local line_count = vim.api.nvim_buf_line_count(buf)
+            if line >= line_count then
+              return  -- Line doesn't exist
+            end
+            
+            local line_text = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]
+            if not line_text then
+              return  -- Line is empty or invalid
+            end
+            
+            local line_len = #line_text
+            if to > line_len then
+              to = line_len  -- Clamp to actual line length
+            end
+            
+            if from >= to then
+              return  -- Invalid range
+            end
+            
+            -- Call original with validated parameters
+            pcall(original_add, buf, ns, hl_group, line, from, to)
+          end
+        end
+      end, 100)
     end,
   },
 
