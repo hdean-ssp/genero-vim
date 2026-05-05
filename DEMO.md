@@ -375,16 +375,16 @@ Enable automatic compilation every time you save:
 Jump between errors without opening the quickfix list:
 
 **Try it:**
-1. Press: `Ctrl+.` (next error)
-2. Press: `Ctrl+,` (previous error)
+1. Press: `]d` or `Ctrl+.` (next error)
+2. Press: `[d` or `Ctrl+,` (previous error)
 3. Result: Cursor jumps to error location
 4. Error details shown in virtual text
 
 **Workflow:**
 1. Compile with `F5`
-2. Jump to first error with `Ctrl+.`
+2. Jump to first error with `]d`
 3. Fix the error
-4. Jump to next error with `Ctrl+.`
+4. Jump to next error with `]d`
 5. Repeat until all errors fixed
 
 ### Step 5.4: Browse All Diagnostics
@@ -448,9 +448,13 @@ Hints flag code quality issues in real-time:
 Jump between code quality issues:
 
 **Try it:**
-1. Press: `<space>hn` (next hint)
-2. Press: `<space>hp` (previous hint)
+1. Press: `]h` (next hint)
+2. Press: `[h` (previous hint)
 3. Result: Cursor jumps to hint location
+
+**Alternative:**
+- `<space>hn` - Next hint (also works)
+- `<space>hp` - Previous hint (also works)
 
 ### Step 6.3: View Hint Details
 
@@ -654,6 +658,11 @@ Quickly search for the word under cursor:
 Switch between open files:
 
 **Try it:**
+1. Press: `]b` (next buffer)
+2. Press: `[b` (previous buffer)
+3. Result: Cycles through open buffers with wrapping
+
+**Alternative with Telescope:**
 1. Press: `<space>fb`
 2. Result: List of open buffers
 3. Type to filter by filename
@@ -661,9 +670,8 @@ Switch between open files:
 5. Press: `Enter` to switch
 
 **When to use:**
-- Navigate between multiple open files
-- Find a file you opened earlier
-- See what files are currently open
+- `]b`/`[b` - Quick cycling between recent files
+- `<space>fb` - Find specific buffer by name
 
 ### Step 8.6: Comment Toggle
 
@@ -704,8 +712,8 @@ Special keywords are highlighted automatically:
 2. Result: `TODO` highlighted in yellow with icon
 
 **Navigate temp tags:**
-- `]]` - Jump to next temp tag
-- `[[` - Jump to previous temp tag
+- `]]` - Jump to next temp tag (wraps to beginning)
+- `[[` - Jump to previous temp tag (wraps to end)
 
 **Search all tags:**
 1. Run: `:TodoTelescope`
@@ -814,8 +822,8 @@ vim.g.genero_tools_config = {
 |-----|--------|-------------|
 | **Compilation** |||
 | `F5` | Compile | Compile current file |
-| `Ctrl+.` | Next error | Jump to next error |
-| `Ctrl+,` | Prev error | Jump to previous error |
+| `]d` or `Ctrl+.` | Next error | Jump to next error |
+| `[d` or `Ctrl+,` | Prev error | Jump to previous error |
 | `<space>cc` | Clear errors | Remove error markers |
 | `<space>cD` | Diagnostics | Browse all errors (Telescope) |
 | **Navigation** |||
@@ -826,9 +834,13 @@ vim.g.genero_tools_config = {
 | `<space>gF` | File functions | Browse functions in file |
 | `<space>gM` | Module functions | Browse functions in module |
 | `<space>gS` | Module files | Switch between module files |
+| `]b` | Next buffer | Next open file (wrap) |
+| `[b` | Prev buffer | Previous open file (wrap) |
 | **Code Quality** |||
-| `<space>hn` | Next hint | Jump to next hint |
-| `<space>hp` | Prev hint | Jump to previous hint |
+| `]h` | Next hint | Jump to next hint |
+| `[h` | Prev hint | Jump to previous hint |
+| `<space>hn` | Next hint | Jump to next hint (alt) |
+| `<space>hp` | Prev hint | Jump to previous hint (alt) |
 | `<space>hl` | List hints | Show all hints |
 | `<space>hd` | Hint details | Show hint information |
 | `<space>hf` | Auto-fix | Fix hint automatically |
@@ -847,6 +859,9 @@ vim.g.genero_tools_config = {
 | `Shift+Tab` | Prev placeholder | Jump to previous snippet field |
 | `gcc` | Toggle comment | Comment/uncomment line |
 | `gc` (visual) | Toggle comment | Comment/uncomment selection |
+| **Temp Tags** |||
+| `]]` | Next temp tag | Jump to next #TMP tag (wrap) |
+| `[[` | Prev temp tag | Jump to previous #TMP tag (wrap) |
 | **Terminal** |||
 | `Ctrl+\` | Toggle terminal | Show/hide terminal |
 | `Ctrl+h/j/k/l` | Navigate | Move between windows |
