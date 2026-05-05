@@ -34,12 +34,13 @@ function! genero_tools#hints#init() abort
   call genero_tools#hints#register_detector('genero', function('genero_tools#hints#genero#detect'))
   
   " Set up autocommands for hint analysis
-  " Analyze on buffer read, write, and when entering a buffer
+  " Analyze on buffer read and write only (not on every buffer enter)
   augroup GeneroToolsHints
     autocmd!
     autocmd BufRead *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_read()
     autocmd BufWrite *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_write()
-    autocmd BufEnter *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_enter()
+    " BufEnter disabled - too expensive on large files, use manual refresh or write trigger
+    " autocmd BufEnter *.4gl,*.m3,*.m4,*.per call genero_tools#hints#on_buffer_enter()
   augroup END
   
   let g:genero_tools_hints_state.initialized = 1

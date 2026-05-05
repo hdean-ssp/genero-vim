@@ -201,6 +201,74 @@ code and comments. User-specific temp tags (`#TMP<initials>` derived from
 
 ---
 
+## 8. Bundled Plugins (Example Config)
+
+The `init.lua.example` config ships a curated set of plugins that complement
+the Genero workflow. Everything installs automatically on first launch.
+
+### ToggleTerm — Inline Terminal
+
+Open a terminal without leaving the editor. Useful for running builds, SVN
+commands, or checking logs alongside your code.
+
+```
+Ctrl+\    toggle terminal (horizontal split at bottom)
+```
+
+The terminal sources your login shell, so `$FGLDIR`, `$BRODIR`, and other
+environment variables are available immediately. `Ctrl+h/j/k/l` navigates
+between the terminal and code windows.
+
+### Which-Key — Keybinding Discovery
+
+Press `<space>` and pause — a popup shows all available keybinding groups
+(`c` compiler, `g` goto, `h` hints, `s` SVN, `f` find, etc.). No need to
+memorize anything on day one.
+
+### Telescope — Fuzzy Finder
+
+Beyond the Genero-specific pickers, Telescope provides general-purpose search:
+
+```
+<space>ff    find files in the project
+<space>fg    live grep across all files
+<space>fw    search for word under cursor
+<space>fb    switch between open buffers
+```
+
+### Noice + Notify — Modern UI
+
+Command-line input, search, and messages are rendered in floating windows
+instead of the bottom bar. Notifications appear as toast popups with icons
+for error, warning, and info levels.
+
+### Todo-Comments — Tag Highlighting
+
+Integrates with the Genero keyword highlighting. `TODO`, `BUG`, `HACK`, `TMP`
+and user-specific `#TMP<initials>` tags get colored icons in the sign column
+and are searchable via Telescope (`:TodoTelescope`).
+
+### Other Included Plugins
+
+| Plugin | What it does |
+|--------|-------------|
+| **indent-blankline** | Visual indent guides — makes nesting depth obvious |
+| **Comment.nvim** | `gcc` to toggle line comment, `gbc` for block comment |
+| **dressing.nvim** | Better UI for prompts and selection menus |
+| **LuaSnip** | Snippet engine powering Genero code snippets |
+| **lualine** | Statusline showing breadcrumb, diagnostics, and SVN counts |
+
+### Theme Options
+
+The config defaults to **Thorn** (minimal dark green). Three alternatives are
+included as commented blocks — uncomment one to switch:
+
+- **Tokyonight** — popular dark blue
+- **Catppuccin** — warm pastels
+- **Gruvbox** — retro warm
+
+---
+
 ## Quick Reference Card
 
 | Key | Action |
@@ -211,12 +279,16 @@ code and comments. User-specific temp tags (`#TMP<initials>` derived from
 | `gd` | Go to definition |
 | `gp` | Peek definition |
 | `gr` | Find references |
+| `gcc` | Toggle line comment |
 | `<space>gF` | File functions (Telescope) |
 | `<space>gM` | Module functions (Telescope) |
 | `<space>hf` | Auto-fix hint |
 | `<space>sv` | Toggle SVN markers |
 | `<space>su` | Toggle unified signs |
 | `<space>cD` | Diagnostics (Telescope) |
+| `<space>ff` | Find files |
+| `<space>fg` | Live grep |
+| `Ctrl+\` | Toggle terminal |
 
 ---
 
