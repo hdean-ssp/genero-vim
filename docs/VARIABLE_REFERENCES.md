@@ -8,6 +8,7 @@ Find all references to a variable in the current buffer with scope-aware searchi
   - Local variables: Scans only current function
   - Module variables (m_*): Scans entire buffer
   - Global variables (gl_*): Scans entire buffer
+- **Live Preview**: Background buffer scrolls as you navigate references
 - **Performance Optimized**: Uses caching to avoid redundant scans
 - **Interactive Navigation**: Jump to any reference with Enter key
 - **Context Display**: Shows line number, column, and code snippet for each reference
@@ -23,17 +24,20 @@ If no variable name is provided, uses the word under cursor.
 
 ### Keybinding
 ```vim
-gR    " Find references for variable under cursor
+gr    " Find references for variable under cursor (with live preview)
+gR    " Find references for function under cursor
 ```
 
 ### Example Workflow
 
 1. Position cursor on a variable name
-2. Press `gR` (or run `:GeneroFindVariableReferences`)
+2. Press `gr` (or run `:GeneroFindVariableReferences`)
 3. A floating window appears showing all references
-4. Use `j`/`k` to navigate the list
-5. Press `Enter` to jump to a reference
-6. Press `q` or `Esc` to close the window
+4. Use `j`/`k` (or arrow keys) to navigate the list
+   - **Background buffer scrolls automatically** to show each reference
+   - See the code context without leaving the references window
+5. Press `Enter` to jump to a reference and close the window
+6. Press `q` or `Esc` to close without jumping
 
 ## How It Works
 
@@ -84,11 +88,14 @@ Cache is automatically invalidated when:
     2   145:12  IF l_count > 10 THEN
     3   148:8   LET l_count = l_count + 1
     4   152:15  RETURN l_count
+    
+  Enter: jump  j/k: navigate with preview  q/Esc: close
 ```
 
 - **Idx**: Reference number (for quick identification)
 - **Line:Col**: Exact position in file
 - **Code Snippet**: Trimmed line showing context (max 80 chars)
+- **Live Preview**: As you navigate with `j`/`k`, the background buffer scrolls to show the reference in context
 
 ## Performance
 
@@ -116,7 +123,8 @@ Cache is automatically invalidated when:
 | Scope | Cross-file | Current buffer only |
 | Speed | Network dependent | Instant (cached) |
 | Accuracy | 100% (database) | 95%+ (pattern matching) |
-| Keybinding | `gr` | `gR` |
+| Keybinding | `gR` | `gr` |
+| Live Preview | ❌ | ✅ |
 
 ## Limitations
 
