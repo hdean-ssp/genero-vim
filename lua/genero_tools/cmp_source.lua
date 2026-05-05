@@ -15,6 +15,12 @@ end
 
 -- Check if this source is available for the current buffer
 function source:is_available()
+  -- Only available in insert mode, not in command-line or other modes
+  local mode = vim.api.nvim_get_mode().mode
+  if mode ~= "i" and mode ~= "ic" then
+    return false
+  end
+  
   local ft = vim.bo.filetype
   return ft == "4gl" or ft == "fgl" or ft == "per"
 end
