@@ -55,6 +55,7 @@ vim.opt.timeoutlen = 300
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 vim.opt.mouse = "a"
+vim.opt.showcmd = false  -- Disable showcmd to prevent noice "calculator" popup
 
 -- Use system clipboard if a provider is available (xclip, xsel, wl-copy, etc.)
 -- Falls back to Neovim's internal registers if no provider is found
@@ -404,6 +405,27 @@ local plugins = {
         messages = {
           enabled = true,  -- Re-enable message handling
         },
+        cmdline = {
+          enabled = true,
+          view = "cmdline_popup",
+        },
+        popupmenu = {
+          enabled = true,
+          backend = "nui",
+        },
+        -- Disable showcmd popup (the "calculator" window)
+        views = {
+          cmdline_popup = {
+            position = {
+              row = "50%",
+              col = "50%",
+            },
+            size = {
+              width = 60,
+              height = "auto",
+            },
+          },
+        },
         lsp = {
           progress = {
             enabled = false,  -- Disable LSP progress for Neovim 0.9.5 compatibility
@@ -438,6 +460,9 @@ local plugins = {
                 { find = "; before #%d+" },
                 { find = "lspconfig.*deprecated" },  -- Filter lspconfig deprecation
                 { find = "vim%.lsp%.config" },       -- Filter vim.lsp.config mentions
+                { find = "snippet" },                -- Filter snippet messages
+                { find = "placeholder" },            -- Filter placeholder messages
+                { find = "generotools" },            -- Filter generotools snippet messages
               },
             },
             view = "mini",
@@ -448,7 +473,17 @@ local plugins = {
               any = {
                 { find = "lspconfig.*deprecated" },
                 { find = "vim%.lsp%.config" },
+                { find = "snippet" },
+                { find = "placeholder" },
+                { find = "generotools" },
               },
+            },
+            opts = { skip = true },
+          },
+          -- Skip all msg_showcmd events (these create the calculator popup)
+          {
+            filter = {
+              event = "msg_showcmd",
             },
             opts = { skip = true },
           },
