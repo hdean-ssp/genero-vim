@@ -47,14 +47,11 @@ function! genero_tools#keybindings#register() abort
     endif
 
     " Find variable references (Neovim only — scope-aware buffer scanning)
-    if empty(maparg('gr', 'n'))
-      nnoremap <silent> gr :GeneroFindVariableReferences<CR>
-    endif
+    " Note: Using nnoremap (not checking if exists) to ensure correct mapping
+    nnoremap <silent> gr :GeneroFindVariableReferences<CR>
     
     " Find function references (Neovim only — uses floating window)
-    if empty(maparg('gR', 'n'))
-      nnoremap <silent> gR :GeneroFindReferences<CR>
-    endif
+    nnoremap <silent> gR :GeneroFindReferences<CR>
 
     " Telescope pickers (Neovim only)
     if empty(maparg('<leader>gF', 'n'))
