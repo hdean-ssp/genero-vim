@@ -68,14 +68,18 @@ function! genero_tools#keybindings#register() abort
   
   " Snippet placeholder navigation (Neovim only)
   if has('nvim')
+    " NOTE: Tab/Shift+Tab for snippet navigation is handled by nvim-cmp
+    " See init.lua.example cmp.mapping configuration
+    " These keybindings are disabled to prevent conflicts with cmp
+    
     " Tab to jump to next placeholder
-    if empty(maparg('<Tab>', 'i'))
-      inoremap <silent> <Tab> <C-R>=genero_tools#snippets#next_placeholder_or_tab()<CR>
-    endif
+    " if empty(maparg('<Tab>', 'i'))
+    "   inoremap <silent> <Tab> <C-R>=genero_tools#snippets#next_placeholder_or_tab()<CR>
+    " endif
     
     " Shift+Tab to jump to previous placeholder
-    if empty(maparg('<S-Tab>', 'i'))
-      inoremap <silent> <S-Tab> <C-R>=genero_tools#snippets#prev_placeholder_or_tab()<CR>
-    endif
+    " if empty(maparg('<S-Tab>', 'i'))
+    "   inoremap <silent> <S-Tab> <C-R>=genero_tools#snippets#prev_placeholder_or_tab()<CR>
+    " endif
   endif
 endfunction
