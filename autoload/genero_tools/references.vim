@@ -2,10 +2,12 @@
 " Shows all callers of a function via Telescope picker (with file preview)
 " Falls back to a floating window if Telescope is not available
 " Leverages find-function-dependents (same data as refcount, but displayed)
+" Also supports variable references with scope-aware searching
 
 let s:ref_win = -1
 let s:ref_buf = -1
 let s:ref_data = []
+let s:ref_type = 'function'  " 'function' or 'variable'
 
 " Find references for the function under cursor (or on the current FUNCTION line)
 function! genero_tools#references#find(...) abort
@@ -15,6 +17,8 @@ function! genero_tools#references#find(...) abort
     call genero_tools#error#warn('references', 'No function name under cursor')
     return
   endif
+
+  let s:ref_type = 'function'
 
   " Check refcount cache first — if we already fetched dependents, reuse the count
   " But we need the full data, not just the count, so always query
@@ -56,6 +60,229 @@ function! genero_tools#references#find(...) abort
   let s:ref_data = data
   let lines = s:format_references(func_name, data)
   call s:show_references_window(lines, func_name, len(data))
+endfunction
+
+" Find references for a variable (scope-aware buffer scanning)
+" OPTIMIZED: Only scans current function for local variables, full buffer for module variables
+function! genero_tools#references#find_variable(...) abort
+  let var_name = a:0 > 0 && !empty(a:1) ? a:1 : expand('<cword>')
+  
+  if empty(var_name)
+    call genero_tools#error#warn('references', 'No variable name under cursor')
+    return
+  endif
+  
+  let s:ref_type = 'variable'
+  let bufnr = bufnr('%')
+  let current_line = line('.')
+  
+  " Check cache first
+  let cache_key = 'var-refs:' . bufnr . ':' . getbufvar(bufnr, 'changedtick', 0) . ':' . var_name
+  let cached = genero_tools#cache#get(cache_key)
+  
+  if !empty(cached) && has_key(cached, 'data')
+    let refs = cached.data
+  else
+    " Determine variable scope by checking type info
+    let scope = s:get_variable_scope(var_name, bufnr, current_line)
+    
+    " Scan for references based on scope
+    if scope ==# 'module' || scope ==# 'global'
+      let refs = s:find_variable_refs_full_buffer(var_name, bufnr)
+    else
+      " Local variable - only scan current function
+      let refs = s:find_variable_refs_in_function(var_name, bufnr, current_line)
+    endif
+    
+    " Cache the results
+    call genero_tools#cache#set(cache_key, {'success': 1, 'data': refs, 'timestamp': localtime()})
+  endif
+  
+  if empty(refs)
+    call genero_tools#error#warn('references', 'No references found for variable: ' . var_name)
+    return
+  endif
+  
+  " Format and display
+  let s:ref_data = refs
+  let lines = s:format_variable_references(var_name, refs)
+  call s:show_references_window(lines, var_name . ' (variable)', len(refs))
+endfunction
+
+" Determine variable scope (module, global, or local)
+" Uses the same logic as type_info to detect scope
+function! s:get_variable_scope(var_name, bufnr, cursor_line) abort
+  " Check naming convention first (fast)
+  if a:var_name =~? '^m_'
+    return 'module'
+  elseif a:var_name =~? '^gl_'
+    return 'global'
+  endif
+  
+  " Try to find DEFINE to determine actual scope
+  " Reuse type_info's find_define logic if available
+  if exists('*genero_tools#compiler#type_info#find_define')
+    let define_info = genero_tools#compiler#type_info#find_define(a:var_name, a:bufnr, a:cursor_line)
+    if !empty(define_info)
+      return get(define_info, 'scope', 'local')
+    endif
+  endif
+  
+  " Default to local if we can't determine
+  return 'local'
+endfunction
+
+" Find all references to a variable in the current function only
+" OPTIMIZED: Only scans function boundaries, not entire buffer
+function! s:find_variable_refs_in_function(var_name, bufnr, cursor_line) abort
+  let refs = []
+  
+  " Find function boundaries
+  let func_start = s:find_function_start(a:cursor_line)
+  let func_end = s:find_function_end(a:cursor_line)
+  
+  if func_start == 0 || func_end == 0
+    return refs
+  endif
+  
+  " Build pattern to match variable references
+  let pattern = '\<' . escape(a:var_name, '\') . '\>'
+  
+  " Scan only within function boundaries
+  for line_nr in range(func_start, func_end)
+    let line_text = getline(line_nr)
+    
+    " Skip comments
+    if line_text =~# '^\s*[#\-\-]'
+      continue
+    endif
+    
+    " Check if line contains the variable
+    if line_text =~# pattern
+      " Find all occurrences in the line
+      let col = 0
+      while 1
+        let col = match(line_text, pattern, col)
+        if col == -1
+          break
+        endif
+        
+        call add(refs, {
+          \ 'line': line_nr,
+          \ 'column': col + 1,
+          \ 'text': line_text,
+          \ 'file': expand('%:p')
+          \ })
+        
+        let col += len(a:var_name)
+      endwhile
+    endif
+  endfor
+  
+  return refs
+endfunction
+
+" Find all references to a variable in the entire buffer
+" Used for module-level and global variables
+function! s:find_variable_refs_full_buffer(var_name, bufnr) abort
+  let refs = []
+  let total_lines = line('$')
+  
+  " Build pattern to match variable references
+  let pattern = '\<' . escape(a:var_name, '\') . '\>'
+  
+  " Scan entire buffer
+  for line_nr in range(1, total_lines)
+    let line_text = getline(line_nr)
+    
+    " Skip comments
+    if line_text =~# '^\s*[#\-\-]'
+      continue
+    endif
+    
+    " Check if line contains the variable
+    if line_text =~# pattern
+      " Find all occurrences in the line
+      let col = 0
+      while 1
+        let col = match(line_text, pattern, col)
+        if col == -1
+          break
+        endif
+        
+        call add(refs, {
+          \ 'line': line_nr,
+          \ 'column': col + 1,
+          \ 'text': line_text,
+          \ 'file': expand('%:p')
+          \ })
+        
+        let col += len(a:var_name)
+      endwhile
+    endif
+  endfor
+  
+  return refs
+endfunction
+
+" Find the start line of the function containing the cursor
+function! s:find_function_start(cursor_line) abort
+  let i = a:cursor_line
+  
+  while i >= 1
+    let line = getline(i)
+    let upper = toupper(substitute(line, '^\s*', '', ''))
+    
+    if upper =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
+      return i
+    endif
+    
+    let i -= 1
+  endwhile
+  
+  return 0
+endfunction
+
+" Find the end line of the function containing the cursor
+function! s:find_function_end(cursor_line) abort
+  let i = a:cursor_line
+  let total = line('$')
+  
+  while i <= total
+    let line = getline(i)
+    let upper = toupper(substitute(line, '^\s*', '', ''))
+    
+    if upper =~# '^END\s\+\(FUNCTION\|MAIN\|REPORT\)\>'
+      return i
+    endif
+    
+    let i += 1
+  endwhile
+  
+  return total
+endfunction
+
+" Format variable reference data into display lines
+function! s:format_variable_references(var_name, refs) abort
+  let lines = []
+  let idx = 0
+  
+  for ref in a:refs
+    let idx += 1
+    let line_nr = ref.line
+    let col = ref.column
+    let text = substitute(ref.text, '^\s*', '', '')  " Trim leading whitespace
+    
+    " Truncate long lines
+    if len(text) > 80
+      let text = text[:77] . '...'
+    endif
+    
+    let display = printf('  %3d  %4d:%2d  %s', idx, line_nr, col, text)
+    call add(lines, display)
+  endfor
+  
+  return lines
 endfunction
 
 " Extract function name from context
@@ -190,12 +417,23 @@ function! genero_tools#references#jump_to_reference() abort
   endif
 
   let ref = s:ref_data[ref_index]
-  let file = get(ref, 'path', get(ref, 'file', get(ref, 'file_path', '')))
-  let line_nr = get(ref, 'line_number', get(ref, 'line', get(ref, 'line_start', 0)))
-
-  " Handle line as dict
-  if type(line_nr) == type({})
-    let line_nr = get(line_nr, 'start', 0)
+  
+  " Handle both function and variable references
+  if s:ref_type ==# 'variable'
+    " Variable reference - has line, column, file
+    let file = get(ref, 'file', '')
+    let line_nr = get(ref, 'line', 0)
+    let col_nr = get(ref, 'column', 0)
+  else
+    " Function reference - has path, line_number
+    let file = get(ref, 'path', get(ref, 'file', get(ref, 'file_path', '')))
+    let line_nr = get(ref, 'line_number', get(ref, 'line', get(ref, 'line_start', 0)))
+    let col_nr = 0
+    
+    " Handle line as dict
+    if type(line_nr) == type({})
+      let line_nr = get(line_nr, 'start', 0)
+    endif
   endif
 
   if empty(file)
@@ -217,9 +455,12 @@ function! genero_tools#references#jump_to_reference() abort
     execute 'edit ' . fnameescape(full_path)
   endif
 
-  " Jump to line if available
+  " Jump to line and column if available
   if line_nr > 0
     execute line_nr
+    if col_nr > 0
+      execute 'normal! ' . col_nr . '|'
+    endif
     normal! zz
   endif
 endfunction
