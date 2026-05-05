@@ -107,24 +107,24 @@ vim.g.genero_tools_config = {
   auto_fix_enabled = true,              -- Enable auto-fix suggestions
   
   -- Individual hint checks (true = enabled, false = disabled)
-  trailing_whitespace = true,           -- Detect trailing whitespace
-  mixed_indentation = false,            -- Detect mixed tabs/spaces
-  indentation_consistency = false,      -- Detect inconsistent indentation
-  multiple_blank_lines = false,         -- Detect excessive blank lines
-  lowercase_keywords = false,           -- Detect lowercase keywords
-  lowercase_functions = false,          -- Detect lowercase functions
-  keyword_consistency = false,          -- Detect inconsistent casing
-  naming_convention = false,            -- Detect naming violations
-  unclosed_blocks = false,              -- Detect unclosed blocks
-  nesting_depth = false,                -- Detect excessive nesting
-  line_length = true,                   -- Detect long lines
-  missing_comments = false,             -- Detect missing comments
-  missing_error_handling = false,       -- Detect missing error handling
-  deprecated_functions = false,         -- Detect deprecated functions
+  trailing_whitespace = true,           -- Detect trailing whitespace (team consistency)
+  mixed_indentation = true,             -- Detect mixed tabs/spaces (critical for team consistency)
+  indentation_consistency = false,      -- Detect inconsistent indentation (too noisy, covered by mixed_indentation)
+  multiple_blank_lines = true,          -- Detect excessive blank lines (keeps code clean)
+  lowercase_keywords = true,            -- Detect lowercase keywords (Genero convention is uppercase)
+  lowercase_functions = false,          -- Detect lowercase functions (too opinionated, many codebases use lowercase)
+  keyword_consistency = true,           -- Detect inconsistent casing (important for team consistency)
+  naming_convention = false,            -- Detect naming violations (too opinionated for existing codebase)
+  unclosed_blocks = true,               -- Detect unclosed blocks (catches real bugs)
+  nesting_depth = true,                 -- Detect excessive nesting (code quality, readability)
+  line_length = true,                   -- Detect long lines (readability, code review)
+  missing_comments = false,             -- Detect missing comments (too noisy, subjective)
+  missing_error_handling = true,        -- Detect missing error handling (catches potential bugs)
+  deprecated_functions = true,          -- Detect deprecated functions (important for maintenance)
   
   -- Hint thresholds
-  max_line_length = 100,                -- Maximum line length
-  max_nesting_depth = 5,                -- Maximum nesting depth
+  max_line_length = 120,                -- Maximum line length (increased for modern screens)
+  max_nesting_depth = 4,                -- Maximum nesting depth (stricter for better code quality)
   max_blank_lines = 2,                  -- Maximum consecutive blank lines
   naming_convention_style = "snake_case", -- Naming style: "camelCase", "snake_case"
   
