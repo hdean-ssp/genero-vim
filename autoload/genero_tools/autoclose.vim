@@ -49,9 +49,17 @@ function! genero_tools#autoclose#on_enter_nvim() abort
 
   for [pattern, closer] in s:block_closers
     if line =~# pattern
-      " Get the indentation of the current line
+      " Get the indentation of the current line (preserve exact whitespace)
       let indent = matchstr(line, '^\s*')
-      let inner_indent = indent . "\t"
+      
+      " Determine inner indentation based on current settings
+      if &expandtab
+        " Use spaces
+        let inner_indent = indent . repeat(' ', &shiftwidth)
+      else
+        " Use tabs
+        let inner_indent = indent . "\t"
+      endif
 
       " Check if the closer already exists nearby (don't double-close)
       if s:closer_exists_below(closer)
@@ -60,14 +68,13 @@ function! genero_tools#autoclose#on_enter_nvim() abort
         return
       endif
 
-      " Insert: newline, indented cursor line, newline, closer at same indent
+      " Insert: newline, indented cursor line, newline, closer at same indent as opener
       let current_line = line('.')
-      let current_col = col('.')
       
-      " Insert newline and the closer block
+      " Insert the inner line and the closer line
       call append(current_line, [inner_indent, indent . closer])
       
-      " Move cursor to the indented line
+      " Move cursor to the indented line (inner content position)
       call cursor(current_line + 1, len(inner_indent) + 1)
       
       let matched = 1
@@ -88,16 +95,24 @@ function! genero_tools#autoclose#on_enter() abort
 
   for [pattern, closer] in s:block_closers
     if line =~# pattern
-      " Get the indentation of the current line
+      " Get the indentation of the current line (preserve exact whitespace)
       let indent = matchstr(line, '^\s*')
-      let inner_indent = indent . "\t"
+      
+      " Determine inner indentation based on current settings
+      if &expandtab
+        " Use spaces
+        let inner_indent = indent . repeat(' ', &shiftwidth)
+      else
+        " Use tabs
+        let inner_indent = indent . "\t"
+      endif
 
       " Check if the closer already exists nearby (don't double-close)
       if s:closer_exists_below(closer)
         return "\<CR>"
       endif
 
-      " Insert: newline, indented cursor line, newline, closer at same indent
+      " Insert: newline, indented cursor line, newline, closer at same indent as opener
       return "\<CR>" . inner_indent . "\<CR>" . indent . closer . "\<Up>\<End>"
     endif
   endfor
