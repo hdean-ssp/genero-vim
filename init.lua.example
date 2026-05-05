@@ -116,7 +116,7 @@ vim.g.genero_tools_config = {
   keyword_consistency = true,           -- Detect inconsistent casing (important for team consistency)
   naming_convention = false,            -- Detect naming violations (too opinionated for existing codebase)
   unclosed_blocks = true,               -- Detect unclosed blocks (catches real bugs)
-  nesting_depth = true,                 -- Detect excessive nesting (code quality, readability)
+  nesting_depth = false,                -- DISABLED: Depth calculation has bugs, needs refactoring
   line_length = true,                   -- Detect long lines (readability, code review)
   missing_comments = false,             -- Detect missing comments (too noisy, subjective)
   missing_error_handling = true,        -- Detect missing error handling (catches potential bugs)
@@ -737,37 +737,34 @@ local plugins = {
         },
       })
       
-      -- Override the highlight module's add_highlight to catch extmark errors
-      vim.defer_fn(function()
-        local ok, todo_hl = pcall(require, "todo-comments.highlight")
-        if ok and todo_hl then
-          local original_add = todo_hl.add_highlight
-          todo_hl.add_highlight = function(buf, ns, hl_group, line, from, to)
-            -- Validate that 'to' doesn't exceed line length
-            local line_count = vim.api.nvim_buf_line_count(buf)
-            if line >= line_count then
-              return  -- Line doesn't exist
+      -- Globally wrap nvim_buf_set_extmark to catch all extmark errors
+      local original_set_extmark = vim.api.nvim_buf_set_extmark
+      vim.api.nvim_buf_set_extmark = function(buffer, ns_id, line, col, opts)
+        -- Validate parameters before calling
+        local ok, line_count = pcall(vim.api.nvim_buf_line_count, buffer)
+        if not ok or line >= line_count then
+          return 0  -- Return dummy extmark id
+        end
+        
+        -- If end_col is specified, validate it
+        if opts and opts.end_col then
+          local line_ok, lines = pcall(vim.api.nvim_buf_get_lines, buffer, line, line + 1, false)
+          if line_ok and lines[1] then
+            local line_len = #lines[1]
+            if opts.end_col > line_len then
+              opts.end_col = line_len
             end
-            
-            local line_text = vim.api.nvim_buf_get_lines(buf, line, line + 1, false)[1]
-            if not line_text then
-              return  -- Line is empty or invalid
-            end
-            
-            local line_len = #line_text
-            if to > line_len then
-              to = line_len  -- Clamp to actual line length
-            end
-            
-            if from >= to then
-              return  -- Invalid range
-            end
-            
-            -- Call original with validated parameters
-            pcall(original_add, buf, ns, hl_group, line, from, to)
           end
         end
-      end, 100)
+        
+        -- Call original with validated parameters, catch any remaining errors
+        local success, result = pcall(original_set_extmark, buffer, ns_id, line, col, opts)
+        if success then
+          return result
+        else
+          return 0  -- Return dummy extmark id on error
+        end
+      end
     end,
   },
 
