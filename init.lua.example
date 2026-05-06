@@ -1119,9 +1119,34 @@ local plugins = {
           { name = "genero",   priority = 1100 },  -- Genero functions (highest priority on .4gl files)
           { name = "nvim_lsp", priority = 1000 },
           { name = "luasnip",  priority = 750 },
-          { name = "buffer",   priority = 500 },
+          { 
+            name = "buffer",
+            priority = 500,
+            option = {
+              -- Prioritize matches closer to cursor position
+              get_bufnrs = function()
+                return { vim.api.nvim_get_current_buf() }
+              end,
+              keyword_pattern = [[\k\+]],
+              -- Use locality bonus for sorting (closer matches ranked higher)
+              keyword_length = 3,  -- Minimum 3 characters to trigger
+            }
+          },
           { name = "path",     priority = 250 },
         }),
+        sorting = {
+          priority_weight = 2,
+          comparators = {
+            -- Prioritize by source priority first (genero > lsp > buffer)
+            require("cmp").config.compare.score,
+            require("cmp").config.compare.recently_used,
+            require("cmp").config.compare.locality,  -- Prioritize items closer to cursor
+            require("cmp").config.compare.kind,
+            require("cmp").config.compare.sort_text,
+            require("cmp").config.compare.length,
+            require("cmp").config.compare.order,
+          },
+        },
         formatting = {
           format = function(entry, item)
             -- Show source name in the menu
