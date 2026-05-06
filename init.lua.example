@@ -326,9 +326,13 @@ local plugins = {
   {
     "nvim-lualine/lualine.nvim",
     version = "v0.9.*",
+    dependencies = { "genero-tools" },  -- Ensure genero-tools loads first
     config = function()
-      local lualine_genero = require("genero_tools.lualine")
-      lualine_genero.setup()  -- Initialize highlights
+      -- Safely load genero-tools lualine integration
+      local ok, lualine_genero = pcall(require, "genero_tools.lualine")
+      if ok then
+        lualine_genero.setup()  -- Initialize highlights
+      end
       
       require("lualine").setup({
         options = {
@@ -345,9 +349,9 @@ local plugins = {
         sections = {
           lualine_a = { "mode" },
           lualine_b = {},
-          lualine_c = { "diagnostics", lualine_genero.diagnostics, lualine_genero.breadcrumb },
-          lualine_x = { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "filetype",
-            function() return os.getenv("DEVNAME") or "" end },
+          lualine_c = ok and { "diagnostics", lualine_genero.diagnostics, lualine_genero.breadcrumb } or { "diagnostics" },
+          lualine_x = ok and { lualine_genero.svn_status, lualine_genero.cache_stats, "encoding", "filetype",
+            function() return os.getenv("DEVNAME") or "" end } or { "encoding", "filetype" },
           lualine_y = { "progress" },
           lualine_z = { "location" },
         },
@@ -1044,13 +1048,14 @@ local plugins = {
       -- NOTE: cmp-cmdline removed - command-line completion disabled to avoid conflicts with noice
       "L3MON4D3/LuaSnip",        -- Snippet engine (shared with Genero snippets)
       "saadparwaiz1/cmp_luasnip", -- LuaSnip source for cmp
+      "genero-tools",            -- Genero completion source
     },
     config = function()
       local cmp = require("cmp")
       local luasnip = require("luasnip")
 
       -- Load Genero cmp source (registers itself automatically)
-      require("genero_tools.cmp_source")
+      pcall(require, "genero_tools.cmp_source")
 
       cmp.setup({
         enabled = function()
