@@ -96,7 +96,31 @@ function! s:extract_unique_files(data) abort
     endif
   endfor
   
-  return sort(keys(files))
+  let file_list = keys(files)
+  
+  " Sort files: main 4gl files first, then libraries (reverse alphabetical within each group)
+  " Libraries typically have paths like "lib/..." or contain "lib" in the path
+  call sort(file_list, function('s:compare_module_files'))
+  
+  return file_list
+endfunction
+
+" Compare function for sorting module files
+" Main files (non-lib) come first, then reverse alphabetical within each group
+function! s:compare_module_files(a, b) abort
+  let a_is_lib = a:a =~# '/lib/' || a:a =~# '^lib/' || a:a =~# '/library/'
+  let b_is_lib = a:b =~# '/lib/' || a:b =~# '^lib/' || a:b =~# '/library/'
+  
+  " If one is lib and other isn't, non-lib comes first
+  if a_is_lib && !b_is_lib
+    return 1
+  elseif !a_is_lib && b_is_lib
+    return -1
+  else
+    " Both same type, sort reverse alphabetically (Z to A)
+    " This puts main files at top since they're often named later in alphabet
+    return a:a > a:b ? -1 : a:a < a:b ? 1 : 0
+  endif
 endfunction
 
 " List all functions in a file

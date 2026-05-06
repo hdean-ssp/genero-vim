@@ -382,6 +382,24 @@ function M.module_files()
     return
   end
 
+  -- Sort files: main 4gl files first, then libraries (reverse alphabetical within each group)
+  -- Libraries typically have paths like "lib/..." or contain "lib" in the path
+  table.sort(files, function(a, b)
+    local a_is_lib = a:match("/lib/") or a:match("^lib/") or a:match("/library/")
+    local b_is_lib = b:match("/lib/") or b:match("^lib/") or b:match("/library/")
+    
+    -- If one is lib and other isn't, non-lib comes first
+    if a_is_lib and not b_is_lib then
+      return false
+    elseif not a_is_lib and b_is_lib then
+      return true
+    else
+      -- Both same type, sort reverse alphabetically (Z to A)
+      -- This puts main files at top since they're often named later in alphabet
+      return a > b
+    end
+  end)
+
   local ok_actions, actions = pcall(require, "telescope.actions")
   local ok_state, action_state = pcall(require, "telescope.actions.state")
 
