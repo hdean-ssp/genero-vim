@@ -52,8 +52,10 @@ function! genero_tools#list_module_files(module_name) abort
   let cache_key = 'find-functions-in-module:' . module_name
   let cached = genero_tools#cache#get(cache_key)
   if !empty(cached)
-    call genero_tools#display_result(cached)
-    return cached
+    let files = s:extract_unique_files(cached.data)
+    let file_result = {'success': 1, 'data': files, 'error': ''}
+    call genero_tools#display_result(file_result)
+    return file_result
   endif
   
   let result = genero_tools#command#execute_shell('find-functions-in-module', [module_name])
@@ -63,13 +65,38 @@ function! genero_tools#list_module_files(module_name) abort
     if (type(result.data) == type([]) && empty(result.data)) ||
        \ (type(result.data) == type({}) && empty(result.data))
       call genero_tools#error#warn('Module', 'No files found in module: ' . module_name)
+      return result
     else
       call genero_tools#cache#set(cache_key, result)
+      " Extract unique file paths from function data
+      let files = s:extract_unique_files(result.data)
+      let file_result = {'success': 1, 'data': files, 'error': ''}
+      call genero_tools#display_result(file_result)
+      return file_result
     endif
   endif
   
   call genero_tools#display_result(result)
   return result
+endfunction
+
+" Extract unique file paths from function data
+function! s:extract_unique_files(data) abort
+  if type(a:data) != type([])
+    return []
+  endif
+  
+  let files = {}
+  for func in a:data
+    if type(func) == type({})
+      let file = get(func, 'path', get(func, 'file_path', ''))
+      if !empty(file)
+        let files[file] = 1
+      endif
+    endif
+  endfor
+  
+  return sort(keys(files))
 endfunction
 
 " List all functions in a file
