@@ -329,7 +329,7 @@ function! genero_tools#hints#get_help_for_hint(hint_name) abort
     \   '  - It makes code harder to read and maintain',
     \   '  - Most projects enforce consistent indentation',
     \   '',
-    \   'Auto-fix: Converts tabs to spaces'
+    \   'Auto-fix: Converts spaces to tabs (4 spaces = 1 tab)'
     \ ],
     \ 'lowercase_keywords': [
     \   'Lowercase Keywords',

@@ -67,8 +67,17 @@ function! genero_tools#hints#autofix#fix_whitespace(bufnr, hint) abort
     call setline(line_num, fixed_line)
     return 1
   elseif a:hint.check == 'mixed_indentation'
-    " Convert tabs to spaces
-    let fixed_line = substitute(line_text, '\t', '    ', 'g')
+    " Convert leading spaces to tabs (assuming 4 spaces = 1 tab)
+    " Only convert spaces at the beginning of the line (indentation)
+    let indent = matchstr(line_text, '^\s*')
+    let rest = strpart(line_text, len(indent))
+    
+    " Convert groups of 4 spaces to tabs, then any remaining spaces
+    let fixed_indent = substitute(indent, '    ', '\t', 'g')
+    " Also convert any remaining space+tab or tab+space combinations to just tabs
+    let fixed_indent = substitute(fixed_indent, ' \+\t\|\t \+', '\t', 'g')
+    
+    let fixed_line = fixed_indent . rest
     call setline(line_num, fixed_line)
     return 1
   elseif a:hint.check == 'multiple_blank_lines'
