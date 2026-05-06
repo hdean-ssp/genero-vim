@@ -33,7 +33,7 @@ vim.opt.pumheight = 10
 vim.opt.expandtab = false
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
-vim.opt.smartindent = true
+vim.opt.smartindent = true  -- Note: smartindent is overridden for Genero files (see indent/*.vim)
 vim.opt.wrap = true
 vim.opt.linebreak = true
 vim.opt.breakindent = true
@@ -41,6 +41,7 @@ vim.opt.breakindent = true
 -- Preserve indentation when continuing comments (# in Genero)
 -- r = auto-insert comment leader after Enter in insert mode
 -- o = auto-insert comment leader after o/O in normal mode
+-- Note: indent/*.vim files disable smartindent's # column-0 behavior for Genero files
 vim.opt.formatoptions:append("ro")
 
 -- Search & Navigation
