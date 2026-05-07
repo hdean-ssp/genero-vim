@@ -133,7 +133,9 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 :GeneroClearCache                       " Clear result cache
 :GeneroCompleteEnable                   " Enable autocomplete
 :GeneroCompleteDisable                  " Disable autocomplete
-:GeneroHelp                             " Show keybindings and commands
+:GeneroHelp                             " Show keybindings and commands (floating window)
+:GeneroHelpToggle                       " Toggle help window on/off
+:GeneroHelpClose                        " Close help window
 ```
 
 ### Telescope Picker Commands (Neovim only)

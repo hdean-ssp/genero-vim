@@ -323,7 +323,56 @@ Works on one server (e.g., RHEL 7) but not another (e.g., RHEL 9).
    :checkhealth
    ```
 
-### 9. Performance Issues
+### 9. Telescope Preview Error: ft_to_lang is nil
+
+**Symptoms:**
+```
+Error executing vim.schedule lua callback: 
+...m/lazy/telescope.nvim/lua/telescope/previewers/utils.lua:135: 
+attempt to call field 'ft_to_lang' (a nil value)
+```
+
+This error appears multiple times when using Telescope pickers (like `:GeneroFindReferences`), even though the functionality works correctly.
+
+**Cause:**
+Telescope is trying to use treesitter's `ft_to_lang` function for syntax highlighting in the preview window, but this function doesn't exist in some versions of nvim-treesitter.
+
+**Solution:**
+
+Disable treesitter highlighting in Telescope's preview window by adding this to your Telescope configuration in `init.lua`:
+
+```lua
+{
+  "nvim-telescope/telescope.nvim",
+  branch = "0.1.x",
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+  },
+  config = function()
+    local telescope = require("telescope")
+    local actions = require("telescope.actions")
+
+    telescope.setup({
+      defaults = {
+        -- ... other settings ...
+        
+        -- Disable treesitter highlighting in preview to avoid compatibility issues
+        preview = {
+          treesitter = false,  -- Use vim syntax highlighting instead
+        },
+        
+        -- ... rest of config ...
+      },
+    })
+  end,
+}
+```
+
+This tells Telescope to use Vim's built-in syntax highlighting instead of treesitter, which is more compatible and still provides good syntax highlighting.
+
+**Note:** The `init.lua.example` file in this repository already includes this fix.
+
+### 10. Performance Issues
 
 **Symptoms:**
 - Slow startup

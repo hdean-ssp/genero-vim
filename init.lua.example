@@ -1248,6 +1248,11 @@ local plugins = {
           border = {},
           borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
           color_devicons = true,
+          -- Disable treesitter highlighting in preview to avoid compatibility issues
+          -- This prevents the "ft_to_lang is nil" error with some treesitter versions
+          preview = {
+            treesitter = false,  -- Use vim syntax highlighting instead
+          },
           mappings = {
             i = {
               ["<C-n>"] = actions.cycle_history_next,
@@ -1597,6 +1602,7 @@ if is_nvim_010_plus then
     { "<leader>gF", ":GeneroFileFunctions<CR>", desc = "File functions (Telescope)" },
     { "<leader>gM", ":GeneroModuleFunctions<CR>", desc = "Module functions (Telescope)" },
     { "<leader>gS", ":GeneroModuleFiles<CR>", desc = "Module sibling files" },
+    { "<leader>gh", ":GeneroHelpToggle<CR>", desc = "Toggle help window" },
 
     { "<leader>h", group = "Hints" },
     { "<leader>hn", ":GeneroNextHint<CR>", desc = "Next hint" },
@@ -1659,6 +1665,7 @@ else
       F = { ":GeneroFileFunctions<CR>", "File functions (Telescope)" },
       M = { ":GeneroModuleFunctions<CR>", "Module functions (Telescope)" },
       S = { ":GeneroModuleFiles<CR>", "Module sibling files" },
+      h = { ":GeneroHelpToggle<CR>", "Toggle help window" },
     },
     h = {
       name = "+Hints",
@@ -1705,223 +1712,19 @@ end
 -- HELPFUL COMMANDS & AUTOCMDS
 -- ============================================================================
 
--- Show keybindings help
+-- Show keybindings help in floating window
 vim.api.nvim_create_user_command("GeneroHelp", function()
-  print([==[
-╔════════════════════════════════════════════════════════════════╗
-║           Genero Tools Keybindings & Commands                  ║
-╚════════════════════════════════════════════════════════════════╝
+  require('genero_tools.help').show()
+end, {})
 
-COMPILATION:
-  F5              - Compile current file
-  Space+ca        - Enable autocompile on save
-  Space+cd        - Disable autocompile on save
-  Space+cc        - Clear error markers
-  Space+ce        - Filter: show errors only
-  Space+cw        - Filter: show warnings only
-  Space+cx        - Filter: show all diagnostics
+-- Toggle help window
+vim.api.nvim_create_user_command("GeneroHelpToggle", function()
+  require('genero_tools.help').toggle()
+end, {})
 
-NAVIGATION:
-  ]d / [d         - Next/previous error/warning
-  ]h / [h         - Next/previous hint
-  ]b / [b         - Next/previous buffer
-  ]] / [[         - Next/previous temp code tag (#TMP<initials>)
-  gd              - Go to definition (jump to function/variable source)
-  gp              - Peek definition (preview in floating window)
-  gr              - Find references (show all callers in popup)
-  Ctrl+h/j/k/l    - Navigate between windows
-  Space+bd        - Delete current buffer
-
-GENERO TOOLS:
-  Space+gl        - Lookup function definition
-  Space+gf        - List functions in file
-  Space+gs        - Get function signature
-  Space+gm        - Get file metadata
-  Space+gd        - Toggle debug stream (real-time file monitoring)
-  Space+gr        - Find references (show all callers in popup)
-
-TELESCOPE PICKERS (Neovim only):
-  Space+gF        - File functions (Telescope picker with preview)
-  Space+gM        - Module functions (all functions in current module)
-  Space+gS        - Module sibling files (switch between files in module)
-  Space+cD        - Compiler diagnostics (errors/warnings with preview)
-
-CODE HINTS:
-  Space+hl        - List all hints in file
-  Space+hd        - Show hint details
-  Space+hf        - Apply auto-fix for hint
-
-SVN DIFF MARKERS:
-  Space+sv        - Toggle SVN markers on/off
-  Space+sr        - Refresh SVN markers
-  Space+ss        - Show SVN status and changes
-
-UNIFIED SIGNS:
-  Space+su        - Toggle unified signs (compiler + SVN combined)
-
-SNIPPETS:
-  Space+sl        - List available snippets
-  Space+sh        - Show snippet documentation
-
-AUTOCOMPLETE:
-  Ctrl+Space      - Trigger code completion (shows function/module suggestions)
-  In completion menu:
-    Tab/Shift+Tab - Navigate suggestions and jump snippet placeholders
-    Enter         - Accept selected suggestion
-    Ctrl+e        - Close completion menu
-    Ctrl+u/d      - Scroll documentation
-  Auto-completion triggers after 500ms pause (Neovim with nvim-cmp)
-  Vim users: Ctrl+N for manual completion (omnifunc)
-
-DEBUG STREAMING:
-  Space+gd        - Toggle debug stream on/off
-  In debug window:
-    q/Esc         - Close debug stream
-    G             - Jump to latest content
-    gg            - Jump to beginning
-    j/k           - Scroll down/up
-
-WINDOW MANAGEMENT:
-  Ctrl+Up/Down    - Navigate to split above/below
-  Ctrl+Left/Right - Navigate to split left/right
-  Ctrl+h/j/k/l    - Navigate between windows (alternative)
-
-TERMINAL:
-  Ctrl+\          - Toggle terminal (horizontal split)
-  Space+tf        - Open floating terminal
-  Space+th        - Open horizontal terminal
-  Space+tv        - Open vertical terminal
-  Space+tk        - Open Kiro AI terminal (vertical split)
-  Esc             - Exit terminal mode (inside terminal)
-  Ctrl+h/j/k/l   - Navigate away from terminal
-
-SEARCH (Telescope with grep fallback):
-  Space+fw        - Search word under cursor in project
-  Space+fg        - Live grep (interactive search)
-  Space+ff        - Find files
-  Space+fb        - Search open buffers
-  In Telescope window:
-    Ctrl+j/k      - Navigate results
-    Ctrl+x        - Open in horizontal split
-    Ctrl+v        - Open in vertical split
-    Ctrl+u/d      - Scroll preview
-    Esc/q         - Close
-  Note: If ripgrep (rg) is not installed, Telescope uses system grep.
-        If Telescope itself fails, searches fall back to :vimgrep + quickfix.
-
-LSP (Python, Java, C, Bash, Lua, JSON, YAML, XML):
-  K               - Hover documentation
-  gi              - Go to implementation
-  Space+la        - Code action (fix, refactor)
-  Space+lf        - Format file
-  Space+ld        - Show line diagnostics in float
-  Space+rn        - Rename symbol
-  gd              - Go to definition (LSP, on non-Genero files)
-  gr              - Find references (LSP, on non-Genero files)
-  :Mason          - Open LSP/tool installer UI
-  :MasonUpdate    - Update all installed servers
-
-COMMENTING:
-  gcc             - Toggle comment on current line
-  gbc             - Toggle block comment
-  gc              - Toggle comment (visual mode)
-  gb              - Toggle block comment (visual mode)
-  gcO             - Add comment above
-  gco             - Add comment below
-  gcA             - Add comment at end of line
-
-COMMANDS:
-  :GeneroCompile              - Compile current file
-  :GeneroAutocompileEnable    - Enable autocompile on save
-  :GeneroAutocompileDisable   - Disable autocompile on save
-  :GeneroAutocompileStatus    - Show autocompile status
-  :GeneroClearErrors          - Clear error markers
-  :GeneroNextError            - Jump to next error
-  :GeneroPrevError            - Jump to previous error
-  :GeneroFirstError           - Jump to first error
-  :GeneroLastError            - Jump to last error
-  :GeneroLookup               - Lookup function definition
-  :GeneroFindReferences       - Find all callers of a function (Telescope)
-  :GeneroFileFunctions        - File functions picker (Telescope)
-  :GeneroModuleFunctions      - Module functions picker (Telescope)
-  :GeneroModuleFiles          - Switch between module sibling files
-  :GeneroDiagnostics          - Compiler diagnostics picker (Telescope)
-  :GeneroDiagnosticsErrors    - Errors only (Telescope)
-  :GeneroDiagnosticsWarnings  - Warnings only (Telescope)
-  :GeneroListFunctions        - List functions in file
-  :GeneroListModuleFiles      - List files in module
-  :GeneroFunctionSignature    - Get function signature
-  :GeneroFileMetadata         - Get file metadata
-  :GeneroNextHint             - Jump to next hint
-  :GeneroPrevHint             - Jump to previous hint
-  :GeneroListHints            - List all hints in file
-  :GeneroHintDetails          - Show hint details
-  :GeneroHintAutofix          - Apply auto-fix for hint
-  :GeneroHintHelp             - Show hint documentation
-  :GeneroClearHintCache       - Clear all cached hints
-  :GeneroSVNRefresh           - Manually refresh SVN markers
-  :GeneroSVNToggle            - Toggle SVN markers on/off
-  :GeneroSVNStatus            - Show SVN status and changes
-  :GeneroSVNCacheStats        - Show SVN cache statistics
-  :GeneroSVNCacheClear        - Clear SVN cache
-  :GeneroUnifiedSignsEnable   - Enable unified sign column
-  :GeneroUnifiedSignsDisable  - Disable unified sign column
-  :GeneroUnifiedSignsToggle   - Toggle unified sign column
-  :GeneroUnifiedSignsStatus   - Show unified signs status
-  :GeneroSnippetList          - List all available snippets
-  :GeneroSnippetHelp          - Show snippet documentation
-  :GeneroDebugStream          - Start debug streaming
-  :GeneroDebugStreamStop      - Stop debug streaming
-  :GeneroDebugStreamToggle    - Toggle debug stream on/off
-  :GeneroDebugStreamSelect    - Select different debug file
-  :GeneroDebugStreamClear     - Clear debug stream content
-  :GeneroDebugStreamStatus    - Show debug stream status
-  :GeneroClearCache           - Clear result cache
-  :GeneroCompleteEnable       - Enable autocomplete
-  :GeneroCompleteDisable      - Disable autocomplete
-  :GeneroConfigShow           - Show current configuration
-  :GeneroHelp                 - Show this help
-
-FEATURES:
-  • Go to definition (gd) and peek definition (gp)
-  • Find references via Telescope picker with file preview (gr)
-  • Function signature and variable type hover (virtual text)
-  • Schema/table/column lookup with floating window
-  • Block matching highlights (IF/END IF, ELSE, CASE/WHEN)
-  • Quote matching highlights
-  • Statusline breadcrumb: module.m3  file.4gl  ƒ function  refs
-  • Reference count on FUNCTION lines (virtual text + statusline)
-  • Module-scoped autocomplete (narrows suggestions to current module)
-  • Telescope pickers: file functions, module functions, module files, diagnostics
-  • TODO/BUG/FIX/TMP keyword highlighting (todo-comments.nvim)
-  • User-specific temp tag highlighting (#TMP<initials> from $USER)
-  • Auto-close blocks (IF→END IF, FOR→END FOR, etc.)
-  • Inline diagnostics: errors always visible, warnings on cursor line
-  • Code hints with current-line-only expansion
-  • Compiler integration with error/warning signs
-  • Autocompile on save
-  • SVN diff markers in sign column (auto-refresh on focus)
-  • Code snippets (Neovim + LuaSnip)
-  • In-buffer terminal (toggleterm, login shell)
-  • Fuzzy search across project (Telescope with grep fallback)
-  • Bracket-style navigation: ]d ]h ]b ]] for errors, hints, buffers, temp tags
-
-TIPS:
-  • Press Space to see available keybindings (which-key)
-  • Use ]d/[d to navigate errors, ]h/[h for hints, ]b/[b for buffers
-  • Use ]]/[[ to jump between your temp code tags (#TMP<initials>)
-  • gd jumps to definition, gp peeks without leaving current position
-  • gr shows all callers of a function in Telescope with file preview
-  • Space+gF picks functions in current file, Space+gM for whole module
-  • Space+gS switches between sibling files in the same module
-  • Space+cD browses compiler errors/warnings with Telescope preview
-  • Hover on a function call to see its signature
-  • Hover on a variable to see its type (resolves LIKE references)
-  • Hover on a table name to see all columns in a floating window
-  • Press Ctrl+\ to quickly open/close a terminal
-  • Cursor on a word? Press Space+fw to search the whole project for it
-  • :TodoTelescope searches all TODO/BUG/FIX/TMP tags across the project
-  ]==])
+-- Close help window
+vim.api.nvim_create_user_command("GeneroHelpClose", function()
+  require('genero_tools.help').close()
 end, {})
 
 -- Show help on startup if no files are opened

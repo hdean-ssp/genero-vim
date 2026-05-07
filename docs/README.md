@@ -6,6 +6,14 @@ Welcome to the genero-tools plugin documentation. This guide will help you get s
 
 - **[QUICK_START.md](QUICK_START.md)** - Get up and running in 5 minutes (start here)
 - **[SETUP_FRESH_VIM.md](SETUP_FRESH_VIM.md)** - Detailed fresh Vim/Neovim installation guide
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference card for essential keybindings and commands
+
+## Help System
+
+- **[HELP_SYSTEM.md](HELP_SYSTEM.md)** - Comprehensive help system documentation
+- **[HELP_WINDOW_PREVIEW.md](HELP_WINDOW_PREVIEW.md)** - Visual preview of the help window
+- **Press `<Space>gh`** - Toggle help window (in Neovim)
+- **Run `:GeneroHelp`** - Open comprehensive help
 
 ## User Guides
 
