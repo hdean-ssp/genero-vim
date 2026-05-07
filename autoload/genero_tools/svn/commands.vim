@@ -314,7 +314,13 @@ function! genero_tools#svn#commands#blame_current_line() abort
     return
   endif
   
-  " Format and display
+  " Show as virtual text if Neovim
+  if has('nvim')
+    let bufnr = bufnr('%')
+    call genero_tools#svn#blame#show_virtual_text(bufnr, line_num, blame_entry)
+  endif
+  
+  " Also show in status line
   let info = genero_tools#svn#blame#format_blame_info(blame_entry)
   call genero_tools#display#echo('Line ' . line_num . ': ' . info)
 endfunction

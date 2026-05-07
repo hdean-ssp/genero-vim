@@ -1,6 +1,58 @@
 " Genero-Tools Plugin - SVN Blame Module
 " Provides SVN blame functionality for displaying line-level authorship information
 
+" Get SVN blame for a specific line (optimized - doesn't parse entire file)
+" Returns: dict with keys: success (bool), error (string), blame (dict)
+" Blame entry contains: line_num, revision, author, date
+function! genero_tools#svn#blame#get_line_blame_fast(file_path, line_num) abort
+  let file_path = a:file_path
+  if empty(file_path)
+    let file_path = expand('%:p')
+  endif
+  
+  if empty(file_path)
+    return {}
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#detection#is_available()
+    return {}
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#detection#is_in_working_copy(file_path)
+    return {}
+  endif
+  
+  " Execute svn blame for specific line only (much faster)
+  let cmd = printf('svn blame -r BASE %s 2>&1 | sed -n ''%dp''', shellescape(file_path), a:line_num)
+  
+  try
+    let blame_output = system(cmd)
+    
+    if v:shell_error != 0
+      return {}
+    endif
+    
+    " Parse the single line output
+    " Format: "   123 username     line content"
+    let match = matchlist(blame_output, '^\s*\(\d\+\)\s\+\(\S\+\)')
+    
+    if len(match) >= 3
+      return {
+        \ 'line_num': a:line_num,
+        \ 'revision': match[1],
+        \ 'author': match[2],
+        \ 'date': ''
+        \ }
+    endif
+    
+    return {}
+  catch
+    return {}
+  endtry
+endfunction
+
 " Get SVN blame for a file
 " Returns: dict with keys: success (bool), error (string), blame (list of dicts)
 " Each blame entry contains: line_num, revision, author, date, content
@@ -131,6 +183,14 @@ endfunction
 " Get blame info for a specific line
 " Returns: dict with keys: revision, author, date, or empty dict if not found
 function! genero_tools#svn#blame#get_line_blame(file_path, line_num) abort
+  " Try fast method first (doesn't parse entire file)
+  let blame_entry = genero_tools#svn#blame#get_line_blame_fast(a:file_path, a:line_num)
+  
+  if !empty(blame_entry)
+    return blame_entry
+  endif
+  
+  " Fallback to full blame if fast method fails
   let blame_result = genero_tools#svn#blame#get_blame(a:file_path)
   
   if !blame_result.success
@@ -201,14 +261,99 @@ function! genero_tools#svn#blame#show_blame_window(blame_data) abort
     call add(lines, line_info)
   endfor
   
-  " Display in floating window if available, otherwise use echo
-  if genero_tools#compat#has_floating_window()
-    call genero_tools#display#show_floating_window(lines, {
-      \ 'title': 'SVN Blame',
-      \ 'width': 60,
-      \ 'height': min([len(lines), 20])
-      \ })
+  " Display using the display module
+  if has('nvim')
+    call genero_tools#display#popup(lines)
   else
     call genero_tools#display#echo(join(lines, "\n"))
   endif
 endfunction
+
+" Show blame as virtual text for current line (Neovim only)
+function! genero_tools#svn#blame#show_virtual_text(bufnr, line_num, blame_entry) abort
+  if !has('nvim')
+    return
+  endif
+  
+  if empty(a:blame_entry)
+    return
+  endif
+  
+  " Create namespace for SVN blame virtual text
+  if !exists('s:blame_ns_id')
+    let s:blame_ns_id = nvim_create_namespace('genero_svn_blame')
+  endif
+  
+  " Clear existing virtual text for this line
+  call nvim_buf_clear_namespace(a:bufnr, s:blame_ns_id, a:line_num - 1, a:line_num)
+  
+  " Format blame info
+  let revision = get(a:blame_entry, 'revision', '?')
+  let author = get(a:blame_entry, 'author', 'unknown')
+  let text = printf('  r%s %s', revision, author)
+  
+  " Add virtual text at end of line
+  try
+    call nvim_buf_set_extmark(a:bufnr, s:blame_ns_id, a:line_num - 1, 0, {
+      \ 'virt_text': [[text, 'Comment']],
+      \ 'virt_text_pos': 'eol',
+      \ 'priority': 100
+      \ })
+  catch
+    " Silently fail if extmark fails
+  endtry
+endfunction
+
+" Clear blame virtual text
+function! genero_tools#svn#blame#clear_virtual_text(bufnr) abort
+  if !has('nvim')
+    return
+  endif
+  
+  if !exists('s:blame_ns_id')
+    return
+  endif
+  
+  try
+    call nvim_buf_clear_namespace(a:bufnr, s:blame_ns_id, 0, -1)
+  catch
+    " Silently fail
+  endtry
+endfunction
+
+" Toggle blame virtual text for current line
+function! genero_tools#svn#blame#toggle_virtual_text() abort
+  if !has('nvim')
+    call genero_tools#display#echo('Virtual text requires Neovim')
+    return
+  endif
+  
+  let bufnr = bufnr('%')
+  let line_num = line('.')
+  
+  " Check if virtual text is already shown
+  if !exists('s:blame_ns_id')
+    let s:blame_ns_id = nvim_create_namespace('genero_svn_blame')
+  endif
+  
+  let marks = nvim_buf_get_extmarks(bufnr, s:blame_ns_id, [line_num - 1, 0], [line_num - 1, -1], {})
+  
+  if !empty(marks)
+    " Clear if already shown
+    call genero_tools#svn#blame#clear_virtual_text(bufnr)
+    call genero_tools#display#echo('Blame virtual text cleared')
+  else
+    " Show blame
+    let file_path = expand('%:p')
+    let blame_entry = genero_tools#svn#blame#get_line_blame(file_path, line_num)
+    
+    if !empty(blame_entry)
+      call genero_tools#svn#blame#show_virtual_text(bufnr, line_num, blame_entry)
+      let info = genero_tools#svn#blame#format_blame_info(blame_entry)
+      call genero_tools#display#echo('Blame: ' . info)
+    else
+      call genero_tools#display#echo('No blame information available')
+    endif
+  endif
+endfunction
+

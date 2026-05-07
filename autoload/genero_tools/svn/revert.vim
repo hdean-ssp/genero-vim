@@ -72,6 +72,9 @@ function! genero_tools#svn#revert#revert_lines(line_nums) abort
     return {'success': 0, 'error': genero_tools#svn#error#format_no_file(), 'reverted_count': 0}
   endif
   
+  " Save cursor position
+  let save_cursor = getcurpos()
+  
   " Get base content
   let base_result = genero_tools#svn#revert#get_base_content(file_path)
   
@@ -104,6 +107,9 @@ function! genero_tools#svn#revert#revert_lines(line_nums) abort
     endif
   endfor
   
+  " Restore cursor position
+  call setpos('.', save_cursor)
+  
   return {'success': 1, 'error': '', 'reverted_count': reverted_count}
 endfunction
 
@@ -120,6 +126,9 @@ function! genero_tools#svn#revert#revert_range(start_line, end_line) abort
   if a:start_line < 1 || a:end_line < a:start_line
     return {'success': 0, 'error': 'Invalid line range', 'reverted_count': 0}
   endif
+  
+  " Save cursor position
+  let save_cursor = getcurpos()
   
   " Get base content
   let base_result = genero_tools#svn#revert#get_base_content(file_path)
@@ -155,6 +164,9 @@ function! genero_tools#svn#revert#revert_range(start_line, end_line) abort
   " Replace buffer content
   silent! execute '1,' . line('$') . 'delete _'
   call setline(1, new_lines)
+  
+  " Restore cursor position
+  call setpos('.', save_cursor)
   
   let reverted_count = a:end_line - a:start_line + 1
   
