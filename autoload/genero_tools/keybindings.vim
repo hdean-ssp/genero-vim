@@ -86,6 +86,11 @@ function! genero_tools#keybindings#register() abort
   endif
   
   " SVN keybindings
+  " SVN Toggle - toggle SVN diff markers
+  if empty(maparg('<leader>st', 'n'))
+    nnoremap <silent> <leader>st :GeneroSVNToggle<CR>
+  endif
+  
   " SVN Blame - show blame for current line
   if empty(maparg('<leader>sb', 'n'))
     nnoremap <silent> <leader>sb :GeneroSVNBlameCurrentLine<CR>
