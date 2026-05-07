@@ -102,22 +102,17 @@ function! genero_tools#keybindings#register() abort
   endif
   
   " SVN Revert - revert current line
-  if empty(maparg('<leader>sv', 'n'))
-    nnoremap <silent> <leader>sv :GeneroSVNRevertLine<CR>
+  if empty(maparg('<leader>sr', 'n'))
+    nnoremap <silent> <leader>sr :GeneroSVNRevertLine<CR>
   endif
   
   " SVN Revert - revert visual selection with confirmation
-  if empty(maparg('<leader>sv', 'v'))
-    vnoremap <silent> <leader>sv :GeneroSVNRevertRangeConfirm<CR>
+  if empty(maparg('<leader>sr', 'v'))
+    vnoremap <silent> <leader>sr :GeneroSVNRevertRangeConfirm<CR>
   endif
   
   " SVN Status - show SVN status for current file
   if empty(maparg('<leader>ss', 'n'))
     nnoremap <silent> <leader>ss :GeneroSVNStatus<CR>
-  endif
-  
-  " SVN Refresh - manually refresh SVN diff markers
-  if empty(maparg('<leader>sR', 'n'))
-    nnoremap <silent> <leader>sR :GeneroSVNRefresh<CR>
   endif
 endfunction

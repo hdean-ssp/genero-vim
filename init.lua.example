@@ -1613,10 +1613,9 @@ if is_nvim_010_plus then
 
     { "<leader>s", group = "SVN/Signs/Snippets" },
     { "<leader>st", ":GeneroSVNToggle<CR>", desc = "Toggle SVN markers" },
-    { "<leader>sR", ":GeneroSVNRefresh<CR>", desc = "Refresh SVN markers" },
     { "<leader>ss", ":GeneroSVNStatus<CR>", desc = "SVN status" },
     { "<leader>sb", ":GeneroSVNBlameCurrentLine<CR>", desc = "SVN blame current line" },
-    { "<leader>sv", ":GeneroSVNRevertLine<CR>", desc = "SVN revert current line" },
+    { "<leader>sr", ":GeneroSVNRevertLine<CR>", desc = "SVN revert current line" },
     { "<leader>su", ":GeneroUnifiedSignsToggle<CR>", desc = "Toggle unified signs" },
     { "<leader>sl", ":GeneroSnippetList<CR>", desc = "List snippets" },
     { "<leader>sh", ":GeneroSnippetHelp<CR>", desc = "Snippet help" },
@@ -1680,10 +1679,9 @@ else
     s = {
       name = "+SVN/Signs/Snippets",
       t = { ":GeneroSVNToggle<CR>", "Toggle SVN markers" },
-      R = { ":GeneroSVNRefresh<CR>", "Refresh SVN markers" },
       s = { ":GeneroSVNStatus<CR>", "SVN status" },
       b = { ":GeneroSVNBlameCurrentLine<CR>", "SVN blame current line" },
-      v = { ":GeneroSVNRevertLine<CR>", "SVN revert current line" },
+      r = { ":GeneroSVNRevertLine<CR>", "SVN revert current line" },
       u = { ":GeneroUnifiedSignsToggle<CR>", "Toggle unified signs" },
       l = { ":GeneroSnippetList<CR>", "List snippets" },
       h = { ":GeneroSnippetHelp<CR>", "Snippet help" },
