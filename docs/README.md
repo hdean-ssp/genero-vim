@@ -68,6 +68,17 @@ Quickly insert common Genero code patterns:
 
 **See:** [SNIPPETS.md](SNIPPETS.md) | [SNIPPET_TELESCOPE_INTEGRATION.md](SNIPPET_TELESCOPE_INTEGRATION.md)
 
+### SVN Integration
+
+Visual diff markers and version control features:
+- **Diff Markers** - Visual indicators for added/modified/deleted lines in sign column
+- **SVN Blame** - View line-level authorship information (revision, author, date)
+- **Selective Revert** - Revert specific lines or sections to SVN base version
+- Auto-refresh on file save and focus
+- Unified sign column with compiler markers
+
+**See:** [SVN_BLAME_AND_REVERT.md](SVN_BLAME_AND_REVERT.md) | [SVN_QUICK_REFERENCE.md](SVN_QUICK_REFERENCE.md) | [SVN_EXAMPLES.md](SVN_EXAMPLES.md)
+
 ### Lua Layer (Neovim)
 
 Enhanced functionality for Neovim users:
@@ -133,6 +144,23 @@ See feature-specific guides for detailed troubleshooting.
 :GeneroListFunctions [file]        " List functions in file
 :GeneroFunctionSignature [func]    " Show function signature
 :GeneroFileMetadata [file]         " Show file metadata
+```
+
+### SVN Commands
+
+```vim
+:GeneroSVNRefresh                  " Refresh SVN diff markers
+:GeneroSVNToggle                   " Toggle SVN diff markers
+:GeneroSVNStatus                   " Show SVN status for file
+:GeneroSVNBlame                    " Show blame for entire file
+:GeneroSVNBlameCurrentLine         " Show blame for current line
+:GeneroSVNBlameRange               " Show blame for range (visual)
+:GeneroSVNRevertLine               " Revert current line to base
+:GeneroSVNRevertRange              " Revert range to base
+:GeneroSVNRevertRangeConfirm       " Revert range with confirmation
+:GeneroSVNRevertAllChanges         " Revert all changes in file
+:GeneroSVNCacheStats               " Show SVN cache statistics
+:GeneroSVNCacheClear               " Clear SVN cache
 ```
 
 ### Utility Commands

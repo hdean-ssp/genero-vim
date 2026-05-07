@@ -55,7 +55,7 @@ See [SETUP.md](SETUP.md) for detailed installation and first-time setup.
   - Display in sign column and/or virtual text (Neovim)
 - **Keyword Highlighting** - TODO, BUG, FIX, HACK, WARN, NOTE, TMP tags highlighted in code and comments, plus user-specific temp tags (#TMP<initials> from $USER)
 - **Code Snippets** (Neovim only) - Intelligent snippet expansion with smart parameter population
-- **SVN Integration** - Visual diff markers for added/modified/deleted lines, auto-refresh on focus
+- **SVN Integration** - Visual diff markers for added/modified/deleted lines, SVN blame, selective line/section revert, auto-refresh on focus
 - **Large Codebase Support** - Optimized for massive codebases with caching and pagination
 - **Unified Sign Column** - Combines compiler and SVN markers in one column (space-efficient)
 - **Neovim Enhancements** (optional) - Async operations, floating windows, modern UI
@@ -96,6 +96,11 @@ The default leader key is space `<space>`. All keybindings work in normal mode u
 | `<space>sv` | Toggle SVN diff markers |
 | `<space>sr` | Refresh SVN diff markers |
 | `<space>ss` | Show SVN status |
+| `<space>sb` | Show SVN blame for current line |
+| `<space>sb` (visual) | Show SVN blame for selection |
+| `<space>sr` | Revert current line to SVN base |
+| `<space>sr` (visual) | Revert selection to SVN base (with confirmation) |
+| `<space>sR` | Refresh SVN diff markers |
 | `<space>su` | Toggle unified signs (compiler + SVN) |
 | `<space>sl` | List snippets |
 | `<space>sh` | Show snippet help |
@@ -653,6 +658,7 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 - **[Compatibility](docs/COMPATIBILITY.md)** - Vim/Neovim compatibility
 - **[Unified Sign Column](docs/UNIFIED_SIGN_COLUMN.md)** - Sign column system for compiler and SVN markers
 - **[SVN Diff Markers](docs/SVN_DIFF_MARKERS.md)** - SVN integration and diff markers
+- **[SVN Blame and Revert](docs/SVN_BLAME_AND_REVERT.md)** - SVN blame and selective revert features
 - **[Snippets](docs/SNIPPETS.md)** - Code snippets documentation
 - **[Code Hints](docs/HINTS.md)** - Code quality hints and auto-fix
 - **[Error Handling](docs/ERROR_HANDLING.md)** - Error handling and troubleshooting

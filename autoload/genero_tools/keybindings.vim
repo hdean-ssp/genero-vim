@@ -84,4 +84,35 @@ function! genero_tools#keybindings#register() abort
     "   inoremap <silent> <S-Tab> <C-R>=genero_tools#snippets#prev_placeholder_or_tab()<CR>
     " endif
   endif
+  
+  " SVN keybindings
+  " SVN Blame - show blame for current line
+  if empty(maparg('<leader>sb', 'n'))
+    nnoremap <silent> <leader>sb :GeneroSVNBlameCurrentLine<CR>
+  endif
+  
+  " SVN Blame - show blame for visual selection
+  if empty(maparg('<leader>sb', 'v'))
+    vnoremap <silent> <leader>sb :GeneroSVNBlameRange<CR>
+  endif
+  
+  " SVN Revert - revert current line
+  if empty(maparg('<leader>sr', 'n'))
+    nnoremap <silent> <leader>sr :GeneroSVNRevertLine<CR>
+  endif
+  
+  " SVN Revert - revert visual selection with confirmation
+  if empty(maparg('<leader>sr', 'v'))
+    vnoremap <silent> <leader>sr :GeneroSVNRevertRangeConfirm<CR>
+  endif
+  
+  " SVN Status - show SVN status for current file
+  if empty(maparg('<leader>ss', 'n'))
+    nnoremap <silent> <leader>ss :GeneroSVNStatus<CR>
+  endif
+  
+  " SVN Refresh - manually refresh SVN diff markers
+  if empty(maparg('<leader>sR', 'n'))
+    nnoremap <silent> <leader>sR :GeneroSVNRefresh<CR>
+  endif
 endfunction

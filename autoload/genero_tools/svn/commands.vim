@@ -212,6 +212,17 @@ function! genero_tools#svn#commands#register() abort
   command! GeneroSVNStatus call genero_tools#svn#commands#status()
   command! GeneroSVNCacheStats call genero_tools#svn#commands#cache_stats()
   command! GeneroSVNCacheClear call genero_tools#svn#commands#cache_clear()
+  
+  " Blame commands
+  command! GeneroSVNBlame call genero_tools#svn#commands#blame()
+  command! GeneroSVNBlameCurrentLine call genero_tools#svn#commands#blame_current_line()
+  command! -range GeneroSVNBlameRange call genero_tools#svn#commands#blame_range(<line1>, <line2>)
+  
+  " Revert commands
+  command! GeneroSVNRevertLine call genero_tools#svn#commands#revert_current_line()
+  command! -range GeneroSVNRevertRange call genero_tools#svn#commands#revert_range(<line1>, <line2>)
+  command! -range GeneroSVNRevertRangeConfirm call genero_tools#svn#commands#revert_range_confirm(<line1>, <line2>)
+  command! GeneroSVNRevertAllChanges call genero_tools#svn#commands#revert_all_changes()
 endfunction
 
 " Show SVN cache statistics
@@ -226,4 +237,277 @@ function! genero_tools#svn#commands#cache_clear() abort
   call genero_tools#svn#cache#clear()
   call genero_tools#svn#cache#reset_stats()
   call genero_tools#display#echo('SVN cache cleared and statistics reset')
+endfunction
+
+" ============================================================================
+" Blame Commands
+" ============================================================================
+
+" Show blame for entire file
+" Command: :GeneroSVNBlame
+function! genero_tools#svn#commands#blame() abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Get blame information
+  let blame_result = genero_tools#svn#blame#get_blame(file_path)
+  
+  if !blame_result.success
+    call genero_tools#display#echo('Error: ' . blame_result.error)
+    return
+  endif
+  
+  " Show blame in floating window
+  call genero_tools#svn#blame#show_blame_window(blame_result.blame)
+endfunction
+
+" Show blame for current line
+" Command: :GeneroSVNBlameCurrentLine
+function! genero_tools#svn#commands#blame_current_line() abort
+  let file_path = expand('%:p')
+  let line_num = line('.')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Get blame for current line
+  let blame_entry = genero_tools#svn#blame#get_line_blame(file_path, line_num)
+  
+  if empty(blame_entry)
+    call genero_tools#display#echo('No blame information for line ' . line_num)
+    return
+  endif
+  
+  " Format and display
+  let info = genero_tools#svn#blame#format_blame_info(blame_entry)
+  call genero_tools#display#echo('Line ' . line_num . ': ' . info)
+endfunction
+
+" Show blame for a range of lines
+" Command: :GeneroSVNBlameRange (with visual selection)
+function! genero_tools#svn#commands#blame_range(start_line, end_line) abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Get blame for range
+  let blame_data = genero_tools#svn#blame#get_range_blame(file_path, a:start_line, a:end_line)
+  
+  if empty(blame_data)
+    call genero_tools#display#echo('No blame information for lines ' . a:start_line . '-' . a:end_line)
+    return
+  endif
+  
+  " Show blame in floating window
+  call genero_tools#svn#blame#show_blame_window(blame_data)
+endfunction
+
+" ============================================================================
+" Revert Commands
+" ============================================================================
+
+" Revert current line to base version
+" Command: :GeneroSVNRevertLine
+function! genero_tools#svn#commands#revert_current_line() abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Revert current line
+  call genero_tools#svn#revert#revert_current_line()
+  
+  " Refresh SVN signs
+  call genero_tools#svn#commands#display_signs_for_buffer()
+endfunction
+
+" Revert a range of lines to base version
+" Command: :GeneroSVNRevertRange (with visual selection or line range)
+function! genero_tools#svn#commands#revert_range(start_line, end_line) abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Revert range
+  let result = genero_tools#svn#revert#revert_range(a:start_line, a:end_line)
+  
+  if result.success
+    call genero_tools#display#echo(printf('Reverted %d lines to base version', result.reverted_count))
+  else
+    call genero_tools#display#echo('Error: ' . result.error)
+  endif
+  
+  " Refresh SVN signs
+  call genero_tools#svn#commands#display_signs_for_buffer()
+endfunction
+
+" Revert a range with confirmation
+" Command: :GeneroSVNRevertRangeConfirm (with visual selection or line range)
+function! genero_tools#svn#commands#revert_range_confirm(start_line, end_line) abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Revert with confirmation
+  call genero_tools#svn#revert#revert_with_confirmation(a:start_line, a:end_line)
+  
+  " Refresh SVN signs
+  call genero_tools#svn#commands#display_signs_for_buffer()
+endfunction
+
+" Revert all changes in the current buffer
+" Command: :GeneroSVNRevertAllChanges
+function! genero_tools#svn#commands#revert_all_changes() abort
+  let file_path = expand('%:p')
+  
+  " Check if file is open
+  if !genero_tools#svn#error#check_file_open()
+    return
+  endif
+  
+  " Check if SVN is enabled
+  if !genero_tools#svn#error#check_enabled()
+    return
+  endif
+  
+  " Check if SVN is available
+  if !genero_tools#svn#error#check_availability()
+    return
+  endif
+  
+  " Check if file is in SVN working copy
+  if !genero_tools#svn#error#check_in_working_copy(file_path)
+    return
+  endif
+  
+  " Ask for confirmation
+  let response = input('Revert all changes in this file? (y/n): ')
+  
+  if response !=? 'y' && response !=? 'yes'
+    call genero_tools#display#echo('Revert cancelled')
+    return
+  endif
+  
+  " Revert all changes
+  let result = genero_tools#svn#revert#revert_all_changes()
+  
+  if result.success
+    if result.reverted_count > 0
+      call genero_tools#display#echo(printf('Reverted %d lines to base version', result.reverted_count))
+    else
+      call genero_tools#display#echo('No changes to revert')
+    endif
+  else
+    call genero_tools#display#echo('Error: ' . result.error)
+  endif
+  
+  " Refresh SVN signs
+  call genero_tools#svn#commands#display_signs_for_buffer()
 endfunction
