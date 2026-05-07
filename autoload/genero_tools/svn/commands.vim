@@ -318,6 +318,12 @@ function! genero_tools#svn#commands#blame_current_line() abort
   if has('nvim')
     let bufnr = bufnr('%')
     call genero_tools#svn#blame#show_virtual_text(bufnr, line_num, blame_entry)
+    
+    " Set up autocmd to clear virtual text when cursor moves
+    augroup GeneroSVNBlameVirtualText
+      autocmd!
+      autocmd CursorMoved,CursorMovedI <buffer> call genero_tools#svn#blame#clear_virtual_text(bufnr('%')) | autocmd! GeneroSVNBlameVirtualText
+    augroup END
   endif
   
   " Also show in status line
