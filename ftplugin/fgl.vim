@@ -17,18 +17,22 @@ endif
 " Smart Tab completion - accepts exact match or cycles through options
 function! s:smart_tab_complete() abort
   if pumvisible()
-    " Check if current selection is an exact match
-    let typed = matchstr(getline('.'), '\k\+\%' . col('.') . 'c')
-    let selected = complete_info(['selected', 'items'])
+    " Get what the user has typed
+    let line = getline('.')
+    let col = col('.')
+    let typed = matchstr(line[0:col-2], '\k\+$')
     
-    if selected.selected >= 0
-      let item = selected.items[selected.selected]
-      let word = type(item) == type({}) ? get(item, 'word', '') : item
-      
-      " If exact match, accept and close
-      if word ==# typed
-        return "\<C-y>"
-      endif
+    if !empty(typed)
+      " Check if any completion item is an exact match
+      let info = complete_info(['items'])
+      for item in info.items
+        let word = type(item) == type({}) ? get(item, 'word', '') : item
+        
+        " If exact match found, accept and close
+        if word ==# typed
+          return "\<C-y>"
+        endif
+      endfor
     endif
     
     " Otherwise cycle to next
