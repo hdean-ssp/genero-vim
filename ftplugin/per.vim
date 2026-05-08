@@ -23,16 +23,19 @@ function! s:smart_tab_complete() abort
     let typed = matchstr(line[0:col-2], '\k\+$')
     
     if !empty(typed)
-      " Check if any completion item is an exact match
-      let info = complete_info(['items'])
-      for item in info.items
-        let word = type(item) == type({}) ? get(item, 'word', '') : item
+      " Get completion info
+      let info = complete_info(['items', 'selected'])
+      
+      if !empty(info.items)
+        " Check if the first item (highest ranked) is an exact match
+        let first_item = info.items[0]
+        let first_word = type(first_item) == type({}) ? get(first_item, 'word', '') : first_item
         
-        " If exact match found, accept and close
-        if word ==# typed
+        " If first item is exact match, accept it
+        if first_word ==# typed
           return "\<C-y>"
         endif
-      endfor
+      endif
     endif
     
     " Otherwise cycle to next
