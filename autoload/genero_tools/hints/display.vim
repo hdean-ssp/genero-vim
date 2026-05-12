@@ -170,26 +170,84 @@ function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, cu
   
   let ns_id = nvim_create_namespace('genero_hints')
   
-  " Clear and redraw all — simplest approach that handles all edge cases
-  call nvim_buf_clear_namespace(a:bufnr, ns_id, 0, -1)
-  
+  " Incremental update: only touch the lines that actually changed
+  " (previous cursor line and current cursor line)
+  if genero_tools#config#get('perf_hints_incremental_update')
+    call s:incremental_hint_update(a:bufnr, ns_id, a:hints, a:current_line)
+  else
+    " Legacy: clear and redraw all (fallback if incremental causes issues)
+    call nvim_buf_clear_namespace(a:bufnr, ns_id, 0, -1)
+    for hint in a:hints
+      let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
+      if hint.line == a:current_line
+        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+      else
+        let virt_text = [['  ▸ ', hl_group]]
+      endif
+      try
+        call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
+          \ 'virt_text': virt_text,
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 50
+          \ })
+      catch
+      endtry
+    endfor
+  endif
+endfunction
+
+" Track previous cursor line for incremental updates
+let s:hints_prev_line = -1
+
+" Incremental hint update — only updates extmarks on lines that changed
+" Instead of clearing all N extmarks and re-placing N extmarks on every line change,
+" this only touches the 2 lines that differ (old cursor line → icon, new cursor line → full)
+function! s:incremental_hint_update(bufnr, ns_id, hints, current_line) abort
+  let prev_line = s:hints_prev_line
+  let s:hints_prev_line = a:current_line
+
+  " If this is the first call or same line, do a full draw
+  if prev_line == -1 || prev_line == a:current_line
+    call nvim_buf_clear_namespace(a:bufnr, a:ns_id, 0, -1)
+    for hint in a:hints
+      let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
+      if hint.line == a:current_line
+        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+      else
+        let virt_text = [['  ▸ ', hl_group]]
+      endif
+      try
+        call nvim_buf_set_extmark(a:bufnr, a:ns_id, hint.line - 1, 0, {
+          \ 'virt_text': virt_text,
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 50
+          \ })
+      catch
+      endtry
+    endfor
+    return
+  endif
+
+  " Only update hints on the previous line (→ icon) and current line (→ full text)
   for hint in a:hints
-    let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
-    
-    if hint.line == a:current_line
-      let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
-    else
-      let virt_text = [['  ▸ ', hl_group]]
+    if hint.line == prev_line || hint.line == a:current_line
+      let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
+      if hint.line == a:current_line
+        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+      else
+        let virt_text = [['  ▸ ', hl_group]]
+      endif
+      " Clear just this line's extmarks and re-place
+      try
+        call nvim_buf_clear_namespace(a:bufnr, a:ns_id, hint.line - 1, hint.line)
+        call nvim_buf_set_extmark(a:bufnr, a:ns_id, hint.line - 1, 0, {
+          \ 'virt_text': virt_text,
+          \ 'virt_text_pos': 'eol',
+          \ 'priority': 50
+          \ })
+      catch
+      endtry
     endif
-    
-    try
-      call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
-        \ 'virt_text': virt_text,
-        \ 'virt_text_pos': 'eol',
-        \ 'priority': 50
-        \ })
-    catch
-    endtry
   endfor
 endfunction
 
@@ -232,6 +290,9 @@ endfunction
 " Clear all hints for a buffer
 function! genero_tools#hints#display#clear(bufnr) abort
   let bufnr = a:bufnr > 0 ? a:bufnr : bufnr('%')
+  
+  " Reset incremental update state
+  let s:hints_prev_line = -1
   
   " Clear signs
   try

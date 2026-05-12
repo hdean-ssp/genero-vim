@@ -2,6 +2,7 @@
 " Shows the current function name in the winbar (Neovim) or statusline (Vim)
 " Scans upward from cursor to find the enclosing FUNCTION/MAIN/REPORT
 " OPTIMIZED: Caches function boundaries to avoid repeated full-buffer scans
+"            Debounces cache invalidation to avoid rebuilding on every keystroke
 
 let s:last_func = ''
 let s:last_line = -1
@@ -9,6 +10,9 @@ let s:last_bufnr = -1
 
 " Cache: bufnr -> { func_name -> {start: N, end: N} }
 let s:function_boundaries = {}
+
+" Debounce timer for cache invalidation
+let s:invalidate_timer = -1
 
 function! genero_tools#breadcrumbs#init() abort
   if !has('nvim')
@@ -20,8 +24,9 @@ function! genero_tools#breadcrumbs#init() abort
     autocmd CursorMoved,CursorMovedI *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#update()
     autocmd BufEnter *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#update()
     autocmd BufLeave *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#clear()
-    " Invalidate cache on buffer changes
-    autocmd BufWritePost,TextChanged,TextChangedI *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#invalidate_cache()
+    " Debounced cache invalidation on buffer changes
+    autocmd BufWritePost *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#invalidate_cache()
+    autocmd TextChanged,TextChangedI *.4gl,*.m3,*.m4,*.per call genero_tools#breadcrumbs#invalidate_cache_debounced()
   augroup END
 endfunction
 
@@ -71,8 +76,31 @@ function! genero_tools#breadcrumbs#clear() abort
   endtry
 endfunction
 
-" Invalidate cache for current buffer
+" Immediate cache invalidation (used for BufWritePost)
 function! genero_tools#breadcrumbs#invalidate_cache() abort
+  if s:invalidate_timer != -1
+    call timer_stop(s:invalidate_timer)
+    let s:invalidate_timer = -1
+  endif
+  let bufnr = bufnr('%')
+  if has_key(s:function_boundaries, bufnr)
+    call remove(s:function_boundaries, bufnr)
+  endif
+  let s:last_func = ''
+endfunction
+
+" Debounced cache invalidation (used for TextChanged/TextChangedI)
+" Avoids rebuilding the full function index on every single keystroke
+function! genero_tools#breadcrumbs#invalidate_cache_debounced() abort
+  if s:invalidate_timer != -1
+    call timer_stop(s:invalidate_timer)
+  endif
+  let delay = genero_tools#config#get('perf_breadcrumbs_debounce')
+  let s:invalidate_timer = timer_start(delay, function('s:do_invalidate_cache'))
+endfunction
+
+function! s:do_invalidate_cache(timer_id) abort
+  let s:invalidate_timer = -1
   let bufnr = bufnr('%')
   if has_key(s:function_boundaries, bufnr)
     call remove(s:function_boundaries, bufnr)

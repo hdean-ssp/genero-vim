@@ -1,12 +1,22 @@
 " Genero-Tools Plugin - Word Highlight
 " Highlights all occurrences of the word under cursor within the current
 " function scope. Uses subtle background highlighting matching block_match style.
+" OPTIMIZED: Debounced to avoid expensive scans on every column change.
+"            Caches function scope boundaries per-buffer.
 " Neovim only
 
 let s:ns_id = -1
 let s:last_word = ''
 let s:last_line = -1
 let s:last_bufnr = -1
+
+" Debounce timer for word highlight
+let s:highlight_timer = -1
+
+" Scope cache: bufnr -> { func_name -> {start: N, end: N} }
+" Reused across calls to avoid repeated linear scans
+let s:scope_cache = {}
+let s:scope_cache_tick = {}
 
 function! genero_tools#word_highlight#init() abort
   if !has('nvim')
@@ -19,10 +29,17 @@ function! genero_tools#word_highlight#init() abort
   highlight! GeneroWordHighlight guifg=NONE guibg=#2a2a3a gui=NONE ctermbg=59 ctermfg=NONE cterm=NONE
 endfunction
 
-" Called by cursor dispatcher when word changes
+" Called by cursor dispatcher when word or column changes
+" Now debounced — clears immediately but delays the expensive scan
 function! genero_tools#word_highlight#on_word_changed(word, bufnr, current_line) abort
-  " Clear previous highlights
+  " Always clear previous highlights immediately for responsiveness
   call genero_tools#word_highlight#clear()
+
+  " Cancel any pending highlight timer
+  if s:highlight_timer != -1
+    call timer_stop(s:highlight_timer)
+    let s:highlight_timer = -1
+  endif
 
   if empty(a:word) || len(a:word) < 3
     let s:last_word = ''
@@ -41,12 +58,36 @@ function! genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
     return
   endif
 
+  " Schedule the expensive highlight operation after debounce delay
+  let delay = genero_tools#config#get('perf_word_highlight_debounce')
+  let s:highlight_timer = timer_start(delay, function('s:do_highlight', [a:word, a:bufnr, a:current_line]))
+endfunction
+
+" Debounced callback — performs the actual highlighting work
+function! s:do_highlight(word, bufnr, current_line, timer_id) abort
+  let s:highlight_timer = -1
+
+  " Verify cursor hasn't moved to a different word/position
+  if expand('<cword>') !=# a:word || bufnr('%') != a:bufnr || line('.') != a:current_line
+    return
+  endif
+
   let s:last_word = a:word
   let s:last_line = a:current_line
   let s:last_bufnr = a:bufnr
 
-  " Find the current function scope boundaries
-  let [scope_start, scope_end] = s:find_function_scope(a:current_line)
+  " Find the current function scope boundaries (cached)
+  let [scope_start, scope_end] = s:find_function_scope_cached(a:bufnr, a:current_line)
+
+  " Enforce max scope size to prevent CPU spikes in very large functions
+  let max_scope = genero_tools#config#get('perf_word_highlight_max_scope')
+  let scope_size = scope_end - scope_start + 1
+  if scope_size > max_scope
+    " Center the search window around the cursor
+    let half = max_scope / 2
+    let scope_start = max([scope_start, a:current_line - half])
+    let scope_end = min([scope_end, a:current_line + half])
+  endif
 
   " Find all occurrences of the word within scope
   let pattern = '\<' . escape(a:word, '\') . '\>'
@@ -93,46 +134,73 @@ function! genero_tools#word_highlight#on_word_changed(word, bufnr, current_line)
   endfor
 endfunction
 
-" Find the start and end lines of the current function scope
-" Returns [start_line, end_line] (1-indexed)
-function! s:find_function_scope(current_line) abort
-  let total = line('$')
+" Find function scope using cached boundaries
+" Avoids repeated linear scans by caching the full function index per-buffer
+function! s:find_function_scope_cached(bufnr, current_line) abort
+  let changedtick = getbufvar(a:bufnr, 'changedtick')
 
-  " Search upward for FUNCTION/MAIN/REPORT
-  let scope_start = 1
-  let i = a:current_line
-  while i >= 1
-    let upper = toupper(substitute(getline(i), '^\s*', '', ''))
+  " Rebuild cache if buffer has changed or cache doesn't exist
+  if !has_key(s:scope_cache, a:bufnr) || get(s:scope_cache_tick, a:bufnr, -1) != changedtick
+    call s:build_scope_cache(a:bufnr)
+    let s:scope_cache_tick[a:bufnr] = changedtick
+  endif
+
+  " Look up which function contains the current line
+  let boundaries = s:scope_cache[a:bufnr]
+  for [func_name, range] in items(boundaries)
+    if a:current_line >= range.start && a:current_line <= range.end
+      return [range.start, range.end]
+    endif
+  endfor
+
+  " Fallback: not inside any function — use a limited window around cursor
+  let max_scope = genero_tools#config#get('perf_word_highlight_max_scope')
+  let half = max_scope / 2
+  return [max([1, a:current_line - half]), min([line('$'), a:current_line + half])]
+endfunction
+
+" Build the function boundary cache for a buffer (single pass)
+function! s:build_scope_cache(bufnr) abort
+  let boundaries = {}
+  let total = nvim_buf_line_count(a:bufnr)
+  let current_func = ''
+  let func_start = 0
+
+  let lines = getbufline(a:bufnr, 1, total)
+  let i = 0
+  while i < len(lines)
+    let trimmed = substitute(lines[i], '^\s*', '', '')
+    let upper = toupper(trimmed)
+
     if upper =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
-      let scope_start = i
-      break
+      if !empty(current_func)
+        let boundaries[current_func] = {'start': func_start, 'end': i}
+      endif
+      if upper =~# '^FUNCTION\>'
+        let current_func = matchstr(trimmed, '\c^FUNCTION\s\+\zs\w\+')
+      elseif upper =~# '^MAIN\>'
+        let current_func = 'MAIN'
+      elseif upper =~# '^REPORT\>'
+        let current_func = matchstr(trimmed, '\c^REPORT\s\+\zs\w\+')
+      endif
+      let func_start = i + 1
     endif
-    " If we hit END FUNCTION before finding an opener, we're between functions
-    if upper =~# '^END\s\+\(FUNCTION\|MAIN\|REPORT\)\>'
-      let scope_start = i + 1
-      break
-    endif
-    let i -= 1
-  endwhile
 
-  " Search downward for END FUNCTION/MAIN/REPORT
-  let scope_end = total
-  let i = a:current_line
-  while i <= total
-    let upper = toupper(substitute(getline(i), '^\s*', '', ''))
     if upper =~# '^END\s\+\(FUNCTION\|MAIN\|REPORT\)\>'
-      let scope_end = i
-      break
+      if !empty(current_func)
+        let boundaries[current_func] = {'start': func_start, 'end': i + 1}
+        let current_func = ''
+      endif
     endif
-    " If we hit another FUNCTION opener, stop before it
-    if i > a:current_line && upper =~# '^\(FUNCTION\|MAIN\|REPORT\)\>'
-      let scope_end = i - 1
-      break
-    endif
+
     let i += 1
   endwhile
 
-  return [scope_start, scope_end]
+  if !empty(current_func)
+    let boundaries[current_func] = {'start': func_start, 'end': total}
+  endif
+
+  let s:scope_cache[a:bufnr] = boundaries
 endfunction
 
 " Common Genero keywords to skip (too noisy to highlight)
@@ -161,6 +229,10 @@ endfunction
 function! genero_tools#word_highlight#clear() abort
   if !has('nvim') || s:ns_id == -1
     return
+  endif
+  if s:highlight_timer != -1
+    call timer_stop(s:highlight_timer)
+    let s:highlight_timer = -1
   endif
   try
     call nvim_buf_clear_namespace(bufnr('%'), s:ns_id, 0, -1)

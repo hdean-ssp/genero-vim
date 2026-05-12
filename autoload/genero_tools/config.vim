@@ -80,6 +80,15 @@ function! genero_tools#config#init() abort
   call genero_tools#config#init_key('debug_mode', 0)
   call genero_tools#config#init_key('lua_enabled', has('nvim'))
   
+  " Performance tuning options (for large files)
+  call genero_tools#config#init_key('perf_block_match_max_lines', 2000)
+  call genero_tools#config#init_key('perf_word_highlight_debounce', 150)
+  call genero_tools#config#init_key('perf_word_highlight_max_scope', 1500)
+  call genero_tools#config#init_key('perf_hints_incremental_update', 1)
+  call genero_tools#config#init_key('perf_inline_diag_incremental_update', 1)
+  call genero_tools#config#init_key('perf_breadcrumbs_debounce', 300)
+  call genero_tools#config#init_key('perf_lualine_function_cache_lines', 50)
+  
   " Format flag integration options (Vim Output Format Integration)
   call genero_tools#config#init_key('format_hover_enabled', 1)
   call genero_tools#config#init_key('format_completion_enabled', 1)
@@ -229,6 +238,20 @@ function! genero_tools#config#get(key) abort
     return 0
   elseif a:key == 'lua_enabled'
     return has('nvim')
+  elseif a:key == 'perf_block_match_max_lines'
+    return 2000
+  elseif a:key == 'perf_word_highlight_debounce'
+    return 150
+  elseif a:key == 'perf_word_highlight_max_scope'
+    return 1500
+  elseif a:key == 'perf_hints_incremental_update'
+    return 1
+  elseif a:key == 'perf_inline_diag_incremental_update'
+    return 1
+  elseif a:key == 'perf_breadcrumbs_debounce'
+    return 300
+  elseif a:key == 'perf_lualine_function_cache_lines'
+    return 50
   elseif a:key == 'compiler_display_mode'
     return ''
   elseif a:key == 'hints_display_mode'

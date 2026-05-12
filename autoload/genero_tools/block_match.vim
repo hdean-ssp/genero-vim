@@ -147,8 +147,10 @@ endfunction
 function! s:find_opener(end_line, opener, end_pattern) abort
   let nesting = 1
   let i = a:end_line - 1
+  let max_lines = genero_tools#config#get('perf_block_match_max_lines')
+  let min_line = max([1, a:end_line - max_lines])
 
-  while i >= 1
+  while i >= min_line
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 
@@ -172,8 +174,10 @@ function! s:find_closer(open_line, opener, end_pattern) abort
   let nesting = 1
   let i = a:open_line + 1
   let total = line('$')
+  let max_lines = genero_tools#config#get('perf_block_match_max_lines')
+  let max_line = min([total, a:open_line + max_lines])
 
-  while i <= total
+  while i <= max_line
     let line = getline(i)
     let upper = toupper(substitute(line, '^\s*', '', ''))
 

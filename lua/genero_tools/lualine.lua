@@ -306,9 +306,38 @@ function M._get_refcount(func_name)
 end
 
 -- Find the enclosing function name by scanning upward from cursor
--- Returns function name or nil if cursor is between/outside functions
+-- OPTIMIZED: Caches result and only rescans when cursor moves beyond a threshold
+-- or when the buffer changes. Avoids O(n) scan on every statusline refresh.
+local _func_cache = {
+  bufnr = -1,
+  row = -1,
+  result = nil,
+  changedtick = -1,
+}
+
 function M._find_enclosing_function()
+  local bufnr = vim.api.nvim_get_current_buf()
   local row = vim.api.nvim_win_get_cursor(0)[1]
+  local changedtick = vim.api.nvim_buf_get_changedtick(bufnr)
+
+  -- Read the configurable threshold for cache invalidation
+  local cache_lines = 50
+  local ok_cfg, val = pcall(vim.fn['genero_tools#config#get'], 'perf_lualine_function_cache_lines')
+  if ok_cfg and val and type(val) == 'number' and val > 0 then
+    cache_lines = val
+  end
+
+  -- Return cached result if buffer hasn't changed and cursor is within threshold
+  if _func_cache.bufnr == bufnr
+    and _func_cache.changedtick == changedtick
+    and math.abs(row - _func_cache.row) < cache_lines then
+    return _func_cache.result
+  end
+
+  -- Perform the scan
+  _func_cache.bufnr = bufnr
+  _func_cache.row = row
+  _func_cache.changedtick = changedtick
 
   for i = row, 1, -1 do
     local line = vim.fn.getline(i)
@@ -320,18 +349,23 @@ function M._find_enclosing_function()
 
     -- Hit END FUNCTION before finding opener = between functions
     if upper:match('^END%s+FUNCTION') or upper:match('^END%s+MAIN') or upper:match('^END%s+REPORT') then
+      _func_cache.result = nil
       return nil
     end
 
     if upper:match('^FUNCTION%s') then
-      return trimmed:match('^%w+%s+([%w_]+)')
+      _func_cache.result = trimmed:match('^%w+%s+([%w_]+)')
+      return _func_cache.result
     elseif upper:match('^MAIN') and not upper:match('^MAIN%s*%(') then
+      _func_cache.result = 'MAIN'
       return 'MAIN'
     elseif upper:match('^REPORT%s') then
-      return trimmed:match('^%w+%s+([%w_]+)')
+      _func_cache.result = trimmed:match('^%w+%s+([%w_]+)')
+      return _func_cache.result
     end
   end
 
+  _func_cache.result = nil
   return nil
 end
 
