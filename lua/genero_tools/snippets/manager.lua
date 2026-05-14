@@ -132,10 +132,13 @@ function M.register_with_luasnip(snippets)
 end
 
 -- Parse snippet body and create LuaSnip nodes with placeholder support
+-- Uses repeat nodes (rep) for linked placeholders: first occurrence of ${N:label}
+-- becomes an insert_node, subsequent occurrences become rep nodes that mirror it.
 function M.parse_snippet_nodes(body)
   local ls = require('luasnip')
   local t = ls.text_node
   local i = ls.insert_node
+  local rep = require('luasnip.extras').rep
   
   if not body or body == '' then
     return { t('') }
@@ -145,6 +148,9 @@ function M.parse_snippet_nodes(body)
   local lines = vim.split(body, '\n', { plain = true })
   local nodes = {}
   local placeholder_pattern = '%$%{(%d+):([^}]*)%}'
+  
+  -- Track which placeholder numbers we've already created an insert_node for
+  local seen_placeholders = {}
   
   for line_idx, line in ipairs(lines) do
     local pos = 1
@@ -167,9 +173,16 @@ function M.parse_snippet_nodes(body)
         table.insert(line_nodes, line:sub(pos, start - 1))
       end
       
-      -- Add placeholder marker (we'll convert to insert node later)
+      -- Add placeholder marker (we'll convert to insert or rep node later)
       local num = tonumber(num_str)
-      table.insert(line_nodes, { type = 'insert', num = num, label = label })
+      if not seen_placeholders[num] then
+        -- First occurrence: will become an insert_node
+        seen_placeholders[num] = label
+        table.insert(line_nodes, { type = 'insert', num = num, label = label })
+      else
+        -- Subsequent occurrence: will become a rep node (mirrors the insert_node)
+        table.insert(line_nodes, { type = 'rep', num = num })
+      end
       
       -- Move position past this placeholder
       pos = finish + 1
@@ -181,14 +194,19 @@ function M.parse_snippet_nodes(body)
       for _, node_data in ipairs(line_nodes) do
         if type(node_data) == 'string' then
           table.insert(text_parts, node_data)
-        elseif type(node_data) == 'table' and node_data.type == 'insert' then
-          -- Flush accumulated text before insert node
+        elseif type(node_data) == 'table' then
+          -- Flush accumulated text before insert/rep node
           if #text_parts > 0 then
             table.insert(nodes, t(table.concat(text_parts)))
             text_parts = {}
           end
-          -- Add insert node
-          table.insert(nodes, i(node_data.num, node_data.label))
+          if node_data.type == 'insert' then
+            -- First occurrence: editable insert node
+            table.insert(nodes, i(node_data.num, node_data.label))
+          elseif node_data.type == 'rep' then
+            -- Subsequent occurrence: mirrors the insert node
+            table.insert(nodes, rep(node_data.num))
+          end
         end
       end
       -- Flush remaining text
