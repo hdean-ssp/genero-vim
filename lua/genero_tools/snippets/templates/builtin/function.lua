@@ -1,29 +1,30 @@
 -- Genero Function Definition Snippets
 -- Provides templates for function definitions with various parameter and return type configurations
+-- Uses linked placeholders so editing one occurrence updates all matching positions
 
 return {
   {
     trigger = "fn",
     name = "Function Definition",
     description = "Define a function with comment header, parameters and return type",
-    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:return_value}      ${5:TYPE}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${7:parameters})\n\tDEFINE ${7:parameters}\n\t\n\t${8:-- function body}\n\t\n\tRETURN ${4:return_value}\nEND FUNCTION { ${1:function_name} }",
+    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:return_value}      ${5:TYPE}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${2:param_name} ${3:TYPE})\n\tDEFINE ${2:param_name} ${3:TYPE}\n\t\n\t${7:-- function body}\n\t\n\tRETURN ${4:return_value}\nEND FUNCTION { ${1:function_name} }",
   },
   {
     trigger = "fnr",
     name = "Function with Return Type",
     description = "Define a function with return type and comment header",
-    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:return_value}      ${5:return_type}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${7:parameters}) RETURNS ${5:return_type}\n\tDEFINE ${7:parameters}\n\tDEFINE ${4:return_value} ${5:return_type}\n\t\n\t${8:-- function body}\n\t\n\tRETURN ${4:return_value}\nEND FUNCTION { ${1:function_name} }",
+    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:return_value}      ${5:return_type}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${2:param_name} ${3:TYPE}) RETURNS ${5:return_type}\n\tDEFINE ${2:param_name} ${3:TYPE}\n\tDEFINE ${4:return_value} ${5:return_type}\n\t\n\t${7:-- function body}\n\t\n\tRETURN ${4:return_value}\nEND FUNCTION { ${1:function_name} }",
   },
   {
     trigger = "fnv",
     name = "Function Returning Variable",
     description = "Define a function that returns a variable with comment header",
-    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:result}            ${5:return_type}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${7:parameters}) RETURNS ${5:return_type}\n\tDEFINE ${7:parameters}\n\tDEFINE ${4:result} ${5:return_type}\n\t\n\t${8:-- function body}\n\t\n\tRETURN ${4:result}\nEND FUNCTION { ${1:function_name} }",
+    body = "#\n# Function ${1:function_name}\n# -------------------\n# Parameters    :   ${2:param_name}        ${3:TYPE}\n#\n# Returns       :   ${4:result}            ${5:return_type}\n#\n# Description of the function\n#   ${6:Description}\n#\nFUNCTION ${1:function_name}(${2:param_name} ${3:TYPE}) RETURNS ${5:return_type}\n\tDEFINE ${2:param_name} ${3:TYPE}\n\tDEFINE ${4:result} ${5:return_type}\n\t\n\t${6:-- function body}\n\t\n\tRETURN ${4:result}\nEND FUNCTION { ${1:function_name} }",
   },
   {
     trigger = "fns",
     name = "Simple Function",
     description = "Define a simple function without comment header",
-    body = "FUNCTION ${1:function_name}(${2:parameters})\n\tDEFINE ${2:parameters}\n\t\n\t${3:-- function body}\n\t\nEND FUNCTION { ${1:function_name} }",
+    body = "FUNCTION ${1:function_name}(${2:param_name} ${3:TYPE})\n\tDEFINE ${2:param_name} ${3:TYPE}\n\t\n\t${4:-- function body}\n\t\nEND FUNCTION { ${1:function_name} }",
   },
 }
