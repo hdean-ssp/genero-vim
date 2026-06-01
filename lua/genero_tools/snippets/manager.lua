@@ -227,6 +227,10 @@ function M.parse_snippet_nodes(body)
     table.insert(nodes, t(lines))
   end
   
+  -- Add i(0) exit node at the end so LuaSnip knows where the snippet session ends
+  -- This is required for Tab/Shift+Tab navigation to work properly
+  table.insert(nodes, i(0))
+  
   return nodes
 end
 
