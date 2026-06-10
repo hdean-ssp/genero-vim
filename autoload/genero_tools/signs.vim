@@ -72,7 +72,7 @@ function! genero_tools#signs#get_sign_text(sign_name) abort
   " Map known signs to their text representations
   let sign_map = {
     \ 'GeneroCompilerError': '✕',
-    \ 'GeneroCompilerWarning': '⚠',
+    \ 'GeneroCompilerWarning': '!!',
     \ 'GeneroCompilerInfo': 'ℹ',
     \ 'GeneroSVNAdded': '+',
     \ 'GeneroSVNModified': '~',
