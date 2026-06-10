@@ -1,44 +1,44 @@
 # Ecosystem: How genero-vim Connects
 
 ```
-                        ┌──────────────────────────────────┐
-                        │   electRa/Castle Codebase        │
-                        │       ~/work/genero              │
-                        └───────────────┬──────────────────┘
-                                        │ scanned by
-                                        ▼
-                        ┌──────────────────────────────────┐
-                        │         genero-tools             │
-                        │  workspace.db · modules.db       │
-                        │  query.sh interface              │
-                        └──────┬───────────────────┬───────┘
-                               │                   │
-          $GENERO_TOOLS_PATH   │                   │  databases read by
-                               ▼                   ▼
-┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐   ┌───────────────────────────────┐
-│                                     │   │       electra-vault           │
-│  ┌═══════════════════════════════┐  │   │  Obsidian vault generator     │
-│  ║  genero-vim                   ║  │   └──────┬──────────┬────────────┘
-│  ║  ★ THIS REPO ★               ║  │          │          │
-│  ║                               ║  │          ▼          ▼
-│  ║  Calls query.sh for:         ║  │   ┌──────────┐ ┌──────────────────┐
-│  ║  • Go to definition (gd)     ║  │   │   AKR    │ │ electra-docs     │
-│  ║  • Find references (gr)      ║  │   │          │ │                  │
-│  ║  • Autocomplete (Ctrl+N)     ║  │   └──────────┘ └──────────────────┘
-│  ║  • Peek definition (gp)      ║  │
-│  ║  • Telescope pickers         ║  │
-│  ║  • Function signatures       ║  │
-│  ║  • Module file resolution    ║  │
-│  ║  • Statusline breadcrumb     ║  │
-│  ║                               ║  │
-│  ║  Also provides:              ║  │
-│  ║  • Compiler integration (F5) ║  │
-│  ║  • SVN diff markers          ║  │
-│  ║  • Code hints/linting        ║  │
-│  ║  • Snippets (Neovim)         ║  │
-│  ╚═══════════════════════════════╝  │
-│                                     │
-└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+                        ┌─────────────────────────────────────┐
+                        │   electRa/Castle Codebase           │
+                        │       ~/work/genero                 │
+                        └─────────────────┬───────────────────┘
+                                          │ scanned by
+                                          ▼
+                        ┌─────────────────────────────────────┐
+                        │         genero-tools                │
+                        │  workspace.db · modules.db          │
+                        │  query.sh interface                 │
+                        └──────┬──────────────────────┬───────┘
+                               │                      │
+          $GENERO_TOOLS_PATH   │                      │  databases read by
+                               ▼                      ▼
+┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐   ┌──────────────────────────────────┐
+│                                         │   │       electra-vault              │
+│  ┌═══════════════════════════════════┐  │   │  Obsidian vault generator        │
+│  ║  genero-vim                       ║  │   └──────┬──────────────┬────────────┘
+│  ║  ★ THIS REPO ★                   ║  │          │              │
+│  ║                                   ║  │          ▼              ▼
+│  ║  Calls query.sh for:             ║  │   ┌────────────┐ ┌────────────────────┐
+│  ║  • Go to definition (gd)         ║  │   │    AKR     │ │  electra-docs      │
+│  ║  • Find references (gr)          ║  │   │            │ │                    │
+│  ║  • Autocomplete (Ctrl+N)         ║  │   └────────────┘ └────────────────────┘
+│  ║  • Peek definition (gp)          ║  │
+│  ║  • Telescope pickers             ║  │
+│  ║  • Function signatures           ║  │
+│  ║  • Module file resolution        ║  │
+│  ║  • Statusline breadcrumb         ║  │
+│  ║                                   ║  │
+│  ║  Also provides:                   ║  │
+│  ║  • Compiler integration (F5)     ║  │
+│  ║  • SVN diff markers              ║  │
+│  ║  • Code hints/linting            ║  │
+│  ║  • Snippets (Neovim)             ║  │
+│  ╚═══════════════════════════════════╝  │
+│                                         │
+└─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 ```
 
 ## Role in the Ecosystem
