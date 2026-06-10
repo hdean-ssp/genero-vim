@@ -1,0 +1,102 @@
+" tests/vader/unit/compiler_parser.vader
+" Tests for genero_tools#compiler#parse_v310 and detect_file_type.
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── parse_v310: full format ───────────────────────────────────────────────────
+
+Execute (parse_v310 full-format error line):
+  let line = 'sample_codebase/simple_functions.4gl:44:5:44:5:error:(-100) undefined variable ''a'' - variable must be defined before use'
+  let result = genero_tools#compiler#parse_v310(line, 'fgl')
+  call AssertEqual(1, result.success, 'parse should succeed')
+  call AssertEqual(1, len(result.errors), 'should have 1 error')
+  call AssertEqual('sample_codebase/simple_functions.4gl', result.errors[0].file, 'file')
+  call AssertEqual(44, result.errors[0].line, 'line number')
+  call AssertEqual(5,  result.errors[0].col,  'column')
+  call AssertEqual('error', result.errors[0].severity, 'severity')
+  call AssertMatch('undefined variable', result.errors[0].message, 'message content')
+
+Execute (parse_v310 full-format warning line):
+  let line = 'sample_codebase/customer_main.4gl:12:12:12:19:warning:(-400) variable declared but not used - ''l_action'' is defined but never referenced'
+  let result = genero_tools#compiler#parse_v310(line, 'fgl')
+  call AssertEqual(1, result.success, 'parse should succeed')
+  call AssertEqual(0, len(result.errors),   'should have 0 errors')
+  call AssertEqual(1, len(result.warnings), 'should have 1 warning')
+  call AssertEqual(12, result.warnings[0].line, 'line number')
+  call AssertEqual('warning', result.warnings[0].severity, 'severity')
+
+Execute (parse_v310 full-format info line):
+  let line = 'foo.4gl:5:1:5:1:info:(-999) informational message'
+  let result = genero_tools#compiler#parse_v310(line, 'fgl')
+  call AssertEqual(1, result.success, 'parse should succeed')
+  call AssertEqual(1, len(result.info), 'should have 1 info entry')
+  call AssertEqual('info', result.info[0].severity, 'severity')
+
+Execute (parse_v310 simple format — filename:line:col:severity:message):
+  let line = 'foo.4gl:10:3:error: undefined symbol'
+  let result = genero_tools#compiler#parse_v310(line, 'fgl')
+  call AssertEqual(1, result.success, 'parse should succeed')
+  call AssertEqual(1, len(result.errors), 'should have 1 error')
+  call AssertEqual(10, result.errors[0].line, 'line number')
+  call AssertEqual(3,  result.errors[0].col,  'column')
+
+Execute (parse_v310 empty string input):
+  let result = genero_tools#compiler#parse_v310('', 'fgl')
+  call AssertEqual(1, result.success, 'empty input should succeed with no entries')
+  call AssertEqual(0, len(result.errors),   'no errors')
+  call AssertEqual(0, len(result.warnings), 'no warnings')
+  call AssertEqual(0, len(result.info),     'no info')
+
+Execute (parse_v310 malformed input — no match):
+  let result = genero_tools#compiler#parse_v310('this is not a compiler line', 'fgl')
+  call AssertEqual(1, result.success, 'malformed input should not crash')
+  call AssertEqual(0, len(result.errors),   'no errors from malformed line')
+  call AssertEqual(0, len(result.warnings), 'no warnings from malformed line')
+
+Execute (parse_v310 multi-line output from fixture file):
+  let lines = join(readfile('tests/fixtures/compiler_output/errors_v310.txt'), "\n")
+  let result = genero_tools#compiler#parse_v310(lines, 'fgl')
+  call AssertEqual(1, result.success, 'fixture parse should succeed')
+  call AssertEqual(3, len(result.errors), 'fixture has 3 errors')
+  call AssertEqual('sample_codebase/simple_functions.4gl', result.errors[0].file, 'first error file')
+
+Execute (parse_v310 warnings fixture file):
+  let lines = join(readfile('tests/fixtures/compiler_output/warnings_v310.txt'), "\n")
+  let result = genero_tools#compiler#parse_v310(lines, 'fgl')
+  call AssertEqual(1, result.success, 'warnings fixture parse should succeed')
+  call AssertEqual(0, len(result.errors),   'no errors in warnings fixture')
+  call AssertEqual(2, len(result.warnings), 'fixture has 2 warnings')
+
+Execute (parse_v310 mixed fixture file):
+  let lines = join(readfile('tests/fixtures/compiler_output/mixed.txt'), "\n")
+  let result = genero_tools#compiler#parse_v310(lines, 'fgl')
+  call AssertEqual(1, result.success, 'mixed fixture parse should succeed')
+  call AssertTrue(len(result.errors)   > 0, 'mixed fixture has errors')
+  call AssertTrue(len(result.warnings) > 0, 'mixed fixture has warnings')
+
+" ── detect_file_type ──────────────────────────────────────────────────────────
+
+Execute (detect_file_type .4gl):
+  call AssertEqual('fgl', genero_tools#compiler#detect_file_type('foo.4gl'), '.4gl → fgl')
+
+Execute (detect_file_type .m3):
+  call AssertEqual('fgl', genero_tools#compiler#detect_file_type('module.m3'), '.m3 → fgl')
+
+Execute (detect_file_type .m4):
+  call AssertEqual('fgl', genero_tools#compiler#detect_file_type('module.m4'), '.m4 → fgl')
+
+Execute (detect_file_type .per):
+  call AssertEqual('per', genero_tools#compiler#detect_file_type('form.per'), '.per → per')
+
+Execute (detect_file_type unknown extension):
+  call AssertEqual('unknown', genero_tools#compiler#detect_file_type('file.txt'), 'unknown ext')
+
+Execute (detect_file_type path with directory):
+  call AssertEqual('fgl', genero_tools#compiler#detect_file_type('src/module/foo.4gl'), 'path with dirs')
+  call AssertEqual('per', genero_tools#compiler#detect_file_type('forms/login.per'), 'per with path')

@@ -1,0 +1,71 @@
+" tests/vader/unit/navigation.vader
+" Tests for genero_tools#navigation using sample_codebase fixture files.
+" Navigation tests that require query.sh use the mock via MOCK_QUERY_OUTPUT.
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── goto_definition — function not found ─────────────────────────────────────
+
+Execute (goto_definition shows warning for missing function):
+  let $MOCK_QUERY_OUTPUT = '[]'
+  let $MOCK_QUERY_EXIT   = '0'
+  edit sample_codebase/simple_functions.4gl
+  " Should not throw; gracefully handles not-found
+  try
+    call genero_tools#navigation#goto_definition('nonexistent_function_xyz')
+    call AssertTrue(1, 'no exception thrown for missing function')
+  catch
+    call AssertTrue(0, 'unexpected exception: ' . v:exception)
+  endtry
+
+" ── goto_definition — local function in buffer ───────────────────────────────
+
+Execute (goto_definition finds add_numbers in simple_functions.4gl):
+  edit sample_codebase/simple_functions.4gl
+  " Move cursor away from the function definition
+  call cursor(1, 1)
+  call genero_tools#navigation#goto_definition('add_numbers')
+  " Cursor should now be on a line containing FUNCTION add_numbers
+  let cur_line = getline('.')
+  call AssertMatch('\cFUNCTION\s\+add_numbers', cur_line, 'cursor on add_numbers definition')
+
+Execute (goto_definition finds get_user_name in simple_functions.4gl):
+  edit sample_codebase/simple_functions.4gl
+  call cursor(1, 1)
+  call genero_tools#navigation#goto_definition('get_user_name')
+  let cur_line = getline('.')
+  call AssertMatch('\cFUNCTION\s\+get_user_name', cur_line, 'cursor on get_user_name definition')
+
+Execute (goto_definition finds no_params_no_return in simple_functions.4gl):
+  edit sample_codebase/simple_functions.4gl
+  call cursor(1, 1)
+  call genero_tools#navigation#goto_definition('no_params_no_return')
+  let cur_line = getline('.')
+  call AssertMatch('\cFUNCTION\s\+no_params_no_return', cur_line, 'cursor on no_params_no_return definition')
+
+" ── goto_definition — module-scoped via mock query ───────────────────────────
+
+Execute (goto_definition uses mock query for external function):
+  let mock_data = '[{"name":"customer_search_by_name","file":"sample_codebase/customer_main.4gl","line_start":20}]'
+  let $MOCK_QUERY_OUTPUT = mock_data
+  let $MOCK_QUERY_EXIT   = '0'
+  edit sample_codebase/customer_main.4gl
+  " Should not throw
+  try
+    call genero_tools#navigation#goto_definition('customer_search_by_name')
+    call AssertTrue(1, 'no exception for module-scoped lookup')
+  catch
+    call AssertTrue(0, 'unexpected exception: ' . v:exception)
+  endtry
+
+" ── navigation module exists ─────────────────────────────────────────────────
+
+Execute (navigation module functions exist):
+  call AssertTrue(exists('*genero_tools#navigation#goto_definition'), 'goto_definition exists')
+  call AssertTrue(exists('*genero_tools#navigation#peek_definition'), 'peek_definition exists')

@@ -1,0 +1,76 @@
+" tests/vader/unit/error_handling.vader
+" Tests for error handling across modules using mock env vars.
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── error#format ─────────────────────────────────────────────────────────────
+
+Execute (error format produces [MODULE] prefix):
+  let msg = genero_tools#error#format('mymod', 'something went wrong')
+  call AssertMatch('^\[mymod\]', msg, 'format has [MODULE] prefix')
+  call AssertMatch('something went wrong', msg, 'format contains message')
+
+Execute (error format with different modules):
+  call AssertMatch('^\[config\]',  genero_tools#error#format('config',  'x'), 'config prefix')
+  call AssertMatch('^\[command\]', genero_tools#error#format('command', 'x'), 'command prefix')
+  call AssertMatch('^\[cache\]',   genero_tools#error#format('cache',   'x'), 'cache prefix')
+
+" ── error#result ─────────────────────────────────────────────────────────────
+
+Execute (error result returns dict with success=false):
+  let r = genero_tools#error#result('nav', 'not found')
+  call AssertEqual(0, r.success, 'result.success == 0')
+  call AssertHasKey(r, 'error',     'result has error key')
+  call AssertHasKey(r, 'timestamp', 'result has timestamp key')
+  call AssertMatch('^\[nav\]', r.error, 'result.error has module prefix')
+
+" ── mock query failure — navigation graceful degradation ─────────────────────
+
+Execute (navigation handles query exit code 1 gracefully):
+  let $MOCK_QUERY_EXIT   = '1'
+  let $MOCK_QUERY_OUTPUT = ''
+  edit sample_codebase/simple_functions.4gl
+  try
+    call genero_tools#navigation#goto_definition('some_function')
+    call AssertTrue(1, 'no exception on query failure')
+  catch
+    call AssertTrue(0, 'unexpected exception: ' . v:exception)
+  endtry
+
+" ── mock compiler failure ─────────────────────────────────────────────────────
+
+Execute (compiler execute handles fglcomp exit code 1 gracefully):
+  let $MOCK_FGLCOMP_EXIT   = '1'
+  let $MOCK_FGLCOMP_OUTPUT = ''
+  call MockConfigSet('compiler_command', 'fglcomp')
+  try
+    let result = genero_tools#compiler#execute('sample_codebase/simple_functions.4gl')
+    call AssertTrue(type(result) == type({}), 'execute returns a dict on failure')
+  catch
+    call AssertTrue(0, 'unexpected exception: ' . v:exception)
+  endtry
+
+" ── malformed query output — autocomplete graceful degradation ────────────────
+
+Execute (command module handles malformed JSON gracefully):
+  let $MOCK_QUERY_OUTPUT = 'not valid json {{{'
+  let $MOCK_QUERY_EXIT   = '0'
+  try
+    let result = genero_tools#command#execute_shell('find-function', ['test'])
+    " Should return a result dict (success may be 0 but no exception)
+    call AssertTrue(type(result) == type({}), 'returns dict on malformed JSON')
+  catch
+    call AssertTrue(0, 'unexpected exception on malformed JSON: ' . v:exception)
+  endtry
+
+" ── timeout error message format ─────────────────────────────────────────────
+
+Execute (error format_from_output handles empty output):
+  let msg = genero_tools#error#format_from_output('', 'query.sh')
+  call AssertMatch('query\.sh', msg, 'empty output error mentions command')

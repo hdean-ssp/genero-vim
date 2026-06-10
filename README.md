@@ -224,11 +224,11 @@ Change how results are displayed by setting `display_mode`:
 
 ```vim
 let g:genero_tools_config.display_mode = 'quickfix'  " Quickfix list (default)
-let g:genero_tools_config.display_mode = 'inline'    " Popup in command line
-let g:genero_tools_config.display_mode = 'split'     " New split window
+let g:genero_tools_config.display_mode = 'floating'  " Floating window (Neovim only)
 let g:genero_tools_config.display_mode = 'echo'      " Command line output
-let g:genero_tools_config.display_mode = 'popup'     " Large floating window (Neovim only)
 ```
+
+**Note:** Legacy mode names (`'popup'`, `'inline'`, `'split'`) are still accepted but automatically mapped to `'floating'` (Neovim) or `'echo'` (Vim).
 
 ## Autocomplete
 
@@ -323,22 +323,22 @@ let g:genero_tools_config = {
   \ 'auto_fix_enabled': 1,
   \ 'trailing_whitespace': 1,
   \ 'mixed_indentation': 1,
-  \ 'indentation_consistency': 1,
+  \ 'indentation_consistency': 0,
   \ 'multiple_blank_lines': 1,
   \ 'lowercase_keywords': 1,
-  \ 'lowercase_functions': 1,
+  \ 'lowercase_functions': 0,
   \ 'keyword_consistency': 1,
   \ 'naming_convention': 0,
   \ 'unclosed_blocks': 1,
-  \ 'nesting_depth': 1,
+  \ 'nesting_depth': 0,
   \ 'line_length': 1,
   \ 'missing_comments': 0,
-  \ 'missing_error_handling': 0,
+  \ 'missing_error_handling': 1,
   \ 'deprecated_functions': 1,
-  \ 'max_line_length': 100,
-  \ 'max_nesting_depth': 5,
+  \ 'max_line_length': 120,
+  \ 'max_nesting_depth': 4,
   \ 'max_blank_lines': 2,
-  \ 'naming_convention_style': 'camelCase',
+  \ 'naming_convention_style': 'snake_case',
   \ 'snippets_enabled': 1,
   \ 'snippet_engine': 'luasnip',
   \ 'snippet_smart_expansion': 1,
@@ -526,22 +526,22 @@ let g:genero_tools_config.auto_fix_enabled = 1                   " Enable auto-f
 " Individual hint checks (1 = enabled, 0 = disabled)
 let g:genero_tools_config.trailing_whitespace = 1                " Detect trailing whitespace
 let g:genero_tools_config.mixed_indentation = 1                  " Detect mixed tabs/spaces
-let g:genero_tools_config.indentation_consistency = 1            " Detect inconsistent indentation
+let g:genero_tools_config.indentation_consistency = 0            " Detect inconsistent indentation (covered by mixed_indentation)
 let g:genero_tools_config.multiple_blank_lines = 1               " Detect excessive blank lines
 let g:genero_tools_config.lowercase_keywords = 1                 " Detect lowercase keywords
-let g:genero_tools_config.lowercase_functions = 1                " Detect lowercase functions
+let g:genero_tools_config.lowercase_functions = 0                " Detect lowercase functions (too opinionated)
 let g:genero_tools_config.keyword_consistency = 1                " Detect inconsistent casing
 let g:genero_tools_config.naming_convention = 0                  " Detect naming violations
 let g:genero_tools_config.unclosed_blocks = 1                    " Detect unclosed blocks
-let g:genero_tools_config.nesting_depth = 1                      " Detect excessive nesting
+let g:genero_tools_config.nesting_depth = 0                      " Detect excessive nesting (disabled: depth calculation has bugs)
 let g:genero_tools_config.line_length = 1                        " Detect long lines
 let g:genero_tools_config.missing_comments = 0                   " Detect missing comments
-let g:genero_tools_config.missing_error_handling = 0             " Detect missing error handling
+let g:genero_tools_config.missing_error_handling = 1             " Detect missing error handling
 let g:genero_tools_config.deprecated_functions = 1               " Detect deprecated functions
 
 " Threshold options
-let g:genero_tools_config.max_line_length = 100                  " Maximum line length
-let g:genero_tools_config.max_nesting_depth = 5                  " Maximum nesting depth
+let g:genero_tools_config.max_line_length = 120                  " Maximum line length
+let g:genero_tools_config.max_nesting_depth = 4                  " Maximum nesting depth
 let g:genero_tools_config.max_blank_lines = 2                    " Maximum consecutive blank lines
 let g:genero_tools_config.naming_convention_style = 'camelCase'  " Naming style: 'camelCase', 'snake_case'
 ```
@@ -653,7 +653,7 @@ For large codebases (6M+ LOC), see [Setup Guide](docs/SETUP_FRESH_VIM.md) for op
 
 - **[Setup Guide](docs/SETUP_FRESH_VIM.md)** - Fresh Vim installation guide
 - **[Quick Start](docs/QUICK_START.md)** - User guide with examples
-- **[Neovim Setup](docs/NEOVIM.md)** - Neovim installation and configuration
+- **[Neovim Setup](docs/NEOVIM_SETUP.md)** - Neovim installation and configuration
 - **[API Integration](docs/API_INTEGRATION.md)** - Complete API reference
 - **[Compatibility](docs/COMPATIBILITY.md)** - Vim/Neovim compatibility
 - **[Unified Sign Column](docs/UNIFIED_SIGN_COLUMN.md)** - Sign column system for compiler and SVN markers

@@ -144,10 +144,10 @@ function! genero_tools#hints#display#show_virtual_text(bufnr, hints) abort
     
     if current_line_only && hint.line != current_line
       " Icon only for non-current lines
-      let virt_text = [['  ▸ ', hl_group]]
+      let virt_text = [['  > ', hl_group]]
     else
       " Full message
-      let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+      let virt_text = [['  > ' . hint.message . ' ', hl_group]]
     endif
     
     try
@@ -180,9 +180,9 @@ function! genero_tools#hints#display#show_virtual_text_for_line(bufnr, hints, cu
     for hint in a:hints
       let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
       if hint.line == a:current_line
-        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+        let virt_text = [['  > ' . hint.message . ' ', hl_group]]
       else
-        let virt_text = [['  ▸ ', hl_group]]
+        let virt_text = [['  > ', hl_group]]
       endif
       try
         call nvim_buf_set_extmark(a:bufnr, ns_id, hint.line - 1, 0, {
@@ -212,9 +212,9 @@ function! s:incremental_hint_update(bufnr, ns_id, hints, current_line) abort
     for hint in a:hints
       let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
       if hint.line == a:current_line
-        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+        let virt_text = [['  > ' . hint.message . ' ', hl_group]]
       else
-        let virt_text = [['  ▸ ', hl_group]]
+        let virt_text = [['  > ', hl_group]]
       endif
       try
         call nvim_buf_set_extmark(a:bufnr, a:ns_id, hint.line - 1, 0, {
@@ -233,9 +233,9 @@ function! s:incremental_hint_update(bufnr, ns_id, hints, current_line) abort
     if hint.line == prev_line || hint.line == a:current_line
       let hl_group = genero_tools#hints#display#get_virtual_text_highlight_group(hint.severity)
       if hint.line == a:current_line
-        let virt_text = [['  ▸ ' . hint.message . ' ', hl_group]]
+        let virt_text = [['  > ' . hint.message . ' ', hl_group]]
       else
-        let virt_text = [['  ▸ ', hl_group]]
+        let virt_text = [['  > ', hl_group]]
       endif
       " Clear just this line's extmarks and re-place
       try

@@ -136,7 +136,7 @@ function! s:incremental_diag_update(bufnr, current_line, result) abort
     if get(warning, 'line', 0) == a:current_line
       try
         call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:current_line - 1, 0, {
-          \ 'virt_text': [['  ▸ ' . warning.message . ' ', 'GeneroInlineWarning']],
+          \ 'virt_text': [['  > ' . warning.message . ' ', 'GeneroInlineWarning']],
           \ 'virt_text_pos': 'eol',
           \ 'priority': 90
           \ })
@@ -182,7 +182,7 @@ function! s:draw_all_diagnostics(bufnr, current_line, result) abort
     if get(warning, 'line', 0) == a:current_line
       try
         call nvim_buf_set_extmark(a:bufnr, s:ns_id, a:current_line - 1, 0, {
-          \ 'virt_text': [['  ▸ ' . warning.message . ' ', 'GeneroInlineWarning']],
+          \ 'virt_text': [['  > ' . warning.message . ' ', 'GeneroInlineWarning']],
           \ 'virt_text_pos': 'eol',
           \ 'priority': 90
           \ })

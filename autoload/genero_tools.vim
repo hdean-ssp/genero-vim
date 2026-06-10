@@ -291,18 +291,63 @@ endfunction
 
 " Get current module from file path
 function! genero_tools#get_current_module() abort
-  let file_path = expand('%')
+  let file_path = expand('%:p')
   if empty(file_path)
     return ''
   endif
   
-  " Extract module name from file path (e.g., mymodule.m3)
-  let parts = split(file_path, '/')
-  if len(parts) > 0
-    return parts[-1]
+  " Try to detect module via query.sh (same approach as Lua layer)
+  " Get a function name from this file, then find its module
+  let file_rel = genero_tools#normalize_file_path(file_path)
+  
+  let cache_key = 'file-module:' . file_path
+  let cached = genero_tools#cache#get(cache_key)
+  if !empty(cached) && has_key(cached, 'module')
+    return cached.module
   endif
   
-  return ''
+  " Get functions in this file
+  let result = genero_tools#command#execute_shell('list-file-functions', [file_rel])
+  if !result.success || type(result.data) != type([]) || empty(result.data)
+    " Fallback: try with just the basename
+    let basename = './' . fnamemodify(file_path, ':t')
+    let result = genero_tools#command#execute_shell('list-file-functions', [basename])
+    if !result.success || type(result.data) != type([]) || empty(result.data)
+      return ''
+    endif
+  endif
+  
+  " Get the first function name
+  let first_func = result.data[0]
+  let func_name = type(first_func) == type({}) ? get(first_func, 'name', '') : ''
+  if empty(func_name)
+    return ''
+  endif
+  
+  " Find module for this function
+  let mod_result = genero_tools#command#execute_shell('find-module-for-function', [func_name])
+  if !mod_result.success || empty(mod_result.data)
+    return ''
+  endif
+  
+  let mod_data = mod_result.data
+  let module_name = ''
+  
+  if type(mod_data) == type('')
+    let module_name = mod_data
+  elseif type(mod_data) == type([]) && len(mod_data) == 1
+    let item = mod_data[0]
+    let module_name = type(item) == type({}) ? get(item, 'name', get(item, 'module', '')) : string(item)
+  elseif type(mod_data) == type({})
+    let module_name = get(mod_data, 'name', get(mod_data, 'module', ''))
+  endif
+  
+  " Cache the result
+  if !empty(module_name)
+    call genero_tools#cache#set(cache_key, {'module': module_name, 'timestamp': localtime()})
+  endif
+  
+  return module_name
 endfunction
 
 " Normalize file path to relative format for genero-tools

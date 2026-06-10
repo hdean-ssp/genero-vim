@@ -1,0 +1,29 @@
+" tests/compat/neovim_compat.vader
+" Neovim compatibility tests — only runs under Neovim.
+
+if !has('nvim') | finish | endif
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+Execute (compat has_floating_windows — nvim_open_win available on Neovim 0.9+):
+  call AssertTrue(exists('*nvim_open_win'), 'nvim_open_win exists')
+
+Execute (compat normalize_display_mode accepts Neovim-specific modes):
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('floating'), 'floating accepted')
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('popup'),    'popup → floating')
+
+Execute (compat Lua bridge functions callable from VimScript):
+  " genero_tools#lua_bridge#is_available() should exist and return a value
+  call AssertTrue(exists('*genero_tools#lua_bridge#is_available'), 'lua_bridge#is_available exists')
+  let avail = genero_tools#lua_bridge#is_available()
+  call AssertTrue(type(avail) == type(0), 'is_available returns a number')
+
+Execute (compat get_supported_display_modes includes floating on Neovim):
+  let modes = genero_tools#compat#get_supported_display_modes()
+  call AssertContains(modes, 'floating', 'floating in supported modes on Neovim')

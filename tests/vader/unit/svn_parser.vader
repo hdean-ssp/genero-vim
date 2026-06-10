@@ -1,0 +1,75 @@
+" tests/vader/unit/svn_parser.vader
+" Tests for genero_tools#svn#parser#parse_diff
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── added_lines fixture ───────────────────────────────────────────────────────
+
+Execute (parse_diff added_lines fixture — three added lines):
+  let diff = join(readfile('tests/fixtures/svn_diff/added_lines.diff'), "\n")
+  let result = genero_tools#svn#parser#parse_diff(diff)
+  call AssertEqual(3, len(result.added), 'should detect 3 added lines')
+  call AssertContains(result.added, 49, 'line 49 added')
+  call AssertContains(result.added, 52, 'line 52 added')
+  call AssertContains(result.added, 55, 'line 55 added')
+  call AssertEqual(0, len(result.deleted), 'no deleted lines')
+
+" ── deleted_lines fixture ─────────────────────────────────────────────────────
+
+Execute (parse_diff deleted_lines fixture — two deleted lines):
+  let diff = join(readfile('tests/fixtures/svn_diff/deleted_lines.diff'), "\n")
+  let result = genero_tools#svn#parser#parse_diff(diff)
+  call AssertEqual(2, len(result.deleted), 'should detect 2 deleted lines')
+  call AssertEqual(0, len(result.added), 'no added lines')
+
+" ── modified_lines fixture ────────────────────────────────────────────────────
+
+Execute (parse_diff modified_lines fixture — one modification):
+  let diff = join(readfile('tests/fixtures/svn_diff/modified_lines.diff'), "\n")
+  let result = genero_tools#svn#parser#parse_diff(diff)
+  " A modification is a delete+add pair; parser records it in modified
+  call AssertTrue(len(result.modified) > 0 || len(result.deleted) > 0,
+    \ 'modification should produce deleted or modified entry')
+
+" ── mixed_changes fixture ─────────────────────────────────────────────────────
+
+Execute (parse_diff mixed_changes fixture — adds, deletes, modifications):
+  let diff = join(readfile('tests/fixtures/svn_diff/mixed_changes.diff'), "\n")
+  let result = genero_tools#svn#parser#parse_diff(diff)
+  call AssertTrue(len(result.added)   > 0, 'mixed fixture has added lines')
+  call AssertTrue(len(result.deleted) > 0, 'mixed fixture has deleted lines')
+
+" ── empty input ───────────────────────────────────────────────────────────────
+
+Execute (parse_diff empty string):
+  let result = genero_tools#svn#parser#parse_diff('')
+  call AssertEqual(0, len(result.added),    'empty diff: no added')
+  call AssertEqual(0, len(result.deleted),  'empty diff: no deleted')
+  call AssertEqual(0, len(result.modified), 'empty diff: no modified')
+
+" ── malformed input ───────────────────────────────────────────────────────────
+
+Execute (parse_diff malformed input does not crash):
+  let result = genero_tools#svn#parser#parse_diff('this is not a diff')
+  call AssertEqual(0, len(result.added),   'malformed: no added')
+  call AssertEqual(0, len(result.deleted), 'malformed: no deleted')
+
+Execute (parse_diff header-only input — no hunks):
+  let diff = "Index: foo.4gl\n===================================================================\n--- foo.4gl\t(revision 1)\n+++ foo.4gl\t(working copy)\n"
+  let result = genero_tools#svn#parser#parse_diff(diff)
+  call AssertEqual(0, len(result.added),   'header-only: no added')
+  call AssertEqual(0, len(result.deleted), 'header-only: no deleted')
+
+" ── result structure ─────────────────────────────────────────────────────────
+
+Execute (parse_diff result always has required keys):
+  let result = genero_tools#svn#parser#parse_diff('')
+  call AssertHasKey(result, 'added',    'result has added key')
+  call AssertHasKey(result, 'deleted',  'result has deleted key')
+  call AssertHasKey(result, 'modified', 'result has modified key')

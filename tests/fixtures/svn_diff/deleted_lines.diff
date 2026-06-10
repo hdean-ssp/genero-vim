@@ -1,0 +1,14 @@
+Index: sample_codebase/simple_functions.4gl
+===================================================================
+--- sample_codebase/simple_functions.4gl	(revision 100)
++++ sample_codebase/simple_functions.4gl	(working copy)
+@@ -58,9 +58,7 @@
+     DEFINE name STRING
+     
+     # Some logic here
+-    LET name = "John Doe"
+     # Call library function to format name
+-    LET name = format_string(name)
+ #TMPHD
+     RETURN name
+ END FUNCTION

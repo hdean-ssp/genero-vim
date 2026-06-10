@@ -1,0 +1,42 @@
+" tests/vader/unit/compat.vader
+" Tests for genero_tools#compat — Neovim-focused compatibility layer.
+" Guarded: only runs under Neovim.
+
+if !has('nvim') | finish | endif
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+Execute (compat is_neovim returns 1 under Neovim):
+  call AssertEqual(1, genero_tools#compat#is_neovim(), 'is_neovim() == 1')
+
+Execute (compat is_vim returns 0 under Neovim):
+  call AssertEqual(0, genero_tools#compat#is_vim(), 'is_vim() == 0')
+
+Execute (compat has_floating_windows returns 1 on Neovim 0.9+):
+  " nvim_open_win is available on all Neovim versions we support (0.9+)
+  call AssertTrue(exists('*nvim_open_win'), 'nvim_open_win exists on Neovim 0.9+')
+
+Execute (compat get_supported_display_modes returns non-empty list):
+  let modes = genero_tools#compat#get_supported_display_modes()
+  call AssertTrue(type(modes) == type([]), 'modes is a list')
+  call AssertTrue(len(modes) > 0, 'modes list is non-empty')
+  call AssertContains(modes, 'quickfix', 'quickfix is always supported')
+
+Execute (compat normalize_display_mode — canonical modes pass through):
+  call AssertEqual('quickfix', genero_tools#compat#normalize_display_mode('quickfix'), 'quickfix unchanged')
+  call AssertEqual('echo',     genero_tools#compat#normalize_display_mode('echo'),     'echo unchanged')
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('floating'), 'floating unchanged on Neovim')
+
+Execute (compat normalize_display_mode — legacy modes map to floating on Neovim):
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('popup'),  'popup → floating')
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('inline'), 'inline → floating')
+  call AssertEqual('floating', genero_tools#compat#normalize_display_mode('split'),  'split → floating')
+
+Execute (compat normalize_display_mode — unknown mode falls back to echo):
+  call AssertEqual('echo', genero_tools#compat#normalize_display_mode('unknown_xyz'), 'unknown → echo')

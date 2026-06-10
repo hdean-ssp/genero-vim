@@ -741,35 +741,6 @@ local plugins = {
           pattern = [[\b(KEYWORDS)\b]],
         },
       })
-      
-      -- Globally wrap nvim_buf_set_extmark to catch all extmark errors
-      local original_set_extmark = vim.api.nvim_buf_set_extmark
-      vim.api.nvim_buf_set_extmark = function(buffer, ns_id, line, col, opts)
-        -- Validate parameters before calling
-        local ok, line_count = pcall(vim.api.nvim_buf_line_count, buffer)
-        if not ok or line >= line_count then
-          return 0  -- Return dummy extmark id
-        end
-        
-        -- If end_col is specified, validate it
-        if opts and opts.end_col then
-          local line_ok, lines = pcall(vim.api.nvim_buf_get_lines, buffer, line, line + 1, false)
-          if line_ok and lines[1] then
-            local line_len = #lines[1]
-            if opts.end_col > line_len then
-              opts.end_col = line_len
-            end
-          end
-        end
-        
-        -- Call original with validated parameters, catch any remaining errors
-        local success, result = pcall(original_set_extmark, buffer, ns_id, line, col, opts)
-        if success then
-          return result
-        else
-          return 0  -- Return dummy extmark id on error
-        end
-      end
     end,
   },
 

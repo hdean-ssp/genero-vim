@@ -23,7 +23,7 @@ function! genero_tools#lua_bridge#call(module, function, args) abort
     let lua_call = 'require("genero_tools.' . a:module . '").' . a:function
     return luaeval(lua_call . '(...)', a:args)
   catch
-    call genero_tools#error#log('Lua bridge error: ' . v:exception)
+    call genero_tools#error#debug('lua_bridge', 'Lua bridge error: ' . v:exception)
     return {}
   endtry
 endfunction
@@ -38,7 +38,7 @@ function! genero_tools#lua_bridge#call_safe(module, function, args, fallback) ab
     let lua_call = 'require("genero_tools.' . a:module . '").' . a:function
     return luaeval(lua_call . '(...)', a:args)
   catch
-    call genero_tools#error#log('Lua bridge error in ' . a:module . '.' . a:function . ': ' . v:exception)
+    call genero_tools#error#debug('lua_bridge', 'Error in ' . a:module . '.' . a:function . ': ' . v:exception)
     return a:fallback
   endtry
 endfunction
@@ -59,7 +59,7 @@ function! genero_tools#lua_bridge#execute_async(command, args, callback) abort
   try
     call luaeval('require("genero_tools.async").execute_async(...)', [a:command, a:args, a:callback])
   catch
-    call genero_tools#error#log('Async execution error: ' . v:exception)
+    call genero_tools#error#debug('lua_bridge', 'Async execution error: ' . v:exception)
     let result = genero_tools#command#execute_shell(a:command, a:args)
     call function(a:callback)(result)
   endtry
@@ -79,7 +79,7 @@ function! genero_tools#lua_bridge#show_floating_window(content, options) abort
   try
     call luaeval('require("genero_tools.ui").show_floating_window(...)', [a:content, a:options])
   catch
-    call genero_tools#error#log('Floating window error: ' . v:exception)
+    call genero_tools#error#debug('lua_bridge', 'Floating window error: ' . v:exception)
     call genero_tools#display#quickfix(a:content)
   endtry
 endfunction
@@ -104,6 +104,6 @@ function! genero_tools#lua_bridge#init() abort
       endtry
     endif
   catch
-    call genero_tools#error#log('Lua layer initialization failed: ' . v:exception)
+    call genero_tools#error#debug('lua_bridge', 'Lua layer initialization failed: ' . v:exception)
   endtry
 endfunction

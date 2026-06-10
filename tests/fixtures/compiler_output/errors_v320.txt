@@ -1,0 +1,3 @@
+sample_codebase/edge_cases.4gl:11:7:11:12:error:(-100) undefined variable 'result' - variable must be defined before use
+sample_codebase/edge_cases.4gl:37:7:37:19:error:(-200) type mismatch - cannot assign INTEGER to STRING variable 'Output_Value'
+sample_codebase/edge_cases.4gl:63:3:64:14:error:(-300) missing END IF - control structure 'IF' is not properly terminated

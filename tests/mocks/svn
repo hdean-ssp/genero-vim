@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Mock svn for testing.
+# Handles diff, info, and status subcommands.
+# Prints $MOCK_SVN_OUTPUT (default: empty) and exits with $MOCK_SVN_EXIT (default: 0).
+
+subcommand="${1:-}"
+
+case "${subcommand}" in
+  diff|info|status)
+    echo "${MOCK_SVN_OUTPUT:-}"
+    exit "${MOCK_SVN_EXIT:-0}"
+    ;;
+  *)
+    echo "Unknown subcommand: ${subcommand}" >&2
+    exit 1
+    ;;
+esac

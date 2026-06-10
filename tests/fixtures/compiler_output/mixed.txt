@@ -1,0 +1,5 @@
+sample_codebase/simple_functions.4gl:44:5:44:5:error:(-100) undefined variable 'a' - variable must be defined before use
+sample_codebase/simple_functions.4gl:60:15:60:26:error:(-200) type mismatch - cannot assign STRING to INTEGER variable 'name'
+sample_codebase/customer_main.4gl:12:12:12:19:warning:(-400) variable declared but not used - 'l_action' is defined but never referenced
+sample_codebase/customer_main.4gl:37:12:37:18:warning:(-500) implicit type conversion - INTEGER value assigned to STRING context in expression
+sample_codebase/edge_cases.4gl:10:2:10:14:error:(-300) undefined function 'validate_long_params' - function not found in scope

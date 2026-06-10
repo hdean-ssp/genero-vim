@@ -1,0 +1,64 @@
+# SVN diff fixture: mixed_changes.diff
+#
+# This diff combines additions, deletions, and modifications across three
+# separate hunks in sample_codebase/simple_functions.4gl.
+#
+# Hunk 1 — add_numbers function (original lines 45–54):
+#   MODIFIED line 49: blank line replaced with a comment
+#     Original line 49: "    " (blank/whitespace-only)
+#     Working copy line 49: "    # Initialize result before assignment"
+#     (This counts as a delete + add pair — one modification)
+#
+# Hunk 2 — get_user_name function (original lines 56–66):
+#   DELETED line 61: '    LET name = "John Doe"'
+#   MODIFIED line 63: 'LET name = format_string(name)' → 'LET name = format_name(name)'
+#     (delete + add pair — one modification; plus one pure deletion)
+#
+# Hunk 3 — no_params_no_return function (original lines 68–72):
+#   ADDED line after original line 69 (DISPLAY "Hello World"):
+#     Working copy line 69: '    # Output sent to terminal'
+#
+# Summary of changes in the working copy:
+#   added   = [49, 69]   (line 49 is the replacement add; line 69 is the pure add)
+#   deleted = [49, 61, 63]  (line 49 blank removed; line 61 removed; line 63 old form removed)
+#   modified = [49, 63]  (line 49 blank→comment; line 63 format_string→format_name)
+#
+# Tests should assert:
+#   added lines ('+' markers) at working-copy lines: 49, 62, 69
+#   deleted lines ('-' markers) at original lines:   49, 61, 63
+Index: sample_codebase/simple_functions.4gl
+===================================================================
+--- sample_codebase/simple_functions.4gl	(revision 100)
++++ sample_codebase/simple_functions.4gl	(working copy)
+@@ -45,10 +45,10 @@
+ FUNCTION add_numbers(a, b)
+     DEFINE a INTEGER
+     DEFINE b INTEGER
+     DEFINE result INTEGER
+-    
++    # Initialize result before assignment
+     LET result = a + b
+     # Call another function to validate result
+     CALL validate_number(result)
+     RETURN result
+ END FUNCTION
+@@ -56,11 +56,9 @@
+ FUNCTION get_user_name(user_id)
+     DEFINE user_id INTEGER
+     DEFINE name STRING
+     
+     # Some logic here
+-    LET name = "John Doe"
+     # Call library function to format name
+-    LET name = format_string(name)
++    LET name = format_name(name)
+ #TMPHD
+     RETURN name
+ END FUNCTION
+@@ -68,5 +66,6 @@
+ FUNCTION no_params_no_return()
+     DISPLAY "Hello World"
++    # Output sent to terminal
+     # Call utility function
+     CALL log_message("Function executed")
+ END FUNCTION

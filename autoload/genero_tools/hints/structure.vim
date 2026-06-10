@@ -88,22 +88,22 @@ function! s:check_nesting_depth_current_scope(bufnr, config) abort
     
     " Count block closers first (to handle same-line open/close correctly)
     let closes = 0
-    if line_upper =~# '\<END\s\+IF\>'
+    if line_upper =~# '^\s*END\s\+IF\>'
       let closes += 1
     endif
-    if line_upper =~# '\<END\s\+WHILE\>'
+    if line_upper =~# '^\s*END\s\+WHILE\>'
       let closes += 1
     endif
-    if line_upper =~# '\<END\s\+FOR\>'
+    if line_upper =~# '^\s*END\s\+FOR\>'
       let closes += 1
     endif
-    if line_upper =~# '\<END\s\+FOREACH\>'
+    if line_upper =~# '^\s*END\s\+FOREACH\>'
       let closes += 1
     endif
-    if line_upper =~# '\<END\s\+CASE\>'
+    if line_upper =~# '^\s*END\s\+CASE\>'
       let closes += 1
     endif
-    if line_upper =~# '\<END\s\+TRY\>'
+    if line_upper =~# '^\s*END\s\+TRY\>'
       let closes += 1
     endif
     
@@ -117,22 +117,35 @@ function! s:check_nesting_depth_current_scope(bufnr, config) abort
     
     " Count block openers (excluding FUNCTION/MAIN/REPORT which are top-level)
     let opens = 0
-    if line_upper =~# '\<IF\>.*\<THEN\>'
+    " IF with THEN on same line
+    if line_upper =~# '^\s*IF\>.*\<THEN\>'
+      let opens += 1
+    " IF without THEN on same line (multi-line condition — THEN is on a later line)
+    " Only count if the line starts with IF (the THEN line will not re-open)
+    elseif line_upper =~# '^\s*IF\>' && line_upper !~# '^\s*END\s\+IF\>'
       let opens += 1
     endif
-    if line_upper =~# '\<WHILE\>'
+    " Avoid double-counting: if a line is just THEN (continuation of multi-line IF), skip it
+    " (The IF line already counted the open above)
+    
+    " WHILE but not END WHILE (already handled by closers above)
+    if line_upper =~# '^\s*WHILE\>'
       let opens += 1
     endif
-    if line_upper =~# '\<FOR\>'
+    " FOR but not FOREACH and not END FOR
+    if line_upper =~# '^\s*FOR\>' && line_upper !~# '^\s*FOREACH\>'
       let opens += 1
     endif
-    if line_upper =~# '\<FOREACH\>'
+    " FOREACH but not END FOREACH
+    if line_upper =~# '^\s*FOREACH\>'
       let opens += 1
     endif
-    if line_upper =~# '\<CASE\>'
+    " CASE but not END CASE
+    if line_upper =~# '^\s*CASE\>'
       let opens += 1
     endif
-    if line_upper =~# '\<TRY\>'
+    " TRY but not END TRY
+    if line_upper =~# '^\s*TRY\>'
       let opens += 1
     endif
     

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Mock fglform compiler for testing.
+# Prints $MOCK_FGLFORM_OUTPUT (default: empty) and exits with $MOCK_FGLFORM_EXIT (default: 0).
+echo "${MOCK_FGLFORM_OUTPUT:-}"
+exit "${MOCK_FGLFORM_EXIT:-0}"

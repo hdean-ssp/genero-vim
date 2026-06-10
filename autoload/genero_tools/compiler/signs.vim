@@ -7,6 +7,11 @@ let s:sign_info = 'GeneroCompilerInfo'
 
 " Initialize signs (define them once)
 function! genero_tools#compiler#signs#init() abort
+  " Ensure ambiguous-width chars (like ⚠) render as single-width in the sign column
+  if &ambiwidth !=# 'single'
+    set ambiwidth=single
+  endif
+
   " Define error sign (✕)
   execute 'sign define ' . s:sign_error . ' text=✕ texthl=ErrorMsg'
   

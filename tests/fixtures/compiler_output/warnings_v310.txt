@@ -1,0 +1,2 @@
+sample_codebase/customer_main.4gl:12:12:12:19:warning:(-400) variable declared but not used - 'l_action' is defined but never referenced
+sample_codebase/customer_main.4gl:37:12:37:18:warning:(-500) implicit type conversion - INTEGER value assigned to STRING context in expression

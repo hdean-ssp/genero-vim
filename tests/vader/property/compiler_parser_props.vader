@@ -1,0 +1,68 @@
+" tests/vader/property/compiler_parser_props.vader
+" Feature: new-test-suite
+" Property 1: compiler parser round-trip
+" Property 6: compiler file-type routing
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  source tests/helpers/generators.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── Property 1: compiler parser round-trip ────────────────────────────────────
+" For any valid v3.10 full-format line, parse_v310 must return fields that
+" exactly match the values used to construct the line.
+
+Execute (Property 1: compiler parser round-trip — 100 iterations):
+  for seed in range(0, 99)
+    let line     = TestGenCompilerError(seed)
+    let expected = TestParseExpectedFromSeed(seed)
+    let result   = genero_tools#compiler#parse_v310(line, 'fgl')
+
+    call AssertEqual(1, result.success, 'seed ' . seed . ': parse should succeed')
+
+    " Locate the entry in the correct severity bucket
+    let sev = expected.severity
+    if sev == 'error'
+      let entries = result.errors
+    elseif sev == 'warning'
+      let entries = result.warnings
+    else
+      let entries = result.info
+    endif
+
+    call AssertEqual(1, len(entries), 'seed ' . seed . ': exactly one entry')
+    let e = entries[0]
+    call AssertEqual(expected.file,     e.file,     'seed ' . seed . ': file')
+    call AssertEqual(expected.line,     e.line,     'seed ' . seed . ': line')
+    call AssertEqual(expected.col,      e.col,      'seed ' . seed . ': col')
+    call AssertEqual(expected.severity, e.severity, 'seed ' . seed . ': severity')
+    call AssertMatch(expected.message,  e.message,  'seed ' . seed . ': message')
+  endfor
+
+" ── Property 6: compiler file-type routing ────────────────────────────────────
+" For any .4gl/.m3/.m4 path detect_file_type returns 'fgl'.
+" For any .per path it returns 'per'.
+
+Execute (Property 6: compiler file-type routing — 100 iterations):
+  let fgl_exts = ['.4gl', '.m3', '.m4']
+  let per_ext  = '.per'
+  let prefixes = ['src/', 'lib/', 'modules/', '']
+
+  for seed in range(0, 49)
+    let ext    = fgl_exts[seed % len(fgl_exts)]
+    let prefix = prefixes[seed % len(prefixes)]
+    let path   = prefix . 'file_' . seed . ext
+    call AssertEqual('fgl', genero_tools#compiler#detect_file_type(path),
+      \ 'seed ' . seed . ': ' . path . ' should route to fgl')
+  endfor
+
+  for seed in range(0, 49)
+    let prefix = prefixes[seed % len(prefixes)]
+    let path   = prefix . 'form_' . seed . per_ext
+    call AssertEqual('per', genero_tools#compiler#detect_file_type(path),
+      \ 'seed ' . seed . ': ' . path . ' should route to per')
+  endfor

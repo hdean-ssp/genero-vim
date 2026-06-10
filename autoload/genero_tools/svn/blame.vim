@@ -14,6 +14,12 @@ function! genero_tools#svn#blame#get_line_blame_fast(file_path, line_num) abort
     return {}
   endif
   
+  " Validate line_num is a positive integer to prevent shell injection
+  let line_num = str2nr(a:line_num)
+  if line_num <= 0
+    return {}
+  endif
+  
   " Check if SVN is available
   if !genero_tools#svn#detection#is_available()
     return {}
@@ -25,7 +31,7 @@ function! genero_tools#svn#blame#get_line_blame_fast(file_path, line_num) abort
   endif
   
   " Execute svn blame for specific line only (much faster)
-  let cmd = printf('svn blame -r BASE %s 2>&1 | sed -n ''%dp''', shellescape(file_path), a:line_num)
+  let cmd = printf('svn blame -r BASE %s 2>&1 | sed -n ''%dp''', shellescape(file_path), line_num)
   
   try
     let blame_output = system(cmd)

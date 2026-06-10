@@ -1,0 +1,85 @@
+" tests/vader/unit/config.vader
+" Tests for genero_tools#config#init, #get, #validate
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  source tests/helpers/mock_config.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── defaults ─────────────────────────────────────────────────────────────────
+
+Execute (config init applies all required defaults):
+  call AssertEqual('query.sh',  genero_tools#config#get('genero_tools_path'), 'genero_tools_path default')
+  call AssertEqual(1,           genero_tools#config#get('cache_enabled'),     'cache_enabled default')
+  call AssertEqual(3600,        genero_tools#config#get('cache_ttl'),         'cache_ttl default')
+  call AssertEqual(500,         genero_tools#config#get('cache_max_size'),    'cache_max_size default')
+  call AssertEqual('quickfix',  genero_tools#config#get('display_mode'),      'display_mode default')
+  call AssertEqual(10000,       genero_tools#config#get('timeout'),           'timeout default')
+  call AssertEqual('auto',      genero_tools#config#get('compiler_version'),  'compiler_version default')
+  call AssertEqual('fglcomp',   genero_tools#config#get('compiler_command'),  'compiler_command default')
+  call AssertEqual('fglform',   genero_tools#config#get('compiler_form_command'), 'compiler_form_command default')
+
+" ── user config merges with defaults ─────────────────────────────────────────
+
+Execute (user config value overrides default):
+  call MockConfigSet('timeout', 5000)
+  call AssertEqual(5000, genero_tools#config#get('timeout'), 'user timeout overrides default')
+
+Execute (unset key still returns default):
+  call AssertEqual(1000, genero_tools#config#get('pagination_size'), 'result_limit default')
+
+" ── validate: invalid timeout ────────────────────────────────────────────────
+
+Execute (validate resets negative timeout to default):
+  let g:genero_tools_config.timeout = -1
+  call genero_tools#config#validate()
+  call AssertEqual(10000, genero_tools#config#get('timeout'), 'negative timeout reset to 10000')
+
+Execute (validate resets zero timeout to default):
+  let g:genero_tools_config.timeout = 0
+  call genero_tools#config#validate()
+  call AssertEqual(10000, genero_tools#config#get('timeout'), 'zero timeout reset to 10000')
+
+" ── validate: invalid cache_ttl ──────────────────────────────────────────────
+
+Execute (validate resets negative cache_ttl to default):
+  let g:genero_tools_config.cache_ttl = -100
+  call genero_tools#config#validate()
+  call AssertEqual(3600, genero_tools#config#get('cache_ttl'), 'negative cache_ttl reset to 3600')
+
+" ── validate: invalid display_mode ───────────────────────────────────────────
+
+Execute (validate resets unknown display_mode to quickfix):
+  let g:genero_tools_config.display_mode = 'invalid_mode'
+  call genero_tools#config#validate()
+  call AssertEqual('quickfix', genero_tools#config#get('display_mode'), 'invalid display_mode reset to quickfix')
+
+" ── validate: invalid cache_max_size ─────────────────────────────────────────
+
+Execute (validate resets non-positive cache_max_size to default):
+  let g:genero_tools_config.cache_max_size = 0
+  call genero_tools#config#validate()
+  call AssertEqual(500, genero_tools#config#get('cache_max_size'), 'zero cache_max_size reset to 500')
+
+" ── validate: valid values unchanged ─────────────────────────────────────────
+
+Execute (validate leaves valid values unchanged):
+  call MockConfigSet('timeout', 20000)
+  call MockConfigSet('display_mode', 'echo')
+  call MockConfigSet('cache_ttl', 7200)
+  call genero_tools#config#validate()
+  call AssertEqual(20000,   genero_tools#config#get('timeout'),      'valid timeout unchanged')
+  call AssertEqual('echo',  genero_tools#config#get('display_mode'), 'valid display_mode unchanged')
+  call AssertEqual(7200,    genero_tools#config#get('cache_ttl'),    'valid cache_ttl unchanged')
+
+" ── get_all ───────────────────────────────────────────────────────────────────
+
+Execute (config get_all returns a dict with expected keys):
+  let all = genero_tools#config#get_all()
+  call AssertHasKey(all, 'timeout',      'get_all has timeout')
+  call AssertHasKey(all, 'cache_enabled','get_all has cache_enabled')
+  call AssertHasKey(all, 'display_mode', 'get_all has display_mode')

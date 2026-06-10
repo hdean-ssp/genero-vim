@@ -1,0 +1,27 @@
+# SVN diff fixture: modified_lines.diff
+#
+# This diff modifies one line in sample_codebase/simple_functions.4gl
+# inside the get_user_name function.
+#
+# A modification in unified diff is a deletion immediately followed by an
+# addition at the same position. The SVN parser detects this pattern and
+# records the line in both the `deleted` and `modified` result lists.
+#
+# Modified line in the working copy:
+#   Line 61: LET name = "John Doe"  →  LET name = "Jane Smith"
+#
+# Tests should assert that the SVN diff parser returns:
+#   modified = [61]
+#   deleted  = [61]
+#   added    = []
+Index: sample_codebase/simple_functions.4gl
+===================================================================
+--- sample_codebase/simple_functions.4gl	(revision 100)
++++ sample_codebase/simple_functions.4gl	(working copy)
+@@ -59,5 +59,5 @@
+     
+     # Some logic here
+-    LET name = "John Doe"
++    LET name = "Jane Smith"
+     # Call library function to format name
+     LET name = format_string(name)

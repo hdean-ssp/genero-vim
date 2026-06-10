@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Mock fglcomp compiler for testing.
+# Prints $MOCK_FGLCOMP_OUTPUT (default: empty) and exits with $MOCK_FGLCOMP_EXIT (default: 0).
+echo "${MOCK_FGLCOMP_OUTPUT:-}"
+exit "${MOCK_FGLCOMP_EXIT:-0}"

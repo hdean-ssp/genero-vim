@@ -1,0 +1,31 @@
+# SVN diff fixture: added_lines.diff
+#
+# This diff adds three lines to sample_codebase/simple_functions.4gl
+# inside the add_numbers function (original lines 45-54).
+#
+# Added lines appear at the following line numbers in the working copy:
+#   Line 49: "    # Initialize result to zero before assignment"
+#   Line 52: "    # Ensure result is non-negative"
+#   Line 55: "    # Validation complete"
+#
+# Tests should assert that the SVN diff parser returns added = [49, 52, 55]
+Index: sample_codebase/simple_functions.4gl
+===================================================================
+--- sample_codebase/simple_functions.4gl	(revision 100)
++++ sample_codebase/simple_functions.4gl	(working copy)
+@@ -43,12 +43,15 @@
+ # Simple functions with basic parameter and return types
+ 
+ FUNCTION add_numbers(a, b)
+     DEFINE a INTEGER
+     DEFINE b INTEGER
+     DEFINE result INTEGER
++    # Initialize result to zero before assignment
+     
+     LET result = a + b
++    # Ensure result is non-negative
+     # Call another function to validate result
+     CALL validate_number(result)
++    # Validation complete
+     RETURN result
+ END FUNCTION

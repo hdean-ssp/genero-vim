@@ -1,0 +1,80 @@
+" tests/vader/unit/cache.vader
+" Tests for genero_tools#cache#set / get / clear / stats
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── set / get round-trip ─────────────────────────────────────────────────────
+
+Execute (cache set+get round-trip — string value):
+  let entry = {'value': 'hello', 'timestamp': localtime()}
+  call genero_tools#cache#set('test_key', entry)
+  let got = genero_tools#cache#get('test_key')
+  call AssertEqual('hello', got.value, 'string value round-trip')
+
+Execute (cache set+get round-trip — list value):
+  let entry = {'value': [1, 2, 3], 'timestamp': localtime()}
+  call genero_tools#cache#set('list_key', entry)
+  let got = genero_tools#cache#get('list_key')
+  call AssertEqual([1, 2, 3], got.value, 'list value round-trip')
+
+Execute (cache set+get round-trip — dict value):
+  let entry = {'value': {'a': 1, 'b': 2}, 'timestamp': localtime()}
+  call genero_tools#cache#set('dict_key', entry)
+  let got = genero_tools#cache#get('dict_key')
+  call AssertEqual({'a': 1, 'b': 2}, got.value, 'dict value round-trip')
+
+" ── missing key ──────────────────────────────────────────────────────────────
+
+Execute (cache get returns empty dict for missing key):
+  let got = genero_tools#cache#get('nonexistent_key_xyz')
+  call AssertEqual({}, got, 'missing key returns empty dict')
+
+" ── TTL expiration ────────────────────────────────────────────────────────────
+
+Execute (cache get returns empty dict after TTL expires):
+  call MockConfigSet('cache_ttl', 1)
+  let entry = {'value': 'expires', 'timestamp': localtime() - 10}
+  call genero_tools#cache#set('ttl_key', entry)
+  " Manually set an old timestamp to simulate expiry
+  let g:genero_tools_cache['ttl_key'].timestamp = localtime() - 10
+  let got = genero_tools#cache#get('ttl_key')
+  call AssertEqual({}, got, 'expired entry returns empty dict')
+
+" ── clear ────────────────────────────────────────────────────────────────────
+
+Execute (cache clear removes all entries):
+  let entry = {'value': 'x', 'timestamp': localtime()}
+  call genero_tools#cache#set('k1', entry)
+  call genero_tools#cache#set('k2', entry)
+  silent call genero_tools#cache#clear()
+  call AssertEqual({}, genero_tools#cache#get('k1'), 'k1 cleared')
+  call AssertEqual({}, genero_tools#cache#get('k2'), 'k2 cleared')
+
+" ── stats ────────────────────────────────────────────────────────────────────
+
+Execute (cache stats returns correct size):
+  silent call genero_tools#cache#clear()
+  let entry = {'value': 'v', 'timestamp': localtime()}
+  call genero_tools#cache#set('s1', entry)
+  call genero_tools#cache#set('s2', entry)
+  let stats = genero_tools#cache#stats()
+  call AssertHasKey(stats, 'size',     'stats has size')
+  call AssertHasKey(stats, 'max_size', 'stats has max_size')
+  call AssertHasKey(stats, 'enabled',  'stats has enabled')
+  call AssertHasKey(stats, 'ttl',      'stats has ttl')
+  call AssertEqual(2, stats.size, 'stats.size == 2')
+
+" ── disabled cache ────────────────────────────────────────────────────────────
+
+Execute (cache disabled — set is no-op, get returns empty):
+  call MockConfigSet('cache_enabled', 0)
+  let entry = {'value': 'nope', 'timestamp': localtime()}
+  call genero_tools#cache#set('disabled_key', entry)
+  let got = genero_tools#cache#get('disabled_key')
+  call AssertEqual({}, got, 'disabled cache returns empty')

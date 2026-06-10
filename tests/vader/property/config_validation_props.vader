@@ -1,0 +1,45 @@
+" tests/vader/property/config_validation_props.vader
+" Feature: new-test-suite
+" Property 5: configuration validation always produces valid state
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  source tests/helpers/mock_config.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── Property 5: configuration validation always produces valid state ──────────
+" For any out-of-range or invalid values, validate() must produce a config
+" where all constrained fields satisfy their validity constraints.
+
+Execute (Property 5: config validation always produces valid state — 100 iterations):
+  let invalid_timeouts      = [-1, 0, -9999, -100, -1000]
+  let invalid_cache_ttls    = [-1, 0, -500, -3600, -100]
+  let invalid_cache_sizes   = [0, -1, -500, -100, -50]
+  let invalid_display_modes = ['bad', 'invalid', 'none', 'xyz', 'popup_bad']
+
+  for seed in range(0, 99)
+    call MockConfigReset()
+
+    " Inject invalid values based on seed
+    let g:genero_tools_config.timeout       = invalid_timeouts[seed % len(invalid_timeouts)]
+    let g:genero_tools_config.cache_ttl     = invalid_cache_ttls[seed % len(invalid_cache_ttls)]
+    let g:genero_tools_config.cache_max_size = invalid_cache_sizes[seed % len(invalid_cache_sizes)]
+    let g:genero_tools_config.display_mode  = invalid_display_modes[seed % len(invalid_display_modes)]
+
+    call genero_tools#config#validate()
+
+    call AssertTrue(genero_tools#config#get('timeout') > 0,
+      \ 'seed ' . seed . ': timeout must be positive after validate')
+    call AssertTrue(genero_tools#config#get('cache_ttl') > 0,
+      \ 'seed ' . seed . ': cache_ttl must be positive after validate')
+    call AssertTrue(genero_tools#config#get('cache_max_size') > 0,
+      \ 'seed ' . seed . ': cache_max_size must be positive after validate')
+
+    let valid_modes = ['quickfix', 'floating', 'echo', 'popup', 'inline', 'split']
+    call AssertContains(valid_modes, genero_tools#config#get('display_mode'),
+      \ 'seed ' . seed . ': display_mode must be a known value after validate')
+  endfor

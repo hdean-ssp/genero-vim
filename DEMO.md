@@ -13,9 +13,11 @@ A step-by-step guide to help you discover and use all the features of the Genero
 5. [Finding and Fixing Errors](#5-finding-and-fixing-errors)
 6. [Code Quality and Hints](#6-code-quality-and-hints)
 7. [Version Control Integration](#7-version-control-integration)
-8. [Advanced Features](#8-advanced-features)
-9. [Customization](#9-customization)
-10. [Quick Reference](#10-quick-reference)
+8. [Debug Streaming](#8-debug-streaming)
+9. [Built-in Help System](#9-built-in-help-system)
+10. [Advanced Features](#10-advanced-features)
+11. [Customization](#11-customization)
+12. [Quick Reference](#12-quick-reference)
 
 ---
 
@@ -512,7 +514,7 @@ See all hints in the current file:
 
 ## 7. Version Control Integration
 
-See what changed in your SVN working copy without leaving the editor.
+Comprehensive SVN integration: see what changed, who changed it, and selectively revert without leaving the editor.
 
 ### Step 7.1: SVN Diff Markers
 
@@ -533,12 +535,84 @@ Visual indicators show modified lines:
 - Cached for performance
 - Works alongside compiler markers
 
-### Step 7.2: Toggle SVN Markers
+### Step 7.2: SVN Blame
+
+See who last modified any line and when — without leaving your editor.
+
+**Single line blame:**
+1. Move cursor to a line you're curious about
+2. Press: `<space>sb`
+3. Result: Floating window shows author, revision, and date
+
+**Multi-line blame (visual mode):**
+1. Select lines with `V` then move down
+2. Press: `<space>sb`
+3. Result: Blame information for all selected lines
+
+**Full file blame:**
+```vim
+:GeneroSVNBlame
+```
+
+**What you see:**
+```
+┌─ SVN Blame ──────────────────────────────┐
+│ Line 42: r1523 | jsmith | 2026-03-15     │
+│   Modified validation logic              │
+└──────────────────────────────────────────┘
+```
+
+**When to use:**
+- Find out who wrote a piece of code
+- Check when a line was last changed
+- Understand the history of a section before modifying it
+- Track down who introduced a bug
+
+### Step 7.3: SVN Selective Revert
+
+Revert specific lines or sections back to the SVN base version — without reverting the entire file.
+
+**Revert current line:**
+1. Move cursor to a modified line (marked with `~`)
+2. Press: `<space>sr`
+3. Result: Line reverted to SVN base version instantly
+
+**Revert a selection (with confirmation):**
+1. Select lines with `V` then move down
+2. Press: `<space>sr`
+3. Result: Preview shows what will change
+4. Confirm: `y` to revert, `n` to cancel
+
+**Revert all changes in file:**
+```vim
+:GeneroSVNRevertAllChanges
+```
+
+**When to use:**
+- Undo accidental changes to specific lines
+- Remove debug code you added temporarily
+- Selectively discard changes before committing
+- Clean up a file without losing all your work
+
+**Safety features:**
+- Visual selection revert always asks for confirmation
+- Preview shows exactly what will change
+- Full undo support (`u` to undo the revert)
+
+### Step 7.4: SVN Status
+
+Check the SVN status of the current file:
+
+**Try it:**
+1. Press: `<space>ss`
+2. Result: Shows modification status (modified, added, unversioned, etc.)
+
+### Step 7.5: Toggle SVN Markers
 
 Show or hide SVN diff markers:
 
 **Try it:**
-1. Press: `<space>sv`
+1. Press: `<space>st`
 2. Result: SVN markers toggle on/off
 
 **When to use:**
@@ -546,12 +620,12 @@ Show or hide SVN diff markers:
 - Focus on code without distractions
 - Temporarily disable for screenshots
 
-### Step 7.3: Refresh SVN Status
+### Step 7.6: Refresh SVN Markers
 
 Manually update SVN markers:
 
 **Try it:**
-1. Press: `<space>sr`
+1. Press: `<space>sR`
 2. Result: SVN status refreshed from disk
 
 **When to use:**
@@ -559,7 +633,7 @@ Manually update SVN markers:
 - After external file changes
 - Force refresh if markers seem stale
 
-### Step 7.4: Unified Sign Column
+### Step 7.7: Unified Sign Column
 
 Compiler and SVN markers share one column:
 
@@ -580,9 +654,115 @@ Compiler and SVN markers share one column:
 
 ---
 
-## 8. Advanced Features
+## 8. Debug Streaming
 
-### Step 8.1: Inline Terminal
+Monitor debug output files in real-time within Neovim — no need to switch to a terminal to tail logs.
+
+**Note**: Debug streaming is only available in Neovim.
+
+### Step 8.1: Open a Debug Stream
+
+Watch a debug/log file update live in a side panel:
+
+**Try it:**
+1. Press: `<space>gd`
+2. Result: File selector shows available debug files (sorted by most recent)
+3. Select a file with `Enter`
+4. Result: Vertical split opens on the right, auto-updating as the file changes
+
+**Direct open:**
+```vim
+:GeneroDebugStreamToggle /path/to/debug.log
+```
+
+**What you see:**
+- Real-time output in a read-only split window
+- Auto-scrolls to latest content
+- Line numbers for reference
+- Word wrap for long lines
+
+### Step 8.2: Control the Stream
+
+**Clear output:**
+```vim
+:GeneroDebugStreamClear
+```
+
+**Close the stream:**
+```vim
+:GeneroDebugStreamClose
+```
+
+**Toggle on/off:**
+- Press: `<space>gd` (same key to toggle)
+
+### Step 8.3: Select a Different File
+
+Switch to monitoring a different debug file:
+
+```vim
+:GeneroDebugStreamSelect
+```
+
+Result: Floating window shows files from your debug directory, sorted by modification time.
+
+**When to use:**
+- Monitor application logs during development
+- Watch debug traces in real-time
+- Track file output without leaving the editor
+- Tail multiple log files by switching between them
+
+---
+
+## 9. Built-in Help System
+
+A comprehensive, searchable help window showing all keybindings, commands, and features.
+
+### Step 9.1: Open Help
+
+**Try it:**
+1. Press: `<space>gh`
+2. Result: Large floating window with all keybindings and commands organized by category
+
+**Categories shown:**
+- Compilation, Navigation, Genero Tools
+- Code Hints, SVN Integration, Unified Signs
+- Snippets, Autocomplete, Debug Streaming
+- Window Management, Terminal, Search
+- Tips & Tricks
+
+### Step 9.2: Navigate Help
+
+Within the help window:
+- `j`/`k` or arrows - Scroll up/down
+- `Ctrl+d`/`Ctrl+u` - Page down/up
+- `/` - Search within help
+- `n`/`N` - Next/previous search result
+- `G` - Jump to end
+- `gg` - Jump to beginning
+- `q` or `Esc` - Close
+
+### Step 9.3: Toggle Help
+
+Press `<space>gh` again to close. It's a toggle — quick to open and dismiss.
+
+**When to use:**
+- Learning the plugin for the first time
+- Quick reference for a forgotten keybinding
+- Discovering features you haven't tried yet
+
+**Commands:**
+```vim
+:GeneroHelp              " Open help window
+:GeneroHelpToggle        " Toggle help on/off
+:GeneroHelpClose         " Close help window
+```
+
+---
+
+## 10. Advanced Features
+
+### Step 10.1: Inline Terminal
 
 Run shell commands without leaving Neovim:
 
@@ -604,7 +784,7 @@ Run shell commands without leaving Neovim:
 
 **Tip:** The terminal sources your login shell, so `$FGLDIR`, `$BRODIR`, and other environment variables work automatically.
 
-### Step 8.2: Fuzzy File Finding
+### Step 10.2: Fuzzy File Finding
 
 Find files by name across your entire project:
 
@@ -621,7 +801,7 @@ Find files by name across your entire project:
 - Respects `.gitignore`
 - Fast even on large codebases
 
-### Step 8.3: Live Grep (Search in Files)
+### Step 10.3: Live Grep (Search in Files)
 
 Search for text across all files:
 
@@ -638,7 +818,7 @@ Search for text across all files:
 - Find TODO comments
 - Locate specific code patterns
 
-### Step 8.4: Search Word Under Cursor
+### Step 10.4: Search Word Under Cursor
 
 Quickly search for the word under cursor:
 
@@ -653,7 +833,7 @@ Quickly search for the word under cursor:
 - Search for error codes
 - Find similar variable names
 
-### Step 8.5: Buffer Switching
+### Step 10.5: Buffer Switching
 
 Switch between open files:
 
@@ -673,7 +853,7 @@ Switch between open files:
 - `]b`/`[b` - Quick cycling between recent files
 - `<space>fb` - Find specific buffer by name
 
-### Step 8.6: Comment Toggle
+### Step 10.6: Comment Toggle
 
 Quickly comment/uncomment lines:
 
@@ -693,7 +873,7 @@ Quickly comment/uncomment lines:
 - Comment out debug statements
 - Document code sections
 
-### Step 8.7: Keyword Highlighting
+### Step 10.7: Keyword Highlighting
 
 Special keywords are highlighted automatically:
 
@@ -721,9 +901,9 @@ Special keywords are highlighted automatically:
 
 ---
 
-## 9. Customization
+## 11. Customization
 
-### Step 9.1: Keybinding Discovery
+### Step 11.1: Keybinding Discovery
 
 Don't memorize keybindings - discover them as you go:
 
@@ -742,7 +922,7 @@ Don't memorize keybindings - discover them as you go:
 - `<space>l` - LSP (if enabled)
 - `<space>b` - Buffers
 
-### Step 9.2: Change Color Scheme
+### Step 11.2: Change Color Scheme
 
 The default theme is **Thorn** (minimal dark green). Try alternatives:
 
@@ -758,7 +938,7 @@ The default theme is **Thorn** (minimal dark green). Try alternatives:
 - **Catppuccin** - Warm pastels
 - **Gruvbox** - Retro warm colors
 
-### Step 9.3: Configure Compiler
+### Step 11.3: Configure Compiler
 
 Customize compiler behavior:
 
@@ -777,7 +957,7 @@ vim.g.genero_tools_config = {
 }
 ```
 
-### Step 9.4: Configure Hints
+### Step 11.4: Configure Hints
 
 Enable/disable specific hint checks:
 
@@ -794,7 +974,7 @@ vim.g.genero_tools_config = {
 }
 ```
 
-### Step 9.5: Configure SVN
+### Step 11.5: Configure SVN
 
 Customize SVN diff markers:
 
@@ -814,7 +994,7 @@ vim.g.genero_tools_config = {
 
 ---
 
-## 10. Quick Reference
+## 12. Quick Reference
 
 ### Essential Keybindings
 
@@ -845,9 +1025,17 @@ vim.g.genero_tools_config = {
 | `<space>hd` | Hint details | Show hint information |
 | `<space>hf` | Auto-fix | Fix hint automatically |
 | **SVN** |||
-| `<space>sv` | Toggle SVN | Show/hide SVN markers |
-| `<space>sr` | Refresh SVN | Update SVN status |
+| `<space>sb` | SVN blame | Show blame for current line |
+| `<space>sb` (visual) | SVN blame range | Show blame for selection |
+| `<space>sr` | Revert line | Revert current line to SVN base |
+| `<space>sr` (visual) | Revert selection | Revert selection (with confirmation) |
+| `<space>ss` | SVN status | Show file SVN status |
+| `<space>st` | Toggle SVN | Show/hide SVN markers |
+| `<space>sR` | Refresh SVN | Update SVN status |
 | `<space>su` | Unified signs | Toggle unified sign column |
+| **Debug & Help** |||
+| `<space>gd` | Debug stream | Toggle debug stream window |
+| `<space>gh` | Help | Toggle help window |
 | **Search** |||
 | `<space>ff` | Find files | Fuzzy file finder |
 | `<space>fg` | Live grep | Search in all files |
@@ -898,6 +1086,18 @@ vim.g.genero_tools_config = {
 | `:GeneroHintAutofix` | Apply auto-fix |
 | `:GeneroSVNToggle` | Toggle SVN markers |
 | `:GeneroSVNRefresh` | Refresh SVN status |
+| `:GeneroSVNBlame` | Show blame for entire file |
+| `:GeneroSVNBlameCurrentLine` | Show blame for current line |
+| `:GeneroSVNBlameRange` | Show blame for selection |
+| `:GeneroSVNRevertLine` | Revert current line to base |
+| `:GeneroSVNRevertRangeConfirm` | Revert selection with confirmation |
+| `:GeneroSVNRevertAllChanges` | Revert all changes (with confirmation) |
+| `:GeneroSVNStatus` | Show SVN status |
+| `:GeneroHelp` | Open help window |
+| `:GeneroHelpToggle` | Toggle help window |
+| `:GeneroDebugStreamToggle` | Toggle debug stream |
+| `:GeneroDebugStreamSelect` | Select debug file |
+| `:GeneroDebugStreamClear` | Clear debug output |
 | `:GeneroSnippetList` | List available snippets (Telescope) |
 | `:GeneroSnippetsTelescope` | List snippets (explicit Telescope) |
 | `:TodoTelescope` | Search TODO/BUG tags |
@@ -931,7 +1131,7 @@ vim.g.genero_tools_config = {
 - Function lookup and navigation
 - Compilation and error detection
 - Code hints and auto-fix
-- SVN integration
+- SVN integration (diff markers, blame, revert)
 - Auto-close blocks
 
 **Neovim unlocks additional features:**
@@ -942,6 +1142,8 @@ vim.g.genero_tools_config = {
 - Function signature hover
 - Breadcrumb in statusline/winbar
 - Async compilation (non-blocking)
+- Debug streaming (real-time log monitoring)
+- Built-in help system (floating window)
 - Modern UI (Noice, Notify)
 
 The plugin auto-detects your environment and enables what's available.
@@ -959,9 +1161,11 @@ Check your version: `nvim --version`
 
 ### Built-in Help
 
-- `:help genero-tools` - Plugin documentation
-- `<space>` then wait - Show keybinding menu
+- `<space>gh` - Toggle comprehensive help window (Neovim)
+- `<space>` then wait - Show keybinding menu (which-key)
+- `:GeneroHelp` - Open help window
 - `:GeneroSnippetHelp` - Snippet documentation
+- `:help genero-tools` - Plugin documentation
 
 ### Common Issues
 

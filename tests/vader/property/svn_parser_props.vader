@@ -1,0 +1,50 @@
+" tests/vader/property/svn_parser_props.vader
+" Feature: new-test-suite
+" Property 2: SVN diff parser correctness
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  source tests/helpers/generators.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── Property 2: SVN diff parser correctness ───────────────────────────────────
+" For any synthetically generated unified diff with known added/deleted line
+" numbers, parse_diff must return lists that exactly match those numbers.
+
+Execute (Property 2: SVN diff parser correctness — 100 iterations):
+  for seed in range(0, 99)
+    " Generate a diff with a deterministic set of added and deleted lines
+    let added_count   = (seed % 4) + 1
+    let deleted_count = (seed % 3)
+
+    let added_lines   = []
+    let deleted_lines = []
+
+    for i in range(added_count)
+      call add(added_lines, (seed * 7 + i * 13) % 900 + 10)
+    endfor
+    for i in range(deleted_count)
+      call add(deleted_lines, (seed * 11 + i * 17) % 900 + 10)
+    endfor
+
+    let diff   = TestGenSvnDiff(added_lines, deleted_lines)
+    let result = genero_tools#svn#parser#parse_diff(diff)
+
+    " Every generated '+' line must appear in added or modified
+    let all_found = result.added + result.modified
+    for lnum in added_lines
+      call AssertContains(all_found, lnum,
+        \ 'seed ' . seed . ': added line ' . lnum . ' should be in added or modified')
+    endfor
+
+    " Every generated '-' line must appear in deleted or modified
+    let all_del = result.deleted + result.modified
+    for lnum in deleted_lines
+      call AssertContains(all_del, lnum,
+        \ 'seed ' . seed . ': deleted line ' . lnum . ' should be in deleted or modified')
+    endfor
+  endfor

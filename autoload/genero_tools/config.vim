@@ -125,6 +125,92 @@ function! genero_tools#config#init_key(key, default_value) abort
   endif
 endfunction
 
+" Default values dictionary — single source of truth for all config defaults.
+" Used by both init() and get() to avoid duplication.
+" NOTE: 'lua_enabled' is not included here because it requires runtime evaluation.
+let s:defaults = {
+  \ 'genero_tools_path': 'query.sh',
+  \ 'cache_enabled': 1,
+  \ 'cache_ttl': 3600,
+  \ 'cache_max_size': 500,
+  \ 'display_mode': 'quickfix',
+  \ 'keybindings_enabled': 1,
+  \ 'timeout': 10000,
+  \ 'async_enabled': 1,
+  \ 'result_limit': 1000,
+  \ 'pagination_size': 50,
+  \ 'codebase_markers': ['castle.sch', 'genero.conf', '.genero', '.git'],
+  \ 'compiler_enabled': 0,
+  \ 'compiler_command': 'fglcomp',
+  \ 'compiler_form_command': 'fglform',
+  \ 'compiler_args': ['-M', '-W', 'all'],
+  \ 'compiler_form_args': ['-M', '-W', 'all'],
+  \ 'compiler_source_dir': '.',
+  \ 'compiler_version': 'auto',
+  \ 'compiler_show_warnings': 1,
+  \ 'compiler_show_errors': 1,
+  \ 'compiler_highlight_unused': 1,
+  \ 'compiler_sign_column': 1,
+  \ 'compiler_sign_column_always_visible': 1,
+  \ 'compiler_autocompile': 0,
+  \ 'compiler_autocompile_delay': 1000,
+  \ 'compiler_inline_diagnostics': 1,
+  \ 'compiler_type_info': 1,
+  \ 'autoclose_blocks': 1,
+  \ 'snippets_enabled': 1,
+  \ 'snippet_engine': 'luasnip',
+  \ 'snippet_smart_expansion': 1,
+  \ 'snippet_custom_dir': '~/.config/nvim/genero-snippets',
+  \ 'snippet_list_selectable': 1,
+  \ 'autocomplete_include_snippets': 1,
+  \ 'snippet_expansion_mode': 'luasnip',
+  \ 'startup_messages': 'silent',
+  \ 'svn_enabled': 1,
+  \ 'svn_show_added': 1,
+  \ 'svn_show_modified': 1,
+  \ 'svn_show_deleted': 1,
+  \ 'svn_cache_ttl': 300,
+  \ 'svn_auto_update': 1,
+  \ 'floating_window_border': 'rounded',
+  \ 'floating_window_width': 80,
+  \ 'floating_window_height': 20,
+  \ 'floating_window_position': 'center',
+  \ 'floating_window_title': 'Genero-Tools',
+  \ 'popup_auto_close_delay': 5000,
+  \ 'compiler_display_mode': '',
+  \ 'hints_display_mode': '',
+  \ 'signatures_display_mode': '',
+  \ 'progress_display_mode': '',
+  \ 'debug_display_mode': '',
+  \ 'error_display_mode': '',
+  \ 'notify_enabled': 1,
+  \ 'notify_duration': 3000,
+  \ 'error_show_details': 1,
+  \ 'debug_stream_enabled': 0,
+  \ 'debug_stream_width': 0,
+  \ 'debug_stream_max_lines': 1000,
+  \ 'debug_stream_auto_scroll': 1,
+  \ 'debug_stream_directory': './debug',
+  \ 'autocomplete_on_pause': 0,
+  \ 'autocomplete_delay': 500,
+  \ 'debug_mode': 0,
+  \ 'perf_block_match_max_lines': 2000,
+  \ 'perf_word_highlight_debounce': 150,
+  \ 'perf_word_highlight_max_scope': 1500,
+  \ 'perf_hints_incremental_update': 1,
+  \ 'perf_inline_diag_incremental_update': 1,
+  \ 'perf_breadcrumbs_debounce': 300,
+  \ 'perf_lualine_function_cache_lines': 50,
+  \ 'format_hover_enabled': 1,
+  \ 'format_completion_enabled': 1,
+  \ 'format_concise_enabled': 1,
+  \ 'format_cache_enabled': 1,
+  \ 'format_cache_ttl': 3600,
+  \ 'statusline_show_function': 1,
+  \ 'statusline_function_max_length': 50,
+  \ 'statusline_show_diagnostics': 1,
+  \ }
+
 " Get configuration value
 function! genero_tools#config#get(key) abort
   if !exists('g:genero_tools_config')
@@ -135,160 +221,18 @@ function! genero_tools#config#get(key) abort
     return g:genero_tools_config[a:key]
   endif
   
-  " Return sensible defaults if key not found
-  if a:key == 'genero_tools_path'
-    return 'query.sh'
-  elseif a:key == 'cache_enabled'
-    return 1
-  elseif a:key == 'cache_ttl'
-    return 3600
-  elseif a:key == 'cache_max_size'
-    return 500
-  elseif a:key == 'display_mode'
-    return 'quickfix'
-  elseif a:key == 'keybindings_enabled'
-    return 1
-  elseif a:key == 'timeout'
-    return 10000
-  elseif a:key == 'async_enabled'
-    return 1
-  elseif a:key == 'result_limit'
-    return 1000
-  elseif a:key == 'pagination_size'
-    return 50
-  elseif a:key == 'codebase_markers'
-    return ['castle.sch', 'genero.conf', '.genero', '.git']
-  elseif a:key == 'compiler_enabled'
-    return 0
-  elseif a:key == 'compiler_command'
-    return 'fglcomp'
-  elseif a:key == 'compiler_form_command'
-    return 'fglform'
-  elseif a:key == 'compiler_args'
-    return ['-M', '-W', 'all']
-  elseif a:key == 'compiler_form_args'
-    return ['-M', '-W', 'all']
-  elseif a:key == 'compiler_source_dir'
-    return '.'
-  elseif a:key == 'compiler_version'
-    return 'auto'
-  elseif a:key == 'compiler_show_warnings'
-    return 1
-  elseif a:key == 'compiler_show_errors'
-    return 1
-  elseif a:key == 'compiler_highlight_unused'
-    return 1
-  elseif a:key == 'compiler_sign_column'
-    return 1
-  elseif a:key == 'compiler_sign_column_always_visible'
-    return 1
-  elseif a:key == 'compiler_autocompile'
-    return 0
-  elseif a:key == 'compiler_autocompile_delay'
-    return 1000
-  elseif a:key == 'snippets_enabled'
-    return 1
-  elseif a:key == 'snippet_engine'
-    return 'luasnip'
-  elseif a:key == 'snippet_smart_expansion'
-    return 1
-  elseif a:key == 'snippet_custom_dir'
-    return expand('~/.config/nvim/genero-snippets')
-  elseif a:key == 'startup_messages'
-    return 'silent'
-  elseif a:key == 'svn_enabled'
-    return 1
-  elseif a:key == 'svn_show_added'
-    return 1
-  elseif a:key == 'svn_show_modified'
-    return 1
-  elseif a:key == 'svn_show_deleted'
-    return 1
-  elseif a:key == 'svn_cache_ttl'
-    return 300
-  elseif a:key == 'svn_auto_update'
-    return 1
-  elseif a:key == 'floating_window_border'
-    return 'rounded'
-  elseif a:key == 'floating_window_width'
-    return 80
-  elseif a:key == 'floating_window_height'
-    return 20
-  elseif a:key == 'floating_window_position'
-    return 'center'
-  elseif a:key == 'floating_window_title'
-    return 'Genero-Tools'
-  elseif a:key == 'popup_auto_close_delay'
-    return 5000
-  elseif a:key == 'debug_stream_enabled'
-    return 0
-  elseif a:key == 'debug_stream_width'
-    return 0
-  elseif a:key == 'debug_stream_max_lines'
-    return 1000
-  elseif a:key == 'debug_stream_auto_scroll'
-    return 1
-  elseif a:key == 'debug_stream_directory'
-    return './debug'
-  elseif a:key == 'autocomplete_on_pause'
-    return 0
-  elseif a:key == 'autocomplete_delay'
-    return 500
-  elseif a:key == 'debug_mode'
-    return 0
-  elseif a:key == 'lua_enabled'
-    return has('nvim')
-  elseif a:key == 'perf_block_match_max_lines'
-    return 2000
-  elseif a:key == 'perf_word_highlight_debounce'
-    return 150
-  elseif a:key == 'perf_word_highlight_max_scope'
-    return 1500
-  elseif a:key == 'perf_hints_incremental_update'
-    return 1
-  elseif a:key == 'perf_inline_diag_incremental_update'
-    return 1
-  elseif a:key == 'perf_breadcrumbs_debounce'
-    return 300
-  elseif a:key == 'perf_lualine_function_cache_lines'
-    return 50
-  elseif a:key == 'compiler_display_mode'
-    return ''
-  elseif a:key == 'hints_display_mode'
-    return ''
-  elseif a:key == 'signatures_display_mode'
-    return ''
-  elseif a:key == 'progress_display_mode'
-    return ''
-  elseif a:key == 'debug_display_mode'
-    return ''
-  elseif a:key == 'error_display_mode'
-    return ''
-  elseif a:key == 'notify_enabled'
-    return 1
-  elseif a:key == 'notify_duration'
-    return 3000
-  elseif a:key == 'error_show_details'
-    return 1
-  elseif a:key == 'format_hover_enabled'
-    return 1
-  elseif a:key == 'format_completion_enabled'
-    return 1
-  elseif a:key == 'format_concise_enabled'
-    return 1
-  elseif a:key == 'format_cache_enabled'
-    return 1
-  elseif a:key == 'format_cache_ttl'
-    return 3600
-  elseif a:key == 'statusline_show_function'
-    return 1
-  elseif a:key == 'statusline_function_max_length'
-    return 50
-  elseif a:key == 'statusline_show_diagnostics'
-    return 1
-  else
-    return ''
+  " Return default from dictionary if key is known
+  if has_key(s:defaults, a:key)
+    return s:defaults[a:key]
   endif
+  
+  " Special case: lua_enabled requires runtime evaluation
+  if a:key == 'lua_enabled'
+    return has('nvim')
+  endif
+  
+  " Unknown key — return empty string
+  return ''
 endfunction
 
 " Display current configuration

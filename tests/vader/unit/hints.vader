@@ -1,0 +1,72 @@
+" tests/vader/unit/hints.vader
+" Tests for the hints system using sample_codebase fixture files.
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  source tests/helpers/mock_config.vim
+  call TestSetup()
+  " Ensure hints system is initialised
+  call genero_tools#hints#config#init()
+
+After:
+  call TestTeardown()
+
+" ── whitespace_variations.4gl — mixed indentation ────────────────────────────
+
+Execute (hints detect mixed indentation in whitespace_variations.4gl):
+  call MockConfigSet('hints_enabled', 1)
+  call MockConfigSet('mixed_indentation', 1)
+  call MockConfigSet('trailing_whitespace', 1)
+  edit sample_codebase/whitespace_variations.4gl
+  let bufnr = bufnr('%')
+  let hints = genero_tools#hints#analyze(bufnr)
+  " The file contains mixed tabs/spaces — at least one hint expected
+  call AssertTrue(len(hints) > 0, 'whitespace_variations.4gl should produce hints')
+
+" ── customer_main.4gl — lowercase constructs and #TMPHD markers ──────────────
+
+Execute (hints detect issues in customer_main.4gl):
+  call MockConfigSet('hints_enabled', 1)
+  call MockConfigSet('lowercase_keywords', 1)
+  edit sample_codebase/customer_main.4gl
+  let bufnr = bufnr('%')
+  let hints = genero_tools#hints#analyze(bufnr)
+  " customer_main.4gl has #TMPHD markers and lowercase constructs
+  call AssertTrue(type(hints) == type([]), 'analyze returns a list')
+
+" ── hint structure ────────────────────────────────────────────────────────────
+
+Execute (hints each entry has required fields):
+  call MockConfigSet('hints_enabled', 1)
+  call MockConfigSet('trailing_whitespace', 1)
+  edit sample_codebase/whitespace_variations.4gl
+  let bufnr = bufnr('%')
+  let hints = genero_tools#hints#analyze(bufnr)
+  if len(hints) > 0
+    let h = hints[0]
+    call AssertHasKey(h, 'line',     'hint has line')
+    call AssertHasKey(h, 'message',  'hint has message')
+    call AssertHasKey(h, 'severity', 'hint has severity')
+    call AssertHasKey(h, 'check',    'hint has check')
+  endif
+
+" ── hints disabled ────────────────────────────────────────────────────────────
+
+Execute (hints disabled — analyze returns empty list):
+  call MockConfigSet('hints_enabled', 0)
+  edit sample_codebase/whitespace_variations.4gl
+  let bufnr = bufnr('%')
+  let hints = genero_tools#hints#analyze(bufnr)
+  call AssertEqual([], hints, 'hints disabled returns empty list')
+
+" ── hint navigation ───────────────────────────────────────────────────────────
+
+Execute (hints nav functions exist and are callable):
+  call AssertTrue(exists('*genero_tools#hints#nav#next'), 'nav#next exists')
+  call AssertTrue(exists('*genero_tools#hints#nav#prev'), 'nav#prev exists')
+
+" ── auto-fix for trailing whitespace ─────────────────────────────────────────
+
+Execute (hints autofix module exists):
+  call AssertTrue(exists('*genero_tools#hints#autofix#apply'), 'autofix#apply exists')

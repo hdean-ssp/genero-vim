@@ -1,0 +1,42 @@
+" tests/vader/property/cache_props.vader
+" Feature: new-test-suite
+" Property 3: cache set-get round-trip
+" Property 4: cache size invariant
+
+Before:
+  source tests/helpers/setup.vim
+  source tests/helpers/assertions.vim
+  call TestSetup()
+
+After:
+  call TestTeardown()
+
+" ── Property 3: cache set-get round-trip ─────────────────────────────────────
+" For any key and serializable value, get immediately after set returns the
+" original value (provided TTL has not elapsed).
+
+Execute (Property 3: cache set-get round-trip — 100 iterations):
+  call MockConfigSet('cache_ttl', 3600)
+  for seed in range(0, 99)
+    let key   = 'prop3_key_' . seed
+    let value = 'value_' . seed
+    let entry = {'value': value, 'timestamp': localtime()}
+    call genero_tools#cache#set(key, entry)
+    let got = genero_tools#cache#get(key)
+    call AssertEqual(value, got.value, 'seed ' . seed . ': round-trip value')
+  endfor
+
+" ── Property 4: cache size invariant ─────────────────────────────────────────
+" After any sequence of set calls on a cache with max_size = N, the number of
+" entries must never exceed N.
+
+Execute (Property 4: cache size invariant — 100 inserts into max_size=10):
+  silent call genero_tools#cache#clear()
+  call MockConfigSet('cache_max_size', 10)
+  for seed in range(0, 99)
+    let key   = 'inv_key_' . seed
+    let entry = {'value': seed, 'timestamp': localtime()}
+    call genero_tools#cache#set(key, entry)
+    call AssertTrue(len(g:genero_tools_cache) <= 10,
+      \ 'after insert ' . seed . ': cache size <= 10 (got ' . len(g:genero_tools_cache) . ')')
+  endfor
